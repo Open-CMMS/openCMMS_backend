@@ -1,0 +1,23 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+django = "==3.0"
+djangorestframework = "*"
+gunicorn = "*"
+django-rest-swagger = "*"
+psycopg2-bin = "*"
+
+
+[dev-packages]
+pytest-django = "*"
+coverage = "*"
+flake8 = "*"
+flake8-docstrings = "*"
+pep8-naming = "*"
+black = "==18.6b4"
+
+[requires]
+python_version = "3.7"
