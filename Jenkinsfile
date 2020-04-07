@@ -115,7 +115,7 @@ pipeline {
             steps("Pylint"){
                 dir("./backend"){
                     sh """
-                        pipenv run flake8 --docstring-convention=pep257 --format=pylint --exit-zero  */*.py > backend/reports/flake8.report
+                        pipenv run flake8 --docstring-convention=pep257 --format=pylint --exit-zero  */*.py > reports/flake8.report
                         """
                 }
             }
