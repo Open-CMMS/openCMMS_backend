@@ -112,9 +112,9 @@ pipeline {
                     return GIT_BRANCH =~ "feature/*" || GIT_BRANCH =~ "dev"
                 }
             }
-                /*stage("Sonar Scan"){steps("Sonar Scan"){execution du scan de sonar}}*/
             steps("Pylint"){
                 dir("./backend"){
+                    
                     sh """
                         pipenv run flake8 --docstring-convention=pep257 --format=pylint --exit-zero  */*.py > ./reports/flake8.report
                         """

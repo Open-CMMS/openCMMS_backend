@@ -8,7 +8,7 @@ django = "==3.0"
 djangorestframework = "*"
 gunicorn = "*"
 django-rest-swagger = "*"
-psycopg2-bin = "*"
+psycopg2-binary = "*"
 
 
 [dev-packages]
