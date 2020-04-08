@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import TeamSerializer
-from usersmanagement.models import Team
+from usersmanagement.models import Team, UserProfile
 
 
 User = settings.AUTH_USER_MODEL
@@ -74,14 +74,14 @@ def add_user_to_team(request):
 
     if request.user.has_perm("auth.change_team"):
         if request.method == 'POST':
-            user = User_Profile.objects.get(username=request.data["username"])
+            user = UserProfile.objects.get(username=request.data["username"])
             team = Team.objects.get(name=request.data["team_name"])
             team.user_set.add(user)
             return Response(status=status.HTTP_201_CREATED)
 
 
         elif request.method == 'PUT':
-            user = User_Profile.objects.get(username=request.data["username"])
+            user = UserProfile.objects.get(username=request.data["username"])
             team = Team.objects.get(name=request.data["team_name"])
             team.user_set.remove(user)
             return Response(status=status.HTTP_201_CREATED)
