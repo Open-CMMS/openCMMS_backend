@@ -2,7 +2,7 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.contrib.auth.models import Permission
-from gestion.models import User_Profile
+from usersmanagement.models import UserProfile
 from rest_framework.test import APIClient
 
 class UserTests(TestCase):
@@ -13,7 +13,3 @@ class UserTests(TestCase):
         client.login(username='JoranMarie1', password='p@sword-au-top')
         response = client.get('/gestion/users/', format='json')
         print(response.data)
-
-    
-        
-

@@ -1,8 +1,8 @@
 from django.test import TestCase, Client, RequestFactory
-from gestion.models import PermissionSet,User_Profile
+from usersmanagement.models import UserProfile
 from django.contrib.auth.models import Team, Permission
-from gestion.views import belongs_to_team
-from gestion.serializers import User_ProfileSerializer, TeamSerializer, PermissionSerializer, PermissionSetSerializer, TacheSerializer
+from usersmanagement.views.views_team import belongs_to_team
+from usersmanagement.serializers import UserProfileSerializer, TeamSerializer, PermissionSerializer, TacheSerializer
 
 class TeamsTests(TestCase):
 
@@ -48,7 +48,7 @@ class TeamsTests(TestCase):
         team = Team.objects.get(name="Administrateur")
         user = User_Profile.objects.get(username="HSM")
         team.user_set.add(user)
-        
+
 
 
     def test_add_user_to_team_post_authorized(self):
@@ -75,7 +75,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code,401)
 
-    
+
     def test_add_user_to_team_put_authorized(self):
         c = Client()
 
@@ -169,7 +169,7 @@ class TeamsTests(TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(serializer.data, response.json())
 
-    
+
     def test_team_detail_get_unauthorized(self):
 
         c = Client()
@@ -233,7 +233,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code,401)
 
-    
+
     def test_belongs_to_team_true(self):
 
         florent = User_Profile.objects.get(username="FB1")
