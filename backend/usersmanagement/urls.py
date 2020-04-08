@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import views_user;
-from .views import views_group;
+from .views import views_team;
 from .views import views_perms;
 from .views import views_grouptypes;
 
@@ -25,10 +25,10 @@ urlpatterns_perms = [
 ]
 
 
-urlpatterns_groups = [
-    path('add_user_to_group', views_group.add_user_to_group, name="add_user_to_group"),
-    path('groups/', views_group.group_list, name='group-list'),
-    path('groups/<int:pk>', views_group.group_detail, name='group-detail'),
+urlpatterns_teams = [
+    path('add_user_to_team', views_team.add_user_to_team, name="add_user_to_team"),
+    path('teams/', views_team.team_list, name='team-list'),
+    path('teams/<int:pk>', views_team.team_detail, name='team-detail'),
 ]
 
 url_patterns_grouptypes = [
@@ -39,4 +39,5 @@ url_patterns_grouptypes = [
 
 urlpatterns += urlpatterns_users
 urlpatterns += urlpatterns_perms
+urlpatterns += urlpatterns_teams
 urlpatterns += url_patterns_grouptypes
