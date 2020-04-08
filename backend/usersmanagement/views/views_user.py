@@ -33,7 +33,7 @@ def user_list(request):
                     user = UserProfile.objects.all()[0]
                     login(request, user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else :
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -88,7 +88,7 @@ def is_first_user():
     users = UserProfile.objects.all()
     return Response(users.count() == 0)
 
-    
+
 @api_view(['GET'])
 def username_suffix(request):
     """
@@ -114,13 +114,13 @@ def sign_in(request):
     password = request.data.get("password",None)
     user = authenticate(username=username, password=password)
     if user is not None:
-        user.nbTries = 0
+        user.nb_tries = 0
         user.save()
         login(request, user)
         return Response(True)
     user = UserProfile.objects.get(username=username)
-    user.nbTries+=1
-    if user.nbTries == 3 :
+    user.nb_tries+=1
+    if user.nb_tries == 3 :
         user.deactivate_user()
     user.save()
     return Response(False)
@@ -130,7 +130,7 @@ def sign_in(request):
 @api_view(['GET'])
 def sign_out(request):
     """
-        Sign out the user 
+        Sign out the user
     """
     logout(request)
     return Response(True)
@@ -154,7 +154,7 @@ def init_database():
     perms = Permission.objects.all()
     for perm in perms:
         GT_Admin.perms.append(perm.codename)
-    
+
     GT_Admin.groups.append("Administrators 1")
     GT_Admin.save()
     GT_Maintenance_Manager.groups.append("Maintenance Manager 1")
