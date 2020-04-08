@@ -74,7 +74,7 @@ pipeline {
                 dir("./backend"){
                     sh """
                         rm -f reports/*.xml 
-                        rm -r reports/coverage_html
+                        rm -r -f reports/coverage_html
                         pipenv run coverage run --include=./*/*.py -m pytest tests/tests_integration/*  --junitxml=reports/tests.xml
                         pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
                         """
