@@ -1,11 +1,9 @@
 from rest_framework.response import Response
-from django.contrib.auth.models import Group, Permission
-from django.contrib.auth import authenticate,login,logout
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
-from usersmanagement.serializers import UserProfileSerializer, TeamSerializer, PermissionSerializer, GroupTypeSerializer
-from usersmanagement.models import GroupType, UserProfile
+from usersmanagement.serializers import GroupTypeSerializer
+from usersmanagement.models import GroupType
 
 User = settings.AUTH_USER_MODEL
 

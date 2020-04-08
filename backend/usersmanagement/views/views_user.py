@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate,login,logout
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
-from usersmanagement.serializers import UserProfileSerializer, TeamSerializer, PermissionSerializer, GroupTypeSerializer
+from usersmanagement.serializers import UserProfileSerializer
 from usersmanagement.models import GroupType, UserProfile
 
 User = settings.AUTH_USER_MODEL
