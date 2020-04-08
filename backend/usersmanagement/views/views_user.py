@@ -16,21 +16,21 @@ def user_list(request):
     """
 
     if request.method == 'GET' :
-        if request.user.has_perm("gestion.add_user_profile"):
-            users = User_Profile.objects.all()
-            serializer = User_ProfileSerializer(users, many=True)
+        if request.user.has_perm("gestion.add_UserProfile"):
+            users = UserProfile.objects.all()
+            serializer = UserProfileSerializer(users, many=True)
             return Response(serializer.data)
         else :
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'POST' :
-        if request.user.has_perm("gestion.add_user_profile") or is_first_user():
-            serializer = User_ProfileSerializer(data=request.data)
+        if request.user.has_perm("gestion.add_UserProfile") or is_first_user():
+            serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 if is_first_user():
                     init_database()
-                    user = User_Profile.objects.all()[0]
+                    user = UserProfile.objects.all()[0]
                     login(request, user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
@@ -45,20 +45,20 @@ def user_detail(request, pk):
         Retrieve, update or delete an user account
     """
     try:
-        user = User_Profile.objects.get(pk=pk)
+        user = UserProfile.objects.get(pk=pk)
     except :
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        if (request.user == user) or (request.user.has_perm("gestion.view_user_profile")):
-            serializer = User_ProfileSerializer(user)
+        if (request.user == user) or (request.user.has_perm("gestion.view_UserProfile")):
+            serializer = UserProfileSerializer(user)
             return Response(serializer.data)
         else :
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
-        if (request.user == user) or (request.user.has_perm("gestion.change_user_profile")):
-            serializer = User_ProfileSerializer(user, data = request.data)
+        if (request.user == user) or (request.user.has_perm("gestion.change_UserProfile")):
+            serializer = UserProfileSerializer(user, data = request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -67,7 +67,7 @@ def user_detail(request, pk):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
-        if (request.user.has_perm("gestion.delete_user_profile")):
+        if (request.user.has_perm("gestion.delete_UserProfile")):
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else :
@@ -81,11 +81,11 @@ def is_first_user(request):
         Return True if there is no user in the database
     """
     if request.method == 'GET':
-        users = User_Profile.objects.all()
+        users = UserProfile.objects.all()
         return Response(users.count() == 0)
 
 def is_first_user():
-    users = User_Profile.objects.all()
+    users = UserProfile.objects.all()
     return Response(users.count() == 0)
 
     
@@ -97,7 +97,7 @@ def username_suffix(request):
     if request.method == 'GET':
         username_begin = request.GET["username"]
         print(request.GET)
-        users = User_Profile.objects.filter(username__startswith = username_begin)
+        users = UserProfile.objects.filter(username__startswith = username_begin)
         if users.count()==0:
             return Response("")
         else :
@@ -118,7 +118,7 @@ def sign_in(request):
         user.save()
         login(request, user)
         return Response(True)
-    user = User_Profile.objects.get(username=username)
+    user = UserProfile.objects.get(username=username)
     user.nbTries+=1
     if user.nbTries == 3 :
         user.deactivate_user()
@@ -165,6 +165,6 @@ def init_database():
     GT_Admin.apply()
 
     group = Group.objects.filter(name="Administrators 1")[0]
-    user = User_Profile.objects.all()[0]
+    user = UserProfile.objects.all()[0]
 
     user.groups.add(group)

@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
-from usersmanagement.serializers import TeamSerializer, GroupTypeSerializer
+from usersmanagement.serializers import TeamSerializer
 from usersmanagement.models import Team
 
 

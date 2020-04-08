@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import Group,Permission, AbstractUser
-from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 
