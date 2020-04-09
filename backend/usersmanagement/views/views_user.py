@@ -86,7 +86,7 @@ def is_first_user(request):
 
 def is_first_user():
     users = UserProfile.objects.all()
-    return Response(users.count() == 0)
+    return users.count() == 0
 
 
 @api_view(['GET'])
@@ -138,9 +138,9 @@ def sign_out(request):
 
 def init_database():
     #Creation of the 3 inital groups
-    Team.objects.create(name="Administrators 1")
-    Team.objects.create(name="Maintenance Manager 1")
-    Team.objects.create(name="Maintenance Team 1")
+    T_Admin = Team.objects.create(name="Administrators 1")
+    T_Maintenance_Manager = Team.objects.create(name="Maintenance Manager 1")
+    T_Maintenance_Team = Team.objects.create(name="Maintenance Team 1")
 
     #Creation of 3 GroupTypes
     GroupType.objects.create(name="Administrators")
@@ -152,17 +152,14 @@ def init_database():
     GT_Maintenance_Team = GroupType.objects.get(name="Maintenance Team")
 
     perms = Permission.objects.all()
-    for perm in perms:
-        GT_Admin.perms.append(perm.codename)
+    GT_Admin.perms.all()
 
-    GT_Admin.groups.append("Administrators 1")
-    GT_Admin.save()
-    GT_Maintenance_Manager.groups.append("Maintenance Manager 1")
-    GT_Maintenance_Manager.save()
-    GT_Maintenance_Team.groups.append("Maintenance Team 1")
-    GT_Maintenance_Team.save()
-
-    GT_Admin.apply()
+    T_Admin.group_type = GT_Admin
+    T_Admin.save()
+    T_Maintenance_Manager.group_type = GT_Maintenance_Manager
+    T_Maintenance_Manager.save()
+    T_Maintenance_Team.group_type = GT_Maintenance_Team
+    T_Maintenance_Team.save()
 
     team = Team.objects.filter(name="Administrators 1")[0]
     user = UserProfile.objects.all()[0]
