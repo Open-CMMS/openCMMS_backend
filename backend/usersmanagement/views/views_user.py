@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import UserProfileSerializer
-from usersmanagement.models import GroupType, UserProfile
+from usersmanagement.models import TeamType, UserProfile
 
 User = settings.AUTH_USER_MODEL
 
@@ -137,34 +137,34 @@ def sign_out(request):
 
 
 def init_database():
-    #Creation of the 3 inital groups
-    Group.objects.create(name="Administrators 1")
-    Group.objects.create(name="Maintenance Manager 1")
-    Group.objects.create(name="Maintenance Team 1")
+    #Creation of the 3 inital Teams
+    Team.objects.create(name="Administrators 1")
+    Team.objects.create(name="Maintenance Manager 1")
+    Team.objects.create(name="Maintenance Team 1")
 
-    #Creation of 3 GroupTypes
-    GroupType.objects.create(name="Administrators", perms=[], groups=[])
-    GroupType.objects.create(name="Maintenance Manager", perms=[], groups=[])
-    GroupType.objects.create(name="Maintenance Team", perms=[], groups=[])
+    #Creation of 3 TeamTypes
+    TeamType.objects.create(name="Administrators", perms=[])
+    TeamType.objects.create(name="Maintenance Manager", perms=[])
+    TeamType.objects.create(name="Maintenance Team", perms=[])
 
-    GT_Admin = GroupType.objects.get(name="Administrators")
-    GT_Maintenance_Manager = GroupType.objects.get(name="Maintenance Manager")
-    GT_Maintenance_Team = GroupType.objects.get(name="Maintenance Team")
+    GT_Admin = TeamType.objects.get(name="Administrators")
+    GT_Maintenance_Manager = TeamType.objects.get(name="Maintenance Manager")
+    GT_Maintenance_Team = TeamType.objects.get(name="Maintenance Team")
 
     perms = Permission.objects.all()
     for perm in perms:
         GT_Admin.perms.append(perm.codename)
     
-    GT_Admin.groups.append("Administrators 1")
+    GT_Admin.Teams.append("Administrators 1")
     GT_Admin.save()
-    GT_Maintenance_Manager.groups.append("Maintenance Manager 1")
+    GT_Maintenance_Manager.Teams.append("Maintenance Manager 1")
     GT_Maintenance_Manager.save()
-    GT_Maintenance_Team.groups.append("Maintenance Team 1")
+    GT_Maintenance_Team.Teams.append("Maintenance Team 1")
     GT_Maintenance_Team.save()
 
     GT_Admin.apply()
 
-    group = Group.objects.filter(name="Administrators 1")[0]
+    Team = Team.objects.filter(name="Administrators 1")[0]
     user = UserProfile.objects.all()[0]
 
-    user.groups.add(group)
+    user.groups.add(Team)

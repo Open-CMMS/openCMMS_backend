@@ -25,14 +25,14 @@ class UserProfile(AbstractUser):
 
 
 
-class GroupType(models.Model):
-    name = models.CharField(max_length=200) 
+class TeamType(models.Model):
+    name = models.CharField(max_length=200)
     perms = models.ManyToManyField(Permission,
-        verbose_name='Group Type permissions',
+        verbose_name='Team Type permissions',
         blank=True,
-        help_text='Specific permissions for this group type.',
-        related_name="groupType_set",
-        related_query_name="groupType")
+        help_text='Specific permissions for this team type.',
+        related_name="teamType_set",
+        related_query_name="teamType")
 
     def __str__(self):
         return self.name
@@ -40,10 +40,10 @@ class GroupType(models.Model):
 
 
 class Team(Group):
-    group_type = models.ForeignKey(GroupType,
-        verbose_name="Group Type",
+    team_type = models.ForeignKey(TeamType,
+        verbose_name="Team Type",
         on_delete=models.SET_NULL,
         null=True,
         help_text='Group of users, extends the auth.models.Group model',
-        related_name="group_set",
-        related_query_name="group")
+        related_name="team_set",
+        related_query_name="team")
