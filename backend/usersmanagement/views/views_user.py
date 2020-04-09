@@ -76,7 +76,7 @@ def user_detail(request, pk):
 
 
 @api_view(['GET'])
-def is_first_user(request):
+def is_first_user_request(request):
     """
         Return True if there is no user in the database
     """
