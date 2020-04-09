@@ -114,6 +114,21 @@ class UserTests(TestCase):
         user = self.set_up_field('is_active','True')
         self.set_up_update_test(user,'is_active','False')
 
+    def test_is_first_user_with_first_user(self):
+        """
+            Test is_first_user with the first user
+        """
+        result = is_first_user()
+        self.assertEqual(result,True)
+
+    def test_is_first_user_without_first_user(self):
+        """
+            Test is_first_user without the first user
+        """
+        self.set_up(True)
+        result = is_first_user()
+        self.assertEqual(result,False)
+
     def test_deactivate_user_active(self):
         """
             Test the deactivation of a user if it's active
