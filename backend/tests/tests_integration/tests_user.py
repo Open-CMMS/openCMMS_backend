@@ -86,3 +86,22 @@ class UserTests(TestCase):
         client.login(username='bob', password='buh')
         response = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         self.assertEqual(response.status_code,401)
+
+    def test_is_first_user_with_first_user_request(self):
+        """
+            Test is_first_user with the first user
+        """
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        request = client.get('/api/gestion/users/is_first_user', format='json')
+        self.assertEqual(request.data,True)
+
+    def test_is_first_user_without_first_user_request(self):
+        """
+            Test is_first_user without the first user
+        """
+        self.set_up_without_perm()
+        client = APIClient()
+        client.login(username='joe', password='machin')
+        request = client.get('/api/gestion/users/is_first_user', format='json')
+        self.assertEqual(request.data,False)
