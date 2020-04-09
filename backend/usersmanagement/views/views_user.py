@@ -1,11 +1,11 @@
 from rest_framework.response import Response
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate,login,logout
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import UserProfileSerializer
-from usersmanagement.models import GroupType, UserProfile
+from usersmanagement.models import GroupType, UserProfile, Team
 
 User = settings.AUTH_USER_MODEL
 
@@ -138,14 +138,14 @@ def sign_out(request):
 
 def init_database():
     #Creation of the 3 inital groups
-    Group.objects.create(name="Administrators 1")
-    Group.objects.create(name="Maintenance Manager 1")
-    Group.objects.create(name="Maintenance Team 1")
+    Team.objects.create(name="Administrators 1")
+    Team.objects.create(name="Maintenance Manager 1")
+    Team.objects.create(name="Maintenance Team 1")
 
     #Creation of 3 GroupTypes
-    GroupType.objects.create(name="Administrators", perms=[], groups=[])
-    GroupType.objects.create(name="Maintenance Manager", perms=[], groups=[])
-    GroupType.objects.create(name="Maintenance Team", perms=[], groups=[])
+    GroupType.objects.create(name="Administrators")
+    GroupType.objects.create(name="Maintenance Manager")
+    GroupType.objects.create(name="Maintenance Team")
 
     GT_Admin = GroupType.objects.get(name="Administrators")
     GT_Maintenance_Manager = GroupType.objects.get(name="Maintenance Manager")
@@ -164,7 +164,7 @@ def init_database():
 
     GT_Admin.apply()
 
-    group = Group.objects.filter(name="Administrators 1")[0]
+    team = Team.objects.filter(name="Administrators 1")[0]
     user = UserProfile.objects.all()[0]
 
-    user.groups.add(group)
+    user.groups.add(team)
