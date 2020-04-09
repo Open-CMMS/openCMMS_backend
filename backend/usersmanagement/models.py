@@ -37,6 +37,13 @@ class TeamType(models.Model):
     def __str__(self):
         return self.name
 
+    def apply(self):
+        teams_with_this_teamtype = Team.objects.filter(team_type=self)
+        for team in teams_with_this_teamtype:
+            team.permissions.set(list(self.perms.all()))
+            # for perm in self.perms.all():’
+            #     team.permissions.add(perm)
+
 
 
 class Team(Group):
