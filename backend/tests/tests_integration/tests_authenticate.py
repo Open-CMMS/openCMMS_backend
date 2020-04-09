@@ -19,14 +19,14 @@ class AuthentificationTests(TestCase):
         """
             Test if a user with correct identifier can connect
         """
-        self.set_up()
+        user = self.set_up()
         factory = APIRequestFactory()
         request = factory.post('/gestion/login', {'username': 'tom', 'password': 'truc'}, format='json')
         middleware = SessionMiddleware()
         middleware.process_request(request)
         request.session.save()
         response = sign_in(request)
-        self.assertEqual(response.data , True)
+        self.assertEqual(response.data , (True, False, user.pk))
 
     def test_is_not_connected_with_incorrect_identifier(self):
         """
@@ -39,7 +39,7 @@ class AuthentificationTests(TestCase):
         middleware.process_request(request)
         request.session.save()
         response = sign_in(request)
-        self.assertEqual(response.data , False)
+        self.assertEqual(response.data , (False, False, 0))
 
     def test_is_not_connected_nbtries_3(self):
         """
@@ -54,7 +54,7 @@ class AuthentificationTests(TestCase):
             request.session.save()
             response = sign_in(request)
         user = UserProfile.objects.get(username='tom')
-        self.assertEqual(user.nb_tries, 3)
+        self.assertEqual(response.data, (False, True, 0)) and self.assertEqual(user.nb_tries, 3)
 
     def test_is_blocked_nbtries_3(self):
         """
@@ -69,7 +69,7 @@ class AuthentificationTests(TestCase):
             request.session.save()
             response = sign_in(request)
         user = UserProfile.objects.get(username='tom')
-        self.assertEqual(user.is_active, False)
+        self.assertEqual(response.data, (False, True, 0)) and self.assertEqual(user.is_active, False)
 
     def test_is_blocked_cant_connect(self):
         """
@@ -89,7 +89,7 @@ class AuthentificationTests(TestCase):
         middleware_final.process_request(request_final)
         request_final.session.save()
         response_final = sign_in(request_final)
-        self.assertEqual(response_final.data , False)
+        self.assertEqual(response_final.status_code , 401)
 
     def test_sign_out(self):
         """

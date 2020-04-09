@@ -1,6 +1,6 @@
 from usersmanagement.models import UserProfile
 from usersmanagement.serializers import UserProfileSerializer
-from django.test import TestCase
+from django.test import TestCase, RequestFactory, Client
 from usersmanagement.views.views_user import is_first_user
 
 class UserTests(TestCase):

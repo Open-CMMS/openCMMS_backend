@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import UserProfileSerializer
-from usersmanagement.models import TeamType, UserProfile
+from usersmanagement.models import TeamType, UserProfile, Team
 
 User = settings.AUTH_USER_MODEL
 
@@ -50,15 +50,15 @@ def user_detail(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        if (request.user == user) or (request.user.has_perm("gestion.view_UserProfile")):
+        if (request.user == user) or (request.user.has_perm("usersmanagement.view_UserProfile")):
             serializer = UserProfileSerializer(user)
             return Response(serializer.data)
         else :
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
-        if (request.user == user) or (request.user.has_perm("gestion.change_UserProfile")):
-            serializer = UserProfileSerializer(user, data = request.data)
+        if (request.user == user) or (request.user.has_perm("usersmanagement.change_UserProfile")):
+            serializer = UserProfileSerializer(user, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -67,7 +67,8 @@ def user_detail(request, pk):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
-        if (request.user.has_perm("gestion.delete_UserProfile")):
+        if (request.user.has_perm("usersmanagement.delete_UserProfile")):
+            #Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else :
@@ -96,7 +97,6 @@ def username_suffix(request):
     """
     if request.method == 'GET':
         username_begin = request.GET["username"]
-        print(request.GET)
         users = UserProfile.objects.filter(username__startswith = username_begin)
         if users.count()==0:
             return Response("")
@@ -112,18 +112,24 @@ def sign_in(request):
     """
     username = request.data.get("username",None)
     password = request.data.get("password",None)
-    user = authenticate(username=username, password=password)
-    if user is not None:
-        user.nb_tries = 0
-        user.save()
-        login(request, user)
-        return Response(True)
     user = UserProfile.objects.get(username=username)
-    user.nb_tries+=1
-    if user.nb_tries == 3 :
-        user.deactivate_user()
-    user.save()
-    return Response(False)
+    if user.is_active :
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            user.nb_tries = 0
+            user.save()
+            login(request, user)
+            return Response((True, False, user.pk))
+        user = UserProfile.objects.get(username=username)
+        user.nb_tries+=1
+        if user.nb_tries == 3 :
+            user.deactivate_user()
+            user.save()
+            return Response((False, True, 0))
+        user.save()
+        return Response((False, False, 0))
+    else :
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 
@@ -137,47 +143,24 @@ def sign_out(request):
 
 
 def init_database():
-    #Creation of the 3 inital Teams
-    Team.objects.create(name="Administrators 1")
-    Team.objects.create(name="Maintenance Manager 1")
-    Team.objects.create(name="Maintenance Team 1")
 
     #Creation of 3 TeamTypes
-    TeamType.objects.create(name="Administrators", perms=[])
-    TeamType.objects.create(name="Maintenance Manager", perms=[])
-    TeamType.objects.create(name="Maintenance Team", perms=[])
+    Admins = TeamType.objects.create(name="Administrators")
+    MMs = TeamType.objects.create(name="Maintenance Manager")
+    MTs = TeamType.objects.create(name="Maintenance Team")
 
-    GT_Admin = TeamType.objects.get(name="Administrators")
-    GT_Maintenance_Manager = TeamType.objects.get(name="Maintenance Manager")
-    GT_Maintenance_Team = TeamType.objects.get(name="Maintenance Team")
+    #Creation of the 3 inital Teams
+    T_Admin = Team.objects.create(name="Administrators 1", team_type=Admins)
+    T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=MMs)
+    T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 
+    #Adding all permissions to admins
     perms = Permission.objects.all()
-    GT_Admin.perms.all()
-
-    T_Admin.group_type = GT_Admin
-    T_Admin.save()
-    T_Maintenance_Manager.group_type = GT_Maintenance_Manager
-    T_Maintenance_Manager.save()
-    T_Maintenance_Team.group_type = GT_Maintenance_Team
-    T_Maintenance_Team.save()
-
-    team = Team.objects.filter(name="Administrators 1")[0]
-    user = UserProfile.objects.all()[0]
-
-    user.groups.add(team)
     for perm in perms:
-        GT_Admin.perms.append(perm.codename)
-    
-    GT_Admin.Teams.append("Administrators 1")
-    GT_Admin.save()
-    GT_Maintenance_Manager.Teams.append("Maintenance Manager 1")
-    GT_Maintenance_Manager.save()
-    GT_Maintenance_Team.Teams.append("Maintenance Team 1")
-    GT_Maintenance_Team.save()
+        Admins.perms.add(perm)
 
-    GT_Admin.apply()
+    Admins.apply()
 
-    Team = Team.objects.filter(name="Administrators 1")[0]
+    #Adding first user to admins
     user = UserProfile.objects.all()[0]
-
-    user.groups.add(Team)
+    user.groups.add(T_Admin)
