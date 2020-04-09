@@ -16,7 +16,7 @@ def user_list(request):
     """
 
     if request.method == 'GET' :
-        if request.user.has_perm("gestion.add_UserProfile"):
+        if request.user.has_perm("usersmanagement.add_UserProfile"):
             users = UserProfile.objects.all()
             serializer = UserProfileSerializer(users, many=True)
             return Response(serializer.data)
@@ -24,7 +24,7 @@ def user_list(request):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'POST' :
-        if request.user.has_perm("gestion.add_UserProfile") or is_first_user():
+        if request.user.has_perm("usersmanagement.add_UserProfile") or is_first_user():
             serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
