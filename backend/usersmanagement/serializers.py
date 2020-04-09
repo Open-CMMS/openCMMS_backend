@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import Group,Permission
 from django.contrib.contenttypes.models import ContentType
-from .models import UserProfile, GroupType, Team
+from .models import UserProfile, TeamType, Team
 
 """
 Serializers enable the link between front-end and back-end
@@ -77,7 +77,7 @@ class PermissionSerializer(serializers.Serializer):
 
 
 
-class GroupTypeSerializer(serializers.HyperlinkedModelSerializer):
+class TeamTypeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = GroupType
+        model = TeamType
         fields = ['name','perms','groups']
