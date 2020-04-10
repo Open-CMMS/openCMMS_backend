@@ -42,6 +42,8 @@ class TeamType(models.Model):
         for team in teams_with_this_teamtype:
             team.permissions.set(list(self.perms.all()))
 
+    def test(self):
+        pass
 
 
 
