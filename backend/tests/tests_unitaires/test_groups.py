@@ -222,7 +222,7 @@ class TeamsTests(TestCase):
 
         address = "/api/gestion/teams/"+str(team.id)
 
-        response = c.put(address,{"name":"new_name"},format='json')
+        response = c.put(address,{"name":"new_name"},content_type="application/json")
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(team.name,"new_name")
