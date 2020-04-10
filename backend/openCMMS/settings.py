@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-import os, sys
+import os, sys, ldap
+from django_auth_ldap.config import LDAPSearch
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -141,7 +142,8 @@ STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'staticfi
 AUTH_USER_MODEL = 'usersmanagement.UserProfile'
 
 REST_FRAMEWORK = {
-  'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+  'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+  'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
 }
 
 CORS_ALLOW_CREDENTIALS = True
@@ -156,3 +158,22 @@ CSRF_TRUSTED_ORIGINS = ['application.lxc.pic.brasserie-du-slalom.fr/',
                         '128.0.0.1:8000/']
 
 CORS_REPLACE_HTTPS_REFERER = True
+
+
+AUTH_LDAP_SERVER_URI = "ldap://192.168.101.12:389"
+
+AUTH_LDAP_BIND_DN = "cn=Administrator,cn=Users,dc=lxc,dc=pic,dc=brasserie-du-slalom,dc=fr"
+AUTH_LDAP_BIND_PASSWORD = "P@ssword01"
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email":"mail"
+}
+
+AUTHENTICATION_BACKENDS = (
+    "django_auth_ldap.backend.LDAPBackend",
+    "django.contrib.auth.backends.ModelBackend",
+)
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch("dc=lxc,dc=pic,dc=brasserie-du-slalom,dc=fr", ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
