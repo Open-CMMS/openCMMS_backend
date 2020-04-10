@@ -125,8 +125,6 @@ def sign_in(request):
     user.save()
     return Response(False)
 
-
-
 @api_view(['GET'])
 def sign_out(request):
     """
