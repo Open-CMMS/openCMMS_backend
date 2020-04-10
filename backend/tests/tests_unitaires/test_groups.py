@@ -98,12 +98,12 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        response = c.put("/api/gestion/add_user_to_team",{'username':'jd','team_name':'Administrators 1'},content_type="application/json")
+        response = c.put("/api/gestion/add_user_to_team",{'username':'jd','team_name':'Administrators 1'}, format='json')
         user = UserProfile.objects.get(username="jd")
         team = Team.objects.get(name="Administrators 1")
 
         self.assertEqual(response.status_code,201)
-        self.assertFalse(user.teams.filter(name="Administrators 1").exists())
+        self.assertFalse(user.groups.filter(name="Administrators 1").exists())
 
     def test_add_user_to_team_put_unauthorized(self):
         self.set_up()
@@ -112,7 +112,7 @@ class TeamsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_login(joe)
 
-        response = c.put("/api/gestion/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'},content_type="application/json")
+        response = c.put("/api/gestion/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'}, format='json')
 
         self.assertEqual(response.status_code,401)
 
@@ -222,7 +222,7 @@ class TeamsTests(TestCase):
 
         address = "/api/gestion/teams/"+str(team.id)
 
-        response = c.put(address, {"name":"new_name"}, content_type="application/json")
+        response = c.put(address,{"name":"new_name"},format='json')
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(team.name,"new_name")
