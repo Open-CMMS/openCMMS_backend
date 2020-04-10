@@ -2,7 +2,7 @@ from django.urls import path
 from .views import views_user;
 from .views import views_team;
 from .views import views_perms;
-from .views import views_grouptypes;
+from .views import views_teamtypes;
 
 
 urlpatterns = [
@@ -31,13 +31,13 @@ urlpatterns_teams = [
     path('teams/<int:pk>', views_team.team_detail, name='team-detail'),
 ]
 
-url_patterns_grouptypes = [
-    path('grouptypes/', views_grouptypes.grouptypes_list, name='grouptypes-list'),
-    path('grouptypes/<int:pk>/', views_grouptypes.grouptypes_detail, name='grouptypes-detail')
+url_patterns_teamtypes = [
+    path('teamtypes/', views_teamtypes.teamtypes_list, name='teamtypes-list'),
+    path('teamtypes/<int:pk>/', views_teamtypes.teamtypes_detail, name='teamtypes-detail')
 ]
 
 
 urlpatterns += urlpatterns_users
 urlpatterns += urlpatterns_perms
 urlpatterns += urlpatterns_teams
-urlpatterns += url_patterns_grouptypes
+urlpatterns += url_patterns_teamtypes

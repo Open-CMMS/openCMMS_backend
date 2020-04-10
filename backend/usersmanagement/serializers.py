@@ -77,7 +77,7 @@ class PermissionSerializer(serializers.Serializer):
 
 
 
-class TeamTypeSerializer(serializers.HyperlinkedModelSerializer):
+class TeamTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamType
-        fields = ['name','perms','groups']
+        fields = ['id','name','perms','team_set']
