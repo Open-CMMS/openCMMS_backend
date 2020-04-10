@@ -157,7 +157,7 @@ def init_database():
     for perm in perms:
         Admins.perms.add(perm)
 
-    Admins.apply()
+    Admins._apply_()
 
     #Adding first user to admins
     user = UserProfile.objects.all()[0]

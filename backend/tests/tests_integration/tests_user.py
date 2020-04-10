@@ -2,10 +2,12 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.test import TestCase, Client
 from django.contrib.auth.models import Permission
-from usersmanagement.models import UserProfile
+from usersmanagement.models import UserProfile, Team, TeamType
 from rest_framework.test import APIClient
 from usersmanagement.views.views_user import *
 from django.contrib.contenttypes.models import ContentType
+from usersmanagement.views.views_user import is_first_user, init_database
+
 
 class UserTests(TestCase):
 
@@ -237,3 +239,24 @@ class UserTests(TestCase):
         user.user_permissions.clear()
         response = client.delete('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
+
+
+    def test_init_database(self):
+        """
+            Test the good function of init_database
+        """
+        users = UserProfile.objects.all()
+        users.delete()
+        teams = Team.objects.all()
+        teams.delete()
+        teamtypes = TeamType.objects.all()
+        teamtypes.delete()
+
+        user = self.set_up_without_perm()
+
+        init_database()
+
+        self.assertEqual(user.groups.all().count(), 1)
+        self.assertEqual(Team.objects.all().count(), 3)
+        self.assertEqual(TeamType.objects.all().count(), 3)
+        self.assertEqual('usersmanagement.add_userprofile' in user.get_all_permissions(), True)
