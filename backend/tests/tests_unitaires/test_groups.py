@@ -1,252 +1,299 @@
-from django.test import TestCase, Client, RequestFactory
-from usersmanagement.models import UserProfile, Team
+from django.test import TestCase, RequestFactory
+from rest_framework.test import APIClient
+from usersmanagement.models import UserProfile, Team, TeamType
 from django.contrib.auth.models import Permission
 from usersmanagement.views.views_team import belongs_to_team
-from usersmanagement.serializers import UserProfileSerializer, TeamSerializer, PermissionSerializer, TacheSerializer
+from usersmanagement.serializers import UserProfileSerializer, TeamSerializer, PermissionSerializer
+from django.contrib.contenttypes.models import ContentType
 
 class TeamsTests(TestCase):
 
-    def setUp(self):
-        #Creation of the 2 inital teams
-        Team.objects.create(name="Administrateur")
-        Team.objects.create(name="Equipe de maintenance")
+    def set_up(self):
+        #Creation of 3 TeamTypes
+        Admins = TeamType.objects.create(name="Administrators")
+        MMs = TeamType.objects.create(name="Maintenance Manager")
+        MTs = TeamType.objects.create(name="Maintenance Team")
 
-        #Creation of the 2 initial set of permissions
-        PermissionSet.objects.create(name="admin_on_team",model_name="team",add=True,change=True,delete=True,view=True)
-        PermissionSet.objects.create(name="equipe_maintenance_on_team",model_name="team")
+        #Create and add permissions du admin
+        content_type = ContentType.objects.get_for_model(Team)
+        permission = Permission.objects.create(codename='add_Team',
+                                       name='Can add a team',
+                                       content_type=content_type)
+        permission2 = Permission.objects.create(codename='view_Team',
+                                       name='Can view a team',
+                                       content_type=content_type)
+        permission3 = Permission.objects.create(codename='delete_Team',
+                                       name='Can delete a team',
+                                       content_type=content_type)
+        permission4 = Permission.objects.create(codename='change_Team',
+                                       name='Can change a team',
+                                       content_type=content_type)
 
-        #Apply the 2 initial set of permissions on the 2 initial teams
-        PermissionSet.objects.get(name="admin_on_team").apply("Administrateur")
-        PermissionSet.objects.get(name="equipe_maintenance_on_team").apply("Equipe de maintenance")
+        #Creation of the 3 inital Teams
+        T_Admin = Team.objects.create(name="Administrators 1", team_type=Admins)
+        T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=MMs)
+        T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 
-        User_Profile.objects.create(first_name="Florent",
-                                       last_name="B",
-                                       email="florent.b@insa-rouen.fr",
-                                       password="p@sword-au-top4",
-                                        username = "FB1")
+        #User creation
+        tom = UserProfile.objects.create(first_name="Tom",
+                                       last_name="N",
+                                       email="tom.n@ac.com",
+                                       password="truc",
+                                       username = "tn")
 
-        User_Profile.objects.create(first_name="Hugo",
-                                       last_name="SM",
-                                       email="hugo.sm@insa-rouen.fr",
-                                       password="p@sword-au-top4",
-                                        username = "HSM")
+        joe = UserProfile.objects.create(first_name="Joe",
+                                       last_name="D",
+                                       email="joe.d@ll.com",
+                                       password="bouh",
+                                       username = "jd")
 
-        User_Profile.objects.create(first_name="Joran",
-                                       last_name="Marie",
-                                       email="joran.marie2@insa-rouen.fr",
-                                       password="p@sword-au-top",
-                                       username = "JoranMarie1")
+        joey = UserProfile.objects.create(first_name="Joey",
+                                       last_name="Bidouille",
+                                       email="joey.bidouille@machin.com",
+                                       password="brico",
+                                       username = "jbi")
 
-        team = Team.objects.get(name="Equipe de maintenance")
-        user = User_Profile.objects.get(username="FB1")
-        team.user_set.add(user)
+        tom.groups.add(T_Admin)
+        tom.save()
+        tom.user_permissions.add(permission)
+        tom.user_permissions.add(permission2)
+        tom.user_permissions.add(permission3)
+        tom.user_permissions.add(permission4)
+        tom.save()
 
-        team = Team.objects.get(name="Administrateur")
-        user = User_Profile.objects.get(username="JoranMarie1")
-        team.user_set.add(user)
-
-        team = Team.objects.get(name="Administrateur")
-        user = User_Profile.objects.get(username="HSM")
-        team.user_set.add(user)
-
-
+        joe.groups.add(T_MT1)
+        joe.save()
 
     def test_add_user_to_team_post_authorized(self):
-        c = Client()
+        self.set_up()
+        c = APIClient()
 
-        joran = User_Profile.objects.get(username="JoranMarie1")
-        c.force_login(joran)
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
 
-        response = c.post("/gestion/add_user_to_team",{'username':'FB1','team_name':'Administrateur'})
-        user = User_Profile.objects.get(username="FB1")
-        team = Team.objects.get(name="Administrateur")
+        response = c.post("/api/gestion/add_user_to_team",{'username':'jd','team_name':'Administrators 1'})
+        user = UserProfile.objects.get(username="jd")
+        team = Team.objects.get(name="Administrators 1")
 
         self.assertEqual(response.status_code,201)
-        self.assertEqual(user.teams.get(name="Administrateur"),team)
+        self.assertEqual(user.groups.get(name="Administrators 1").name,team.name)
 
 
     def test_add_user_to_team_post_unauthorized(self):
-        c = Client()
+        self.set_up()
+        c = APIClient()
 
-        florent = User_Profile.objects.get(username="FB1")
-        c.force_login(florent)
+        joey = UserProfile.objects.get(username="jbi")
+        c.force_login(joey)
 
-        response = c.post("/gestion/add_user_to_team",{'username':'FB1','team_name':'Administrateur'})
+        response = c.post("/api/gestion/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'})
 
         self.assertEqual(response.status_code,401)
 
 
     def test_add_user_to_team_put_authorized(self):
-        c = Client()
+        self.set_up()
+        c = APIClient()
 
-        joran = User_Profile.objects.get(username="JoranMarie1")
-        c.force_login(joran)
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
 
-        response = c.put("/gestion/add_user_to_team",{'username':'HSM','team_name':'Administrateur'},content_type="application/json")
-        user = User_Profile.objects.get(username="HSM")
-        team = Team.objects.get(name="Administrateur")
-
+        response = c.put("/api/gestion/add_user_to_team",{'username':'jd','team_name':'Administrators 1'},content_type="application/json")
+        user = UserProfile.objects.get(username="jd")
+        team = Team.objects.get(name="Administrators 1")
 
         self.assertEqual(response.status_code,201)
-        self.assertFalse(user.teams.filter(name="Administrateur").exists())
+        self.assertFalse(user.teams.filter(name="Administrators 1").exists())
 
     def test_add_user_to_team_put_unauthorized(self):
-        c = Client()
+        self.set_up()
+        c = APIClient()
 
-        florent = User_Profile.objects.get(username="FB1")
-        c.force_login(florent)
+        joe = UserProfile.objects.get(username="jd")
+        c.force_login(joe)
 
-        response = c.put("/gestion/add_user_to_team",{'username':'HSM','team_name':'Administrateur'},content_type="application/json")
+        response = c.put("/api/gestion/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'},content_type="application/json")
 
         self.assertEqual(response.status_code,401)
 
 
     def test_team_list_get_authorized(self):
+        self.set_up()
 
         teams = Team.objects.all()
         serializer = TeamSerializer(teams, many=True)
 
-        c = Client()
+        c = APIClient()
 
-        joran = User_Profile.objects.get(username="JoranMarie1")
-        c.force_login(joran)
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
 
-        response = c.get("/gestion/teams/")
+        response = c.get("/api/gestion/teams/")
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(serializer.data, response.json())
 
 
     def test_team_list_get_unauthorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
 
-        florent = User_Profile.objects.get(username="FB1")
-        c.force_login(florent)
+        joe = UserProfile.objects.get(username="jd")
+        c.force_login(joe)
 
-        response = c.get("/gestion/teams/")
+        response = c.get("/api/gestion/teams/")
 
         self.assertEqual(response.status_code,401)
 
 
     def test_team_list_post_authorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
 
-        joran = User_Profile.objects.get(username="JoranMarie1")
-        c.force_login(joran)
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
 
-        response = c.post("/gestion/teams/",{"name":"test_team"})
+        response = c.post("/api/gestion/teams/",{"name":"test_team"})
 
         self.assertEqual(response.status_code,201)
         self.assertTrue(Team.objects.filter(name="test_team"))
 
 
     def test_team_list_post_unauthorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
 
-        florent = User_Profile.objects.get(username="FB1")
-        c.force_login(florent)
+        joe = UserProfile.objects.get(username="jd")
+        c.force_login(joe)
 
-        response = c.post("/gestion/teams/",{"name":"test_team"})
+        response = c.post("/api/gestion/teams/",{"name":"test_team"})
 
         self.assertEqual(response.status_code,401)
 
 
     def test_team_detail_get_authorized(self):
+        self.set_up()
 
-        team = Team.objects.get(id="1")
+        team = Team.objects.get(name="Administrators 1")
         serializer = TeamSerializer(team)
 
-        c = Client()
+        c = APIClient()
 
-        joran = User_Profile.objects.get(username="JoranMarie1")
-        c.force_login(joran)
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
 
-        response = c.get("/gestion/teams/1")
+        address = "/api/gestion/teams/"+str(team.id)
+
+        response = c.get(address)
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(serializer.data, response.json())
 
 
     def test_team_detail_get_unauthorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
 
-        florent = User_Profile.objects.get(username="FB1")
-        c.force_login(florent)
+        joe = UserProfile.objects.get(username="jd")
+        c.force_login(joe)
 
-        response = c.get("/gestion/teams/1")
+        team = Team.objects.get(name="Administrators 1")
+
+        address = "/api/gestion/teams/"+str(team.id)
+
+        response = c.get(address)
 
         self.assertEqual(response.status_code,401)
 
 
     def test_team_detail_put_authorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
 
-        joran = User_Profile.objects.get(username="JoranMarie1")
-        c.force_login(joran)
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
 
-        response = c.put("/gestion/teams/1", {"name":"new_name"}, content_type="application/json")
+        team = Team.objects.get(name="Administrators 1")
 
-        team = Team.objects.get(id="1")
+        address = "/api/gestion/teams/"+str(team.id)
+
+        response = c.put(address, {"name":"new_name"}, content_type="application/json")
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(team.name,"new_name")
 
 
     def test_team_detail_put_unauthorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
 
-        florent = User_Profile.objects.get(username="FB1")
-        c.force_login(florent)
+        joe = UserProfile.objects.get(username="jd")
+        c.force_login(joe)
 
-        response = c.put("/gestion/teams/1", {"name":"new_name"}, content_type="application/json")
+        team = Team.objects.get(name="Administrators 1")
+
+        address = "/api/gestion/teams/"+str(team.id)
+
+        response = c.put(address, {"name":"new_name"}, content_type="application/json")
 
         self.assertEqual(response.status_code,401)
 
 
     def test_team_detail_delete_authorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
+        team = Team.objects.get(name="Maintenance Team 1")
 
-        joran = User_Profile.objects.get(username="JoranMarie1")
-        c.force_login(joran)
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
 
-        response = c.delete("/gestion/teams/1")
+        address = "/api/gestion/teams/"+str(team.id)
+
+        response = c.delete(address)
 
         self.assertEqual(response.status_code,204)
-        self.assertFalse(Team.objects.filter(id="1").exists())
+        with self.assertRaises(Team.DoesNotExist):
+            team_final = Team.objects.get(name="Maintenance Team 1")
 
 
     def test_team_detail_delete_unauthorized(self):
+        self.set_up()
 
-        c = Client()
+        c = APIClient()
+        team = Team.objects.get(name="Maintenance Team 1")
 
-        florent = User_Profile.objects.get(username="FB1")
-        c.force_login(florent)
+        joe = UserProfile.objects.get(username="jd")
+        c.force_login(joe)
 
-        response = c.delete("/gestion/teams/1")
+        address = "/api/gestion/teams/"+str(team.id)
+
+        response = c.delete(address)
 
         self.assertEqual(response.status_code,401)
 
 
     def test_belongs_to_team_true(self):
+        self.set_up()
 
-        florent = User_Profile.objects.get(username="FB1")
+        joe = UserProfile.objects.get(username="jd")
 
-        team = Team.objects.get(name="Equipe de maintenance")
+        team = Team.objects.get(name="Maintenance Team 1")
 
-        self.assertTrue(belongs_to_team(florent,team))
+        self.assertTrue(belongs_to_team(joe,team))
 
 
     def test_belongs_to_team_false(self):
+        self.set_up()
 
-        florent = User_Profile.objects.get(username="FB1")
+        joe = UserProfile.objects.get(username="jd")
 
-        team = Team.objects.get(name="Administrateur")
+        team = Team.objects.get(name="Administrators 1")
 
-        self.assertFalse(belongs_to_team(florent,team))
+        self.assertFalse(belongs_to_team(joe,team))
