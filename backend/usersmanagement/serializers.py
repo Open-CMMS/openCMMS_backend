@@ -11,10 +11,10 @@ Serializers enable the link between front-end and back-end
 class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password', 'nb_tries']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password', 'nb_tries', 'is_active']
         #other fields available :
         # 'groups', 'user_permissions', 'is_staff', 'is_active', 'is_superuser', 'last_login', 'date_joined', 'is_authenticated', 'is_anonymous'
-    
+
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         instance = self.Meta.model(**validated_data)
