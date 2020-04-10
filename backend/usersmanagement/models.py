@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import Group,Permission, AbstractUser
 
-# Create your models here.
-
 class UserProfile(AbstractUser):
+    """
+    Define a user. Heritage of abstract user and addition of the field nb_tries to detect if the user use a false password to login.
+    """
     nb_tries = models.IntegerField(default=0)
     USERNAME_FIELD = 'username'
 

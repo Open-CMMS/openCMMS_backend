@@ -14,13 +14,13 @@ def team_list(request):
     """
         List all teams or create a new one
     """
-    if request.user.has_perm("auth.view_team"):
+    if request.user.has_perm("usersmanagement.view_Team"):
         if request.method == 'GET':
             teams = Team.objects.all()
             serializer = TeamSerializer(teams, many=True)
             return Response(serializer.data)
-        
-    if request.user.has_perm("auth.add_team"):
+
+    if request.user.has_perm("usersmanagement.add_Team"):
         if request.method == 'POST' :
             serializer = TeamSerializer(data=request.data)
             if serializer.is_valid():
@@ -43,14 +43,14 @@ def team_detail(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        if request.user.has_perm("auth.view_team"):
+        if request.user.has_perm("usersmanagement.view_Team"):
             serializer = TeamSerializer(team)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
-        if request.user.has_perm("auth.change_team"):
-            serializer = TeamSerializer(team, data = request.data)
+        if request.user.has_perm("usersmanagement.change_Team"):
+            serializer = TeamSerializer(team, data = request.data, Partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -58,7 +58,7 @@ def team_detail(request, pk):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
-        if request.user.has_perm("auth.delete_team"):
+        if request.user.has_perm("usersmanagement.delete_Team"):
             team.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -72,7 +72,7 @@ def add_user_to_team(request):
         Add and remove users from teams
     """
 
-    if request.user.has_perm("auth.change_team"):
+    if request.user.has_perm("usersmanagement.change_Team"):
         if request.method == 'POST':
             user = UserProfile.objects.get(username=request.data["username"])
             team = Team.objects.get(name=request.data["team_name"])
@@ -85,10 +85,10 @@ def add_user_to_team(request):
             team = Team.objects.get(name=request.data["team_name"])
             team.user_set.remove(user)
             return Response(status=status.HTTP_201_CREATED)
-    
+
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 
 def belongs_to_team(user, team):
-    return user.teams.filter(id=team.id).exists()
+    return user.groups.filter(id=team.id).exists()

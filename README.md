@@ -37,3 +37,16 @@ Lancez cette commande, vous pourrez lancer un push normalement juste après.
 
 
 Une fois que vous avez fini de développer votre fonctionnalité il faut aller sur gitea et faire une demande de pull request de votre branche feature/<id> into dev
+
+
+
+## Requirements
+
+Afin de lancer notre application il vous faudra divers package, à installer sur un environnement virtuel avec python3 dessus.
+Les packages sont à installer via la commande pip3 :
+Django              3.0.4     
+django-auth-ldap    2.1.1     
+django-rest-swagger 2.2.0     
+djangorestframework 3.11.0 
+psycopg2            2.8.4 
+python-ldap         3.2.0
