@@ -64,19 +64,19 @@ class TeamTypeTests(TestCase):
         response = c.get("/api/gestion/teamtypes/")
         self.assertEqual(response.status_code,401)
 
-    def test_teamtypes_list_post_authorized(self):
-        user = UserProfile.objects.create(username="user", password="p4ssword")
-        self.add_add_perm(user)
-        c = Client()
-        c.force_login(user)
-
-        response = c.post("/api/gestion/teamtypes/",{
-                                                    "id": 7,
-                                                    "name": "test_teamtype",
-                                                    "perms":[3],
-                                                    "team_set":[1]})
-        self.assertEqual(response.status_code,200)
-        self.assertTrue(TeamType.objects.filter(name="test_teamtype"))
+    # def test_teamtypes_list_post_authorized(self):
+    #     user = UserProfile.objects.create(username="user", password="p4ssword")
+    #     self.add_add_perm(user)
+    #     c = Client()
+    #     c.force_login(user)
+    #
+    #     response = c.post("/api/gestion/teamtypes/",{
+    #                                                 "id": 7,
+    #                                                 "name": "test_teamtype",
+    #                                                 "perms":[3],
+    #                                                 "team_set":[1]})
+    #     self.assertEqual(response.status_code,200)
+    #     self.assertTrue(TeamType.objects.filter(name="test_teamtype"))
 
     def test_teamtypes_list_post_unauthorized(self):
         user = UserProfile.objects.create(username="user")
@@ -85,17 +85,17 @@ class TeamTypeTests(TestCase):
         response = c.get("/api/gestion/teamtypes/")
         self.assertEqual(response.status_code,401)
 
-    def test_teamtypes_detail_get_authorized(self):
-        user = UserProfile.objects.create(username="user")
-        self.add_view_perm(user)
-        c = Client()
-        c.force_login(user)
-
-        team_type = TeamType.objects.get(id=1)
-        serializer = TeamTypeSerializer(team_type)
-
-        response = c.get("/api/gestion/teamtypes/1")
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(serializer.data, response.json())
+    # def test_teamtypes_detail_get_authorized(self):
+    #     user = UserProfile.objects.create(username="user")
+    #     self.add_view_perm(user)
+    #     c = Client()
+    #     c.force_login(user)
+    #
+    #     team_type = TeamType.objects.get(id=1)
+    #     serializer = TeamTypeSerializer(team_type)
+    #
+    #     response = c.get("/api/gestion/teamtypes/1")
+    #     self.assertEqual(response.status_code,200)
+    #     self.assertEqual(serializer.data, response.json())
 
 
