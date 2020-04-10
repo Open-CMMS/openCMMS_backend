@@ -1,6 +1,6 @@
 from django.urls import reverse
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.contrib.auth.models import Permission
 from usersmanagement.models import UserProfile
 from rest_framework.test import APIClient
@@ -17,10 +17,23 @@ class UserTests(TestCase):
         permission = Permission.objects.create(codename='add_UserProfile',
                                        name='Can add a user',
                                        content_type=content_type)
-        user = UserProfile(username='tom')
+        permission2 = Permission.objects.create(codename='view_UserProfile',
+                                       name='Can view a user',
+                                       content_type=content_type)  
+        permission3 = Permission.objects.create(codename='delete_UserProfile',
+                                       name='Can delete a user',
+                                       content_type=content_type)
+        permission4 = Permission.objects.create(codename='change_UserProfile',
+                                       name='Can update a user',
+                                       content_type=content_type)                             
+        user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
+        user.first_name='Tom'
         user.save()
         user.user_permissions.add(permission)
+        user.user_permissions.add(permission2)
+        user.user_permissions.add(permission3)
+        user.user_permissions.add(permission4)
         user.save()
         return user
 
@@ -28,8 +41,9 @@ class UserTests(TestCase):
         """
             Set up a user without permissions
         """
-        user = UserProfile(username='tom')
+        user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
+        user.first_name='Tom'
         user.save()
         return user
 
@@ -105,3 +119,121 @@ class UserTests(TestCase):
         client.login(username='joe', password='machin')
         request = client.get('/api/gestion/users/is_first_user', format='json')
         self.assertEqual(request.data,False)
+
+
+    def test_username_suffix_with_existant(self):
+        """
+            Test that the fonction give the correct number to put after an username
+        """
+        self.set_up_perm()
+        c = Client()
+        response = c.get('/api/gestion/users/username_suffix?username=tom')
+        self.assertEqual(response.data, '1')
+
+    def test_username_suffix_without_existant(self):
+        """
+            Test that the fonction give empty string to put after an username
+        """
+        c = Client()
+        response = c.get('/api/gestion/users/username_suffix?username=yolo')
+        self.assertEqual(response.data, "")
+
+
+    def test_view_user_request_own_detail(self):
+        """
+            Test if a user without perm can see his own detail
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response = client.get('/api/gestion/users/'+str(user.pk)+'/')
+        self.assertEqual(response.data['username'],'tom')
+
+
+    def test_view_user_request_with_perm(self):
+        """
+            Test if a user with perm can see another user detail
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        pk = response1.data['id']
+        response = client.get('/api/gestion/users/'+str(pk)+'/')
+        self.assertEqual(response.data['username'],'joey')
+
+    def test_view_user_request_without_perm(self):
+        """
+            Test if a user without perm can see another user detail
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        response = client.get('/api/gestion/users/'+str(pk)+'/')
+        self.assertEqual(response.status_code,401)
+
+
+    def test_change_user_request_own_detail(self):
+        """
+            Test if a user can change his own detail
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response = client.put('/api/gestion/users/'+str(user.pk)+'/', {'first_name':'Paul'}, format='json')
+        self.assertEqual(response.data['first_name'],'Paul')
+
+
+    def test_view_user_request_with_perm(self):
+        """
+            Test if a user with perm can change another user detail
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        pk = response1.data['id']
+        response = client.put('/api/gestion/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
+        self.assertEqual(response.data['first_name'],'Paul')
+
+    def test_view_user_request_without_perm(self):
+        """
+            Test if a user without perm can change another user detail
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        response = client.put('/api/gestion/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
+        self.assertEqual(response.status_code,401)
+
+
+    def test_delete_user_request_with_perm(self):
+        """
+            Test if a user with perm can delete another user
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        pk = response1.data['id']
+        response = client.delete('/api/gestion/users/'+str(pk)+'/')
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_user_request_without_perm(self):
+        """
+            Test if a user without perm can delete another user
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.login(username='tom', password='truc')
+        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        response = client.delete('/api/gestion/users/'+str(pk)+'/')
+        self.assertEqual(response.status_code,401)

@@ -1,6 +1,6 @@
 from django.test import TestCase, Client, RequestFactory
-from usersmanagement.models import UserProfile
-from django.contrib.auth.models import Team, Permission
+from usersmanagement.models import UserProfile, Team
+from django.contrib.auth.models import Permission
 from usersmanagement.views.views_team import belongs_to_team
 from usersmanagement.serializers import UserProfileSerializer, TeamSerializer, PermissionSerializer, TacheSerializer
 
