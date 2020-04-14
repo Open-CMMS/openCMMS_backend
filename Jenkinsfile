@@ -33,7 +33,7 @@ pipeline {
                     sh """
                         rm -f reports/*.xml 
                         rm -f -r reports/coverage_html
-                        pipenv run coverage run --include=./*/*.py -m pytest tests/*  --junitxml=reports/tests.xml
+                        pipenv run coverage run --include=./*/*.py -m pytest tests/*/*  --junitxml=reports/tests.xml
                         pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
                         """
                 }
