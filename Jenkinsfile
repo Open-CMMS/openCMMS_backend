@@ -169,6 +169,7 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('SonarQube') {
+                    sh "ls backend/reports/"
                     sh "${scannerHome}/bin/sonar-scanner -X"
                 }
                 timeout(time: 1, unit: 'HOURS') {
