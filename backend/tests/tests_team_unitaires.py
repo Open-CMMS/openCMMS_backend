@@ -128,7 +128,6 @@ class TeamsTests(TestCase):
         c.force_login(tom)
 
         response = c.get("/api/usersmanagement/teams/")
-
         self.assertEqual(response.status_code,200)
         self.assertEqual(serializer.data, response.json())
 
