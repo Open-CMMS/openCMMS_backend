@@ -183,7 +183,7 @@ pipeline {
         stage("DEPLOY dev") {
             when {
                 expression{
-                    return GIT_BRANCH =~ "master"
+                    return GIT_BRANCH =~ "dev"
                 }
             }
             steps("Deploy to distant server") {
