@@ -50,7 +50,7 @@ def team_detail(request, pk):
 
     elif request.method == 'PUT':
         if request.user.has_perm("usersmanagement.change_Team"):
-            serializer = TeamSerializer(team, data = request.data, Partial=True)
+            serializer = TeamSerializer(team, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)

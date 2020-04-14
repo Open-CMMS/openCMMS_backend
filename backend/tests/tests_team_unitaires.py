@@ -71,13 +71,12 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        response = c.post("/api/gestion/add_user_to_team",{'username':'jd','team_name':'Administrators 1'})
+        response = c.post("/api/usersmanagement/add_user_to_team",{'username':'jd','team_name':'Administrators 1'}, format='json')
         user = UserProfile.objects.get(username="jd")
         team = Team.objects.get(name="Administrators 1")
 
         self.assertEqual(response.status_code,201)
         self.assertEqual(user.groups.get(name="Administrators 1").name,team.name)
-
 
     def test_add_user_to_team_post_unauthorized(self):
         self.set_up()
@@ -86,7 +85,7 @@ class TeamsTests(TestCase):
         joey = UserProfile.objects.get(username="jbi")
         c.force_login(joey)
 
-        response = c.post("/api/gestion/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'})
+        response = c.post("/api/usersmanagement/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'})
 
         self.assertEqual(response.status_code,401)
 
@@ -98,7 +97,7 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        response = c.put("/api/gestion/add_user_to_team",{'username':'jd','team_name':'Administrators 1'}, format='json')
+        response = c.put("/api/usersmanagement/add_user_to_team",{'username':'jd','team_name':'Administrators 1'}, format='json')
         user = UserProfile.objects.get(username="jd")
         team = Team.objects.get(name="Administrators 1")
 
@@ -112,7 +111,7 @@ class TeamsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_login(joe)
 
-        response = c.put("/api/gestion/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'}, format='json')
+        response = c.put("/api/usersmanagement/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'}, format='json')
 
         self.assertEqual(response.status_code,401)
 
@@ -128,8 +127,7 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        response = c.get("/api/gestion/teams/")
-
+        response = c.get("/api/usersmanagement/teams/")
         self.assertEqual(response.status_code,200)
         self.assertEqual(serializer.data, response.json())
 
@@ -142,7 +140,7 @@ class TeamsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_login(joe)
 
-        response = c.get("/api/gestion/teams/")
+        response = c.get("/api/usersmanagement/teams/")
 
         self.assertEqual(response.status_code,401)
 
@@ -155,10 +153,13 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        response = c.post("/api/gestion/teams/",{"name":"test_team"})
+        tt = TeamType.objects.all()[0]
 
+        response = c.post("/api/usersmanagement/teams/",{"name":"test_team", "team_type":str(tt.id)})
+        team = Team.objects.get(pk=response.data['id'])
         self.assertEqual(response.status_code,201)
         self.assertTrue(Team.objects.filter(name="test_team"))
+        self.assertEqual(team.team_type, tt)
 
 
     def test_team_list_post_unauthorized(self):
@@ -169,7 +170,7 @@ class TeamsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_login(joe)
 
-        response = c.post("/api/gestion/teams/",{"name":"test_team"})
+        response = c.post("/api/usersmanagement/teams/",{"name":"test_team"})
 
         self.assertEqual(response.status_code,401)
 
@@ -185,7 +186,7 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        address = "/api/gestion/teams/"+str(team.id)
+        address = "/api/usersmanagement/teams/"+str(team.id)
 
         response = c.get(address)
 
@@ -203,14 +204,14 @@ class TeamsTests(TestCase):
 
         team = Team.objects.get(name="Administrators 1")
 
-        address = "/api/gestion/teams/"+str(team.id)
+        address = "/api/usersmanagement/teams/"+str(team.id)
 
         response = c.get(address)
 
         self.assertEqual(response.status_code,401)
 
 
-    def test_team_detail_put_authorized(self):
+    def test_team_detail_put_change_name_authorized(self):
         self.set_up()
 
         c = APIClient()
@@ -219,13 +220,31 @@ class TeamsTests(TestCase):
         c.force_login(tom)
 
         team = Team.objects.get(name="Administrators 1")
+        address = "/api/usersmanagement/teams/"+str(team.id)
 
-        address = "/api/gestion/teams/"+str(team.id)
-
-        response = c.put(address,{"name":"new_name"},content_type="application/json")
-
+        response = c.put(address,{"name":"new_name"}, format='json')
+        
         self.assertEqual(response.status_code,200)
-        self.assertEqual(team.name,"new_name")
+        self.assertEqual(response.data['name'],"new_name")
+
+    def test_team_detail_put_change_team_type_authorized(self):
+        self.set_up()
+
+        c = APIClient()
+
+        tom = UserProfile.objects.get(username="tn")
+        c.force_login(tom)
+
+        team = Team.objects.get(name="Administrators 1")
+        address = "/api/usersmanagement/teams/"+str(team.id)
+
+        tt = TeamType.objects.all()[1]
+
+        response = c.put(address,{"team_type":str(tt.id)}, format='json')
+        
+        teamApres = Team.objects.get(pk=response.data['id'])
+        self.assertEqual(response.status_code,200)
+        self.assertNotEqual(team.team_type, teamApres.team_type)
 
 
     def test_team_detail_put_unauthorized(self):
@@ -238,7 +257,7 @@ class TeamsTests(TestCase):
 
         team = Team.objects.get(name="Administrators 1")
 
-        address = "/api/gestion/teams/"+str(team.id)
+        address = "/api/usersmanagement/teams/"+str(team.id)
 
         response = c.put(address, {"name":"new_name"}, content_type="application/json")
 
@@ -254,7 +273,7 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        address = "/api/gestion/teams/"+str(team.id)
+        address = "/api/usersmanagement/teams/"+str(team.id)
 
         response = c.delete(address)
 
@@ -272,7 +291,7 @@ class TeamsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_login(joe)
 
-        address = "/api/gestion/teams/"+str(team.id)
+        address = "/api/usersmanagement/teams/"+str(team.id)
 
         response = c.delete(address)
 

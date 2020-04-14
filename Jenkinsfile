@@ -33,7 +33,7 @@ pipeline {
                     sh """
                         rm -f reports/*.xml 
                         rm -f -r reports/coverage_html
-                        pipenv run coverage run --include=./*/*.py -m pytest tests/tests_unitaires/*  --junitxml=reports/tests.xml
+                        pipenv run coverage run --include=./*/*.py -m pytest tests/*_unitaires.py  --junitxml=reports/tests.xml
                         pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
                         """
                 }
@@ -67,7 +67,7 @@ pipeline {
         stage("Tests Integration"){
             when {
                 expression {
-                    return GIT_BRANCH =~ "toto" //a Remplacer par dev
+                    return GIT_BRANCH =~ "dev" //a Remplacer par dev
                 }
             }
             steps("Execution des tests et realisation de la couverture de tests"){

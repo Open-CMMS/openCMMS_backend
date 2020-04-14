@@ -35,14 +35,12 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
 
 
 
-class TeamSerializer(serializers.HyperlinkedModelSerializer):
+class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'team_type', 'user_set']
         #other fields available :
         # 'permissions'
-
-
 
 
 class ContentTypeSerializer(serializers.Serializer):
