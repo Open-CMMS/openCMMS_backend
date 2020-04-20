@@ -71,9 +71,11 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        response = c.post("/api/usersmanagement/add_user_to_team",{'username':'jd','team_name':'Administrators 1'}, format='json')
         user = UserProfile.objects.get(username="jd")
         team = Team.objects.get(name="Administrators 1")
+
+        response = c.post("/api/usersmanagement/add_user_to_team",{'id_user':user.pk,'id_team':team.pk}, format='json')
+        
 
         self.assertEqual(response.status_code,201)
         self.assertEqual(user.groups.get(name="Administrators 1").name,team.name)
@@ -97,10 +99,11 @@ class TeamsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_login(tom)
 
-        response = c.put("/api/usersmanagement/add_user_to_team",{'username':'jd','team_name':'Administrators 1'}, format='json')
         user = UserProfile.objects.get(username="jd")
         team = Team.objects.get(name="Administrators 1")
 
+        response = c.put("/api/usersmanagement/add_user_to_team",{'id_user':user.pk,'id_team':team.pk}, format='json')
+        
         self.assertEqual(response.status_code,201)
         self.assertFalse(user.groups.filter(name="Administrators 1").exists())
 
