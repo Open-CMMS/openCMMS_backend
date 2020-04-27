@@ -38,10 +38,6 @@ Lancez cette commande, vous pourrez lancer un push normalement juste après.
 
 Une fois que vous avez fini de développer votre fonctionnalité il faut aller sur gitea et faire une demande de pull request de votre branche feature/<id> into dev
 
-<<<<<<< HEAD
-=======
-
-
 ## Requirements
 
 Afin de lancer notre application il vous faudra divers package, à installer sur un environnement virtuel avec python3 dessus.
@@ -52,4 +48,3 @@ django-rest-swagger 2.2.0
 djangorestframework 3.11.0 
 psycopg2            2.8.4 
 python-ldap         3.2.0
->>>>>>> 9ddff5b4be99d6fa323008b4b92e693470d9d433
