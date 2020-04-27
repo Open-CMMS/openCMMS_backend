@@ -2,10 +2,12 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.test import TestCase, Client
 from django.contrib.auth.models import Permission
-from usersmanagement.models import UserProfile
+from usersmanagement.models import UserProfile, Team, TeamType
 from rest_framework.test import APIClient
 from usersmanagement.views.views_user import *
 from django.contrib.contenttypes.models import ContentType
+from usersmanagement.views.views_user import is_first_user, init_database
+
 
 class UserTests(TestCase):
 
@@ -56,7 +58,7 @@ class UserTests(TestCase):
         serializer = UserProfileSerializer(users, many=True)
         client = APIClient()
         client.login(username='tom', password='truc')
-        response = client.get('/api/gestion/users/', format='json')
+        response = client.get('/api/usersmanagement/users/', format='json')
         self.assertEqual(response.data,serializer.data)
 
     def test_can_acces_users_list_without_perm(self):
@@ -66,7 +68,7 @@ class UserTests(TestCase):
         self.set_up_without_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response = client.get('/api/gestion/users/', format='json')
+        response = client.get('/api/usersmanagement/users/', format='json')
         self.assertEqual(response.status_code,401)
 
     def test_add_user_first_user(self):
@@ -75,7 +77,7 @@ class UserTests(TestCase):
         """
         client = APIClient()
         client.login(username='tom', password='truc')
-        response = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         self.assertEqual(response.status_code,201)
 
     def test_add_user_with_perm(self):
@@ -85,7 +87,7 @@ class UserTests(TestCase):
         self.set_up_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         self.assertEqual(response.status_code,201)
 
     def test_add_user_without_perm(self):
@@ -98,7 +100,7 @@ class UserTests(TestCase):
         user.save()
         client = APIClient()
         client.login(username='bob', password='buh')
-        response = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         self.assertEqual(response.status_code,401)
 
     def test_is_first_user_with_first_user_request(self):
@@ -107,7 +109,7 @@ class UserTests(TestCase):
         """
         client = APIClient()
         client.login(username='tom', password='truc')
-        request = client.get('/api/gestion/users/is_first_user', format='json')
+        request = client.get('/api/usersmanagement/users/is_first_user', format='json')
         self.assertEqual(request.data,True)
 
     def test_is_first_user_without_first_user_request(self):
@@ -117,7 +119,7 @@ class UserTests(TestCase):
         self.set_up_without_perm()
         client = APIClient()
         client.login(username='joe', password='machin')
-        request = client.get('/api/gestion/users/is_first_user', format='json')
+        request = client.get('/api/usersmanagement/users/is_first_user', format='json')
         self.assertEqual(request.data,False)
 
 
@@ -127,7 +129,7 @@ class UserTests(TestCase):
         """
         self.set_up_perm()
         c = Client()
-        response = c.get('/api/gestion/users/username_suffix?username=tom')
+        response = c.get('/api/usersmanagement/users/username_suffix?username=tom')
         self.assertEqual(response.data, '1')
 
     def test_username_suffix_without_existant(self):
@@ -135,7 +137,7 @@ class UserTests(TestCase):
             Test that the fonction give empty string to put after an username
         """
         c = Client()
-        response = c.get('/api/gestion/users/username_suffix?username=yolo')
+        response = c.get('/api/usersmanagement/users/username_suffix?username=yolo')
         self.assertEqual(response.data, "")
 
 
@@ -146,7 +148,7 @@ class UserTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response = client.get('/api/gestion/users/'+str(user.pk)+'/')
+        response = client.get('/api/usersmanagement/users/'+str(user.pk)+'/')
         self.assertEqual(response.data['username'],'tom')
 
 
@@ -157,9 +159,9 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         pk = response1.data['id']
-        response = client.get('/api/gestion/users/'+str(pk)+'/')
+        response = client.get('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.data['username'],'joey')
 
     def test_view_user_request_without_perm(self):
@@ -169,10 +171,10 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
-        response = client.get('/api/gestion/users/'+str(pk)+'/')
+        response = client.get('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
 
 
@@ -183,7 +185,7 @@ class UserTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response = client.put('/api/gestion/users/'+str(user.pk)+'/', {'first_name':'Paul'}, format='json')
+        response = client.put('/api/usersmanagement/users/'+str(user.pk)+'/', {'first_name':'Paul'}, format='json')
         self.assertEqual(response.data['first_name'],'Paul')
 
 
@@ -194,9 +196,9 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
-        response = client.put('/api/gestion/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
+        response = client.put('/api/usersmanagement/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
         self.assertEqual(response.data['first_name'],'Paul')
 
     def test_view_user_request_without_perm(self):
@@ -206,10 +208,10 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
-        response = client.put('/api/gestion/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
+        response = client.put('/api/usersmanagement/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
         self.assertEqual(response.status_code,401)
 
 
@@ -220,9 +222,9 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
-        response = client.delete('/api/gestion/users/'+str(pk)+'/')
+        response = client.delete('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code, 204)
 
     def test_delete_user_request_without_perm(self):
@@ -232,8 +234,29 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.login(username='tom', password='truc')
-        response1 = client.post('/api/gestion/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
-        response = client.delete('/api/gestion/users/'+str(pk)+'/')
+        response = client.delete('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
+
+
+    def test_init_database(self):
+        """
+            Test the good function of init_database
+        """
+        users = UserProfile.objects.all()
+        users.delete()
+        teams = Team.objects.all()
+        teams.delete()
+        teamtypes = TeamType.objects.all()
+        teamtypes.delete()
+
+        user = self.set_up_without_perm()
+
+        init_database()
+
+        self.assertEqual(user.groups.all().count(), 1)
+        self.assertEqual(Team.objects.all().count(), 3)
+        self.assertEqual(TeamType.objects.all().count(), 3)
+        self.assertEqual('usersmanagement.add_userprofile' in user.get_all_permissions(), True)

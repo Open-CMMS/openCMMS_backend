@@ -38,13 +38,26 @@ class TeamType(models.Model):
     def __str__(self):
         return self.name
 
+    def _apply_(self):
+        teams_with_this_teamtype = self.team_set.all()
+        for team in teams_with_this_teamtype:
+            team.permissions.set(list(self.perms.all()))
+
+
 
 
 class Team(Group):
     team_type = models.ForeignKey(TeamType,
         verbose_name="Team Type",
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
         help_text='Group of users, extends the auth.models.Group model',
         related_name="team_set",
-        related_query_name="team")
+        related_query_name="team",
+        blank=False,
+        null = False
+        )
+
+    def set_team_type(self,new_team_type):
+        self.team_type = new_team_type
+        self.save()
+        new_team_type._apply_()

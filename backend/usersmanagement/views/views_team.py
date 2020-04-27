@@ -50,7 +50,7 @@ def team_detail(request, pk):
 
     elif request.method == 'PUT':
         if request.user.has_perm("usersmanagement.change_Team"):
-            serializer = TeamSerializer(team, data = request.data, Partial=True)
+            serializer = TeamSerializer(team, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -74,15 +74,15 @@ def add_user_to_team(request):
 
     if request.user.has_perm("usersmanagement.change_Team"):
         if request.method == 'POST':
-            user = UserProfile.objects.get(username=request.data["username"])
-            team = Team.objects.get(name=request.data["team_name"])
+            user = UserProfile.objects.get(pk=request.data["id_user"])
+            team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.add(user)
             return Response(status=status.HTTP_201_CREATED)
 
 
         elif request.method == 'PUT':
-            user = UserProfile.objects.get(username=request.data["username"])
-            team = Team.objects.get(name=request.data["team_name"])
+            user = UserProfile.objects.get(pk=request.data["id_user"])
+            team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.remove(user)
             return Response(status=status.HTTP_201_CREATED)
 

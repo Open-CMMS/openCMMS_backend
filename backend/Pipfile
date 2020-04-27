@@ -9,6 +9,9 @@ djangorestframework = "*"
 gunicorn = "*"
 django-rest-swagger = "*"
 psycopg2-binary = "*"
+python-ldap = "*"
+django-auth-ldap = "*"
+djangorestframework-jwt = "*"
 
 
 [dev-packages]

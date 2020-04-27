@@ -1,10 +1,10 @@
 from rest_framework.response import Response
 from django.contrib.auth.models import Permission
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
-from usersmanagement.serializers import UserProfileSerializer
+from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer
 from usersmanagement.models import TeamType, UserProfile, Team
 
 User = settings.AUTH_USER_MODEL
@@ -46,7 +46,7 @@ def user_detail(request, pk):
     """
     try:
         user = UserProfile.objects.get(pk=pk)
-    except :
+    except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
@@ -67,7 +67,7 @@ def user_detail(request, pk):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
-        if (request.user.has_perm("usersmanagement.delete_UserProfile")):
+        if request.user.has_perm("usersmanagement.delete_UserProfile"):
             #Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -110,26 +110,16 @@ def sign_in(request):
     """
         Sign in the user if the password and the login are correct
     """
-    username = request.data.get("username",None)
-    password = request.data.get("password",None)
-    user = UserProfile.objects.get(username=username)
-    if user.is_active :
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            user.nb_tries = 0
-            user.save()
-            login(request, user)
-            return Response((True, False, user.pk))
-        user = UserProfile.objects.get(username=username)
-        user.nb_tries+=1
-        if user.nb_tries == 3 :
-            user.deactivate_user()
-            user.save()
-            return Response((False, True, 0))
-        user.save()
-        return Response((False, False, 0))
-    else :
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    serializer = UserLoginSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    response = {
+        'success' : 'True',
+        'status code' : status.HTTP_200_OK,
+        'message' : 'User logged in successfully',
+        'token' : serializer.data['token'],
+        'user_id' : serializer.data['user_id'],
+    }
+    return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def sign_out(request):
@@ -157,7 +147,7 @@ def init_database():
     for perm in perms:
         Admins.perms.add(perm)
 
-    Admins.apply()
+    Admins._apply_()
 
     #Adding first user to admins
     user = UserProfile.objects.all()[0]

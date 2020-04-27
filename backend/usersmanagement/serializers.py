@@ -2,6 +2,10 @@ from rest_framework import serializers
 from django.contrib.auth.models import Group,Permission
 from django.contrib.contenttypes.models import ContentType
 from .models import UserProfile, TeamType, Team
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import update_last_login
+from rest_framework import serializers
+from rest_framework_jwt.settings import api_settings
 
 """
 Serializers enable the link between front-end and back-end
@@ -33,16 +37,49 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
         return instance
 
 
+JWT_PAYLOAD_HANDLER = api_settings.JWT_PAYLOAD_HANDLER
+JWT_ENCODE_HANDLER = api_settings.JWT_ENCODE_HANDLER
+
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, write_only=True)
+    token = serializers.CharField(max_length=255, read_only=True)
+    user_id = serializers.CharField(max_length=255, read_only=True)
+
+    def validate(self, data):
+        username = data.get("username", None)
+        password = data.get("password", None)
+        user = UserProfile.objects.get(username=username)
+        if user.is_active:
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                user.nb_tries = 0
+                user.save()
+                payload = JWT_PAYLOAD_HANDLER(user)
+                jwt_token = JWT_ENCODE_HANDLER(payload)
+                update_last_login(None, user)
+                return {
+                    'user':user,
+                    'token': jwt_token,
+                    'username' : username,
+                    'user_id' : user.pk,
+                }
+            user = UserProfile.objects.get(username=username)
+            user.nb_tries += 1
+            if user.nb_tries == 3 :
+                user.deactivate_user()
+                user.save()
+            raise serializers.ValidationError('Error during authentication.')
+        else :
+            raise serializers.ValidationError('A user with this email and password is not found.')
 
 
-class TeamSerializer(serializers.HyperlinkedModelSerializer):
+class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'team_type', 'user_set']
         #other fields available :
         # 'permissions'
-
-
 
 
 class ContentTypeSerializer(serializers.Serializer):
@@ -77,7 +114,7 @@ class PermissionSerializer(serializers.Serializer):
 
 
 
-class TeamTypeSerializer(serializers.HyperlinkedModelSerializer):
+class TeamTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamType
-        fields = ['name','perms','groups']
+        fields = ['id','name','perms','team_set']
