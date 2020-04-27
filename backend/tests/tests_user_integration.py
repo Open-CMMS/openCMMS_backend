@@ -53,11 +53,11 @@ class UserTests(TestCase):
         """
             Test if a user with perm receive the data
         """
-        self.set_up_perm()
+        user = self.set_up_perm()
         users = UserProfile.objects.all()
         serializer = UserProfileSerializer(users, many=True)
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response = client.get('/api/usersmanagement/users/', format='json')
         self.assertEqual(response.data,serializer.data)
 
@@ -65,9 +65,9 @@ class UserTests(TestCase):
         """
             Test if a user without perm doesn't receive the data
         """
-        self.set_up_without_perm()
+        user = self.set_up_without_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response = client.get('/api/usersmanagement/users/', format='json')
         self.assertEqual(response.status_code,401)
 
@@ -84,9 +84,9 @@ class UserTests(TestCase):
         """
             Test if a user with perm and is not first user can add a user
         """
-        self.set_up_perm()
+        user = self.set_up_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         self.assertEqual(response.status_code,201)
 
@@ -94,12 +94,9 @@ class UserTests(TestCase):
         """
             Test if a user without perm can't add a user
         """
-        self.set_up_without_perm()
-        user = UserProfile(username='bob')
-        user.set_password('buh')
-        user.save()
+        user = self.set_up_without_perm()
         client = APIClient()
-        client.login(username='bob', password='buh')
+        client.force_authenticate(user=user)
         response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         self.assertEqual(response.status_code,401)
 
@@ -108,7 +105,7 @@ class UserTests(TestCase):
             Test is_first_user with the first user
         """
         client = APIClient()
-        client.login(username='tom', password='truc')
+        UserProfile.objects.all().delete()
         request = client.get('/api/usersmanagement/users/is_first_user', format='json')
         self.assertEqual(request.data,True)
 
@@ -116,9 +113,9 @@ class UserTests(TestCase):
         """
             Test is_first_user without the first user
         """
-        self.set_up_without_perm()
+        user = self.set_up_without_perm()
         client = APIClient()
-        client.login(username='joe', password='machin')
+        client.force_authenticate(user=user)
         request = client.get('/api/usersmanagement/users/is_first_user', format='json')
         self.assertEqual(request.data,False)
 
@@ -127,7 +124,7 @@ class UserTests(TestCase):
         """
             Test that the fonction give the correct number to put after an username
         """
-        self.set_up_perm()
+        user = self.set_up_perm()
         c = Client()
         response = c.get('/api/usersmanagement/users/username_suffix?username=tom')
         self.assertEqual(response.data, '1')
@@ -147,7 +144,7 @@ class UserTests(TestCase):
         """
         user = self.set_up_without_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response = client.get('/api/usersmanagement/users/'+str(user.pk)+'/')
         self.assertEqual(response.data['username'],'tom')
 
@@ -158,7 +155,7 @@ class UserTests(TestCase):
         """
         user = self.set_up_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         pk = response1.data['id']
         response = client.get('/api/usersmanagement/users/'+str(pk)+'/')
@@ -170,10 +167,12 @@ class UserTests(TestCase):
         """
         user = self.set_up_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
         response = client.get('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
 
@@ -184,33 +183,35 @@ class UserTests(TestCase):
         """
         user = self.set_up_without_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response = client.put('/api/usersmanagement/users/'+str(user.pk)+'/', {'first_name':'Paul'}, format='json')
         self.assertEqual(response.data['first_name'],'Paul')
 
 
-    def test_view_user_request_with_perm(self):
+    def test_change_user_request_with_perm(self):
         """
             Test if a user with perm can change another user detail
         """
         user = self.set_up_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
         response = client.put('/api/usersmanagement/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
         self.assertEqual(response.data['first_name'],'Paul')
 
-    def test_view_user_request_without_perm(self):
+    def test_change_user_request_without_perm(self):
         """
             Test if a user without perm can change another user detail
         """
         user = self.set_up_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
         response = client.put('/api/usersmanagement/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
         self.assertEqual(response.status_code,401)
 
@@ -221,7 +222,7 @@ class UserTests(TestCase):
         """
         user = self.set_up_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
         response = client.delete('/api/usersmanagement/users/'+str(pk)+'/')
@@ -233,10 +234,12 @@ class UserTests(TestCase):
         """
         user = self.set_up_perm()
         client = APIClient()
-        client.login(username='tom', password='truc')
+        client.force_authenticate(user=user)
         response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
         response = client.delete('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
 
