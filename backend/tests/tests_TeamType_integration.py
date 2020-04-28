@@ -61,7 +61,9 @@ class TeamTypeTests(TestCase):
         user = UserProfile.objects.create(username="user")
         c = Client()
         c.force_login(user)
-        response = c.get("/api/usersmanagement/teamtypes/")
+        response = c.post("/api/usersmanagement/teamtypes/",{"name": "test_teamtype",
+                                                    "perms":[3],
+                                                    "team_set":[Team.objects.get(name="Administrators").id]}, content_type="application/json")
         self.assertEqual(response.status_code,401)
 
     def test_teamtypes_detail_get_authorized(self):
@@ -108,7 +110,7 @@ class TeamTypeTests(TestCase):
         response = c.put("/api/usersmanagement/teamtypes/" + str(team_type.id) + "/", {
             "name": "test_teamtype",
             "perms": [3],
-            "team_set": [1]}, content_type="application/json")
+            "team_set": [Team.objects.get(name="Administrators").id]}, content_type="application/json")
 
         self.assertEqual(response.status_code, 401)
 
@@ -129,4 +131,5 @@ class TeamTypeTests(TestCase):
         team_type = TeamType.objects.get(name="Administrators")
         response = c.delete("/api/usersmanagement/teamtypes/"+str(team_type.id)+"/")
         self.assertEqual(response.status_code,401)
+
 
