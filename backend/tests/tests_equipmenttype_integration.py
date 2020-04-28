@@ -4,7 +4,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import Permission
 from maintenancemanagement.models import EquipmentType
 from rest_framework.test import APIClient
-from maintenancemanagement.views.views_equipment_type import *
+from maintenancemanagement.views.views_equipmentType import *
 from django.contrib.contenttypes.models import ContentType
 
 #note à la personne faisant passer les tests : il faudra sûrement changer les imports et checker les URL
