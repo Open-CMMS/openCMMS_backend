@@ -158,25 +158,25 @@ pipeline {
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        stage("SonarQube analysis") {
-            when {
-                expression{
-                    return GIT_BRANCH =~ "dev"
-                }
-            }
-            environment {
-                scannerHome = tool 'SonarQubeScanner' 
-            }
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh "ls backend/reports/"
-                    sh "${scannerHome}/bin/sonar-scanner -X"
-                }
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: true 
-                }
-            }
-        }
+        // stage("SonarQube analysis") {
+        //     when {
+        //         expression{
+        //             return GIT_BRANCH =~ "dev"
+        //         }
+        //     }
+        //     environment {
+        //         scannerHome = tool 'SonarQubeScanner' 
+        //     }
+        //     steps {
+        //         withSonarQubeEnv('SonarQube') {
+        //             sh "ls backend/reports/"
+        //             sh "${scannerHome}/bin/sonar-scanner -X"
+        //         }
+        //         timeout(time: 1, unit: 'HOURS') {
+        //             waitForQualityGate abortPipeline: true 
+        //         }
+        //     }
+        // }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
