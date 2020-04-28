@@ -63,47 +63,47 @@ pipeline {
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-        stage("Tests Integration"){
-            when {
-                expression {
-                    return GIT_BRANCH =~ "dev" //a Remplacer par dev
-                }
-            }
-            steps("Execution des tests et realisation de la couverture de tests"){
-                dir("./backend"){
-                    sh """
-                        rm -f reports/*.xml 
-                        rm -f -r reports/coverage_html
-                        pipenv run coverage run --include=./*/*.py -m pytest tests/*  --junitxml=reports/tests.xml
-                        pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
-                        """
-                }
-            }
-            post {
-                always {
-                    junit "backend/reports/tests.xml"
-                    cobertura (
-                        autoUpdateHealth: false,
-                        autoUpdateStability: false,
-                        coberturaReportFile: 'backend/reports/coverage.xml',
-                        lineCoverageTargets: '70, 0, 70',
-                        maxNumberOfBuilds: 0, methodCoverageTargets: '70, 0, 70',
-                        onlyStable: false,
-                        sourceEncoding: 'ASCII',
-                        zoomCoverageChart: false)
-                    publishHTML(target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'backend/reports/coverage_html',
-                        reportFiles: 'index.html',
-                        reportName: 'HTML Report',
-                        reportTitles: ''])
-                }
-            }
-        }
-*/
+
+        // stage("Tests Integration"){
+        //     when {
+        //         expression {
+        //             return GIT_BRANCH =~ "dev" //a Remplacer par dev
+        //         }
+        //     }
+        //     steps("Execution des tests et realisation de la couverture de tests"){
+        //         dir("./backend"){
+        //             sh """
+        //                 rm -f reports/*.xml 
+        //                 rm -f -r reports/coverage_html
+        //                 pipenv run coverage run --include=./*/*.py -m pytest tests/*  --junitxml=reports/tests.xml
+        //                 pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
+        //                 """
+        //         }
+        //     }
+        //     post {
+        //         always {
+        //             junit "backend/reports/tests.xml"
+        //             cobertura (
+        //                 autoUpdateHealth: false,
+        //                 autoUpdateStability: false,
+        //                 coberturaReportFile: 'backend/reports/coverage.xml',
+        //                 lineCoverageTargets: '70, 0, 70',
+        //                 maxNumberOfBuilds: 0, methodCoverageTargets: '70, 0, 70',
+        //                 onlyStable: false,
+        //                 sourceEncoding: 'ASCII',
+        //                 zoomCoverageChart: false)
+        //             publishHTML(target: [
+        //                 allowMissing: false,
+        //                 alwaysLinkToLastBuild: true,
+        //                 keepAll: true,
+        //                 reportDir: 'backend/reports/coverage_html',
+        //                 reportFiles: 'index.html',
+        //                 reportName: 'HTML Report',
+        //                 reportTitles: ''])
+        //         }
+        //     }
+        // }
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         stage("Analyse du code"){
