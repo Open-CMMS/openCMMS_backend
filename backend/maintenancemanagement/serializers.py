@@ -1,3 +1,4 @@
+from rest_framework import serializers
 from .models import Equipment, EquipmentType
 """
 Serializers enable the link between front-end and back-end
@@ -6,10 +7,10 @@ Serializers enable the link between front-end and back-end
 class EquipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Equipment
-        fields = [id, name, equipment_type]
+        fields = ['id', 'name', 'id_equipment_type']
         #ajouter les fichiers par la suite
 
-class EquipmentTypeSerializer(serializer.ModelSerializer):
+class EquipmentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EquipmentType
-        fields = [id, name, field]
+        fields = ['id', 'name', 'fields']
