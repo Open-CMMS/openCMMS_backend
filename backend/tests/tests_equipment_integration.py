@@ -58,7 +58,7 @@ class EquipmentTests(TestCase):
         c.force_authenticate(user=user)
         response = c.post("/api/maintenancemanagement/equipment/", {
             "name": "Renault Kangoo",
-            "equipment_type": [EquipmentType.objects.get(name="Voiture").id]
+            "equipment_type": EquipmentType.objects.get(name="Voiture").id
         }, format='json')
         self.assertEqual(response.status_code,201)
         self.assertTrue(Equipment.objects.get(name="Renault Kangoo"))
@@ -69,7 +69,7 @@ class EquipmentTests(TestCase):
         c.force_authenticate(user=user)
         response = c.post("/api/maintenancemanagement/equipment/", {
             "name" : "Renault Kangoo",
-                     "equipment_type" : [EquipmentType.objects.get(name="Voiture").id]
+                     "equipment_type" : EquipmentType.objects.get(name="Voiture").id
         })
         self.assertEqual(response.status_code, 401)
 
@@ -97,7 +97,7 @@ class EquipmentTests(TestCase):
 
     def test_equipment_detail_put_authorized(self):
         user = UserProfile.objects.create(username="user", password="p4ssword")
-        self.add_add_perm(user)
+        self.add_change_perm(user)
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Peugeot Partner")
@@ -125,17 +125,15 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        response = c.delete("/api/maintenancemanagement/equipmenet/"+str(equipment.id)+"/")
+        response = c.delete("/api/maintenancemanagement/equipment/"+str(equipment.id)+"/")
         self.assertEqual(response.status_code,204)
         self.assertFalse(Equipment.objects.filter(id=equipment.id).exists())
 
 
-    def test_equipment_detail_delete_authorized(self):
+    def test_equipment_detail_delete_unauthorized(self):
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        response = c.delete("/api/maintenancemanagement/equipmenet/"+str(equipment.id)+"/")
+        response = c.delete("/api/maintenancemanagement/equipment/"+str(equipment.id)+"/")
         self.assertEqual(response.status_code,401)
-
-

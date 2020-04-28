@@ -43,7 +43,7 @@ def equipment_detail(request, pk):
 
     elif request.method == 'PUT':
         if request.user.has_perm("maintenancemanagement.change_equipment"):
-            serializer = EquipmentSerializer(team, data = request.data, partial=True)
+            serializer = EquipmentSerializer(equipment, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
