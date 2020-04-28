@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import  PermissionSerializer
+from django.contrib.auth import authenticate, login, logout
 
 User = settings.AUTH_USER_MODEL
 
@@ -41,7 +42,7 @@ def perm_detail(request,pk):
     """
     user = authenticate(username='user', password='pass')
     login(request, user)
-    
+
     try:
         perm = Permission.objects.get(pk=pk)
     except :
