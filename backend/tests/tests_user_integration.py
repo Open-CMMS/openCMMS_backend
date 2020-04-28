@@ -8,7 +8,6 @@ from usersmanagement.views.views_user import *
 from django.contrib.contenttypes.models import ContentType
 from usersmanagement.views.views_user import is_first_user, init_database
 
-
 class UserTests(TestCase):
 
     def set_up_perm(self):

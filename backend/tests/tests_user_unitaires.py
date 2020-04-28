@@ -160,3 +160,4 @@ class UserTests(TestCase):
         user = self.set_up(False)
         user.reactivate_user()
         self.assertEqual(user.is_active , True)
+
