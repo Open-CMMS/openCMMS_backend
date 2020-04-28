@@ -16,16 +16,16 @@ class EquipmentTypeTests(TestCase):
             Set up a user with permissions
         """
         content_type = ContentType.objects.get_for_model(EquipmentType)
-        permission = Permission.objects.create(codename='add_EquipmentType',
+        permission = Permission.objects.create(codename='add_equipmenttype',
                                        name='Can add an equipment type',
                                        content_type=content_type)
-        permission2 = Permission.objects.create(codename='view_EquipmentType',
+        permission2 = Permission.objects.create(codename='view_equipmenttype',
                                        name='Can view an equipment type',
                                        content_type=content_type)
-        permission3 = Permission.objects.create(codename='delete_EquipmentType',
+        permission3 = Permission.objects.create(codename='delete_equipmenttype',
                                        name='Can delete an equipment type',
                                        content_type=content_type)
-        permission4 = Permission.objects.create(codename='change_EquipmentType',
+        permission4 = Permission.objects.create(codename='change_equipmenttype',
                                        name='Can update an equipment type',
                                        content_type=content_type)
         user = UserProfile.objects.create(username='tom')

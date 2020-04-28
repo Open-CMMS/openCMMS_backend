@@ -31,7 +31,7 @@ class Equipment(models.Model):
         Define an equipment.
     """
     name = models.CharField(max_length=100)
-    equipment_type = models.ForeignKey(EquipmentType,
+    id_equipment_type = models.ForeignKey(EquipmentType,
         verbose_name = "Equipment Type",
         on_delete = models.CASCADE,
         null = False,
