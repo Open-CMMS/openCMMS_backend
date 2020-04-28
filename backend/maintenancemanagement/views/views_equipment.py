@@ -52,6 +52,6 @@ def equipment_detail(request, pk):
 
     elif request.method == 'DELETE':
         if request.user.has_perm("maintenancemanagement.delete_equipment"):
-            team.delete()
+            equipment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
