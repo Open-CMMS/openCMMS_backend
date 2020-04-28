@@ -10,7 +10,7 @@ User = settings.AUTH_USER_MODEL
 @api_view(['GET','POST'])
 def teamtypes_list(request):
     """
-        List all the group types
+        List all the team types or add one.
     """
 
     if request.method == 'GET':
@@ -28,8 +28,7 @@ def teamtypes_list(request):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def teamtypes_detail(request,pk):
@@ -46,8 +45,7 @@ def teamtypes_detail(request,pk):
         if request.user.has_perm("usersmanagement.view_teamtype"):
             serializer = TeamTypeSerializer(group_type)
             return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'PUT':
         if request.user.has_perm("usersmanagement.change_teamtype"):
@@ -56,8 +54,7 @@ def teamtypes_detail(request,pk):
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'DELETE':
         if request.user.has_perm("usersmanagement.delete_teamtype"):
