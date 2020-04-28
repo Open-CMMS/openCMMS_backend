@@ -1,4 +1,3 @@
-from rest_framework import serializers
 from django.contrib.auth.models import Group,Permission
 from django.contrib.contenttypes.models import ContentType
 from .models import UserProfile, TeamType, Team
@@ -91,6 +90,7 @@ class ContentTypeSerializer(serializers.Serializer):
 
 
 class PermissionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     name = serializers.CharField(max_length=200)
     content_type = ContentTypeSerializer()
     codename = serializers.CharField(max_length=200)
