@@ -39,5 +39,3 @@ class Equipment(models.Model):
         related_query_name="equipment")
     #gestion d'un fichier, voir pour en gérer plusieurs
     #upload = models.FileField(upload_to = 'uploads/equipment/')
-
-
