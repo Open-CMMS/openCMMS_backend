@@ -40,16 +40,4 @@ class Equipment(models.Model):
     #gestion d'un fichier, voir pour en gérer plusieurs
     #upload = models.FileField(upload_to = 'uploads/equipment/')
 
-class EquipmentType(models.Model):
-    """
-        Define an equipment type
-    """
-    objects = None
-    name = models.CharField(max_length=100)
-    fields = models.ManyToManyField(Field,
-        verbose_name='Equipment Type Field',
-        blank=True,
-        help_text='Specific fields for this equipment type',
-        related_name="equipmentType_set",
-        related_query_name="equipmentType")
 
