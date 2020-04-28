@@ -10,7 +10,6 @@ def equipment_list(request):
     """
         List all equipments or create a new one
     """
-
     if request.user.has_perm("maintenancemanagement.view_equipment"):
         if request.method == 'GET':
             equipments = Equipment.objects.all()
