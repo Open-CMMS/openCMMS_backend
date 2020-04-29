@@ -85,9 +85,9 @@ class Equipment(models.Model):
         related_query_name="equipment")
     
     files = models.ManyToManyField(Files,
-        verbose_name = "Files",
-        related_name = "files_set",
-        related_query_name="files",
+        verbose_name = "Equipment File",
+        related_name = "equipment_set",
+        related_query_name="equipment",
         blank=True)
 
 
@@ -138,9 +138,9 @@ class Task(models.Model):
         )
 
     files = models.ManyToManyField(Files,
-        verbose_name = "Files",
-        related_name = "files_set",
-        related_query_name="files",
+        verbose_name = "Task File",
+        related_name = "task_set",
+        related_query_name="task",
         blank=True)
 
 
