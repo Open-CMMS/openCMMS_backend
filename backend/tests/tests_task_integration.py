@@ -5,9 +5,10 @@ from rest_framework.test import APIClient
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
 from usersmanagement.models import UserProfile
+from openCMMS import settings
 import datetime
 
-
+User = settings.AUTH_USER_MODEL
 
 class TaskTests(TestCase):
 
@@ -75,7 +76,7 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'end_date' : datetime.date.today, 'time' : datetime.timedelta(days=1)}, format='json')
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
         self.assertEqual(response.status_code,201)
         self.assertEqual(response.data['name'], 'verifier pneus')
 
@@ -125,7 +126,7 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
         pk = response1.data['id']
-        response = client.put('/api/maintenancemanagement/tasks/'+str(user.pk)+'/', {'name':'verifier roues'}, format='json')
+        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'name':'verifier roues'}, format='json')
         self.assertEqual(response.data['name'],'verifier roues')
         self.assertEqual(response.status_code, 200)
 
@@ -142,7 +143,7 @@ class TaskTests(TestCase):
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/tasks/'+str(user.pk)+'/', {'name':'verifier roues'}, format='json')
+        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'name':'verifier roues'}, format='json')
         self.assertEqual(response.status_code, 401)
 
 

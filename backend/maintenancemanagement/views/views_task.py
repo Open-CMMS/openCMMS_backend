@@ -10,15 +10,13 @@ def task_list(request):
     """
         List all tasks or create a new one
     """
-    user = authenticate(username='user', password='pass')
-    login(request,user)
-    if request.user.has_perm("maintenancemanagement.view_equipment"):
+    if request.user.has_perm("maintenancemanagement.view_task"):
         if request.method == 'GET':
             tasks = Task.objects.all()
             serializer = TaskSerializer(tasks, many=True)
             return Response(serializer.data)
 
-    if request.user.has_perm("maintenancemanagement.add_equipment"):
+    if request.user.has_perm("maintenancemanagement.add_task"):
         if request.method == 'POST' :
             serializer = TaskSerializer(data=request.data)
             if serializer.is_valid():
@@ -45,7 +43,7 @@ def task_detail(request, pk):
 
     elif request.method == 'PUT':
         if request.user.has_perm("maintenancemanagement.change_task"):
-            serializer = TaskSerializer(equipment, data = request.data, partial=True)
+            serializer = TaskSerializer(task, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
