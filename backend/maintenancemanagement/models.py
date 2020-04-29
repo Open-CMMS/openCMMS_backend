@@ -27,8 +27,8 @@ class FieldValue(models.Model):
                               related_query_name="value")
 
 class FieldObject(models.Model):
-    
-    
+
+
     # Ces 3 attributs permettent de faire en sorte que described_object puisse référencer TaskType ou EquipmentType
     content_type = models.ForeignKey(ContentType, on_delete = models.SET_NULL, null=True)
     object_id = models.PositiveIntegerField()
@@ -99,7 +99,7 @@ class Task(models.Model):
     is_template = models.BooleanField(default=False)
     equipment = models.ForeignKey(Equipment,
         verbose_name="Assigned equipment",
-        help_text="The equipment assigned to the task", 
+        help_text="The equipment assigned to the task",
         related_name="task_set",
         related_query_name="task",
         on_delete = models.CASCADE,
@@ -120,8 +120,3 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
         )
-
-
-
-
-

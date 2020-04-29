@@ -3,6 +3,9 @@ from maintenancemanagement.models import Task, TaskType
 from maintenancemanagement.serializers import TaskSerializer
 from rest_framework.test import APIClient
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission
+from usersmanagement.models import UserProfile
+import datetime
 
 
 
@@ -13,22 +16,22 @@ class TaskTests(TestCase):
             Set up a user with permissions
         """
         permission = Permission.objects.get(codename='add_task')
-        permission2 = Permission.objects.get(codename='view_task')  
+        permission2 = Permission.objects.get(codename='view_task')
         permission3 = Permission.objects.get(codename='delete_task')
-        permission4 = Permission.objects.get(codename='change_task')                             
-        
+        permission4 = Permission.objects.get(codename='change_task')
+
         user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
         user.first_name='Tom'
         user.save()
-        
+
         user.user_permissions.add(permission)
         user.user_permissions.add(permission2)
         user.user_permissions.add(permission3)
         user.user_permissions.add(permission4)
-        
+
         user.save()
-        
+
         return user
 
 
@@ -72,7 +75,7 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'end_date' : datetime.date.today, 'time' : datetime.timedelta(days=1)}, format='json')
         self.assertEqual(response.status_code,201)
         self.assertEqual(response.data['name'], 'verifier pneus')
 
