@@ -69,7 +69,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         user = UserProfile.objects.get(username="jd")
         team = Team.objects.get(name="Administrators 1")
@@ -85,7 +85,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         joey = UserProfile.objects.get(username="jbi")
-        c.force_login(joey)
+        c.force_authenticate(user=joey)
 
         response = c.post("/api/usersmanagement/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'})
 
@@ -97,7 +97,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         user = UserProfile.objects.get(username="jd")
         team = Team.objects.get(name="Administrators 1")
@@ -112,7 +112,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         joe = UserProfile.objects.get(username="jd")
-        c.force_login(joe)
+        c.force_authenticate(user=joe)
 
         response = c.put("/api/usersmanagement/add_user_to_team",{'username':'jbi','team_name':'Administrators 1'}, format='json')
 
@@ -128,7 +128,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         response = c.get("/api/usersmanagement/teams/")
         self.assertEqual(response.status_code,200)
@@ -141,7 +141,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         joe = UserProfile.objects.get(username="jd")
-        c.force_login(joe)
+        c.force_authenticate(user=joe)
 
         response = c.get("/api/usersmanagement/teams/")
 
@@ -154,7 +154,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         tt = TeamType.objects.all()[0]
 
@@ -171,7 +171,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         joe = UserProfile.objects.get(username="jd")
-        c.force_login(joe)
+        c.force_authenticate(user=joe)
 
         response = c.post("/api/usersmanagement/teams/",{"name":"test_team"})
 
@@ -187,7 +187,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         address = "/api/usersmanagement/teams/"+str(team.id)
 
@@ -203,7 +203,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         joe = UserProfile.objects.get(username="jd")
-        c.force_login(joe)
+        c.force_authenticate(user=joe)
 
         team = Team.objects.get(name="Administrators 1")
 
@@ -220,7 +220,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         team = Team.objects.get(name="Administrators 1")
         address = "/api/usersmanagement/teams/"+str(team.id)
@@ -236,7 +236,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         team = Team.objects.get(name="Administrators 1")
         address = "/api/usersmanagement/teams/"+str(team.id)
@@ -244,7 +244,7 @@ class TeamsTests(TestCase):
         tt = TeamType.objects.all()[1]
 
         response = c.put(address,{"team_type":str(tt.id)}, format='json')
-        
+
         teamApres = Team.objects.get(pk=response.data['id'])
         self.assertEqual(response.status_code,200)
         self.assertNotEqual(team.team_type, teamApres.team_type)
@@ -256,7 +256,7 @@ class TeamsTests(TestCase):
         c = APIClient()
 
         joe = UserProfile.objects.get(username="jd")
-        c.force_login(joe)
+        c.force_authenticate(user=joe)
 
         team = Team.objects.get(name="Administrators 1")
 
@@ -274,7 +274,7 @@ class TeamsTests(TestCase):
         team = Team.objects.get(name="Maintenance Team 1")
 
         tom = UserProfile.objects.get(username="tn")
-        c.force_login(tom)
+        c.force_authenticate(user=tom)
 
         address = "/api/usersmanagement/teams/"+str(team.id)
 
@@ -292,7 +292,7 @@ class TeamsTests(TestCase):
         team = Team.objects.get(name="Maintenance Team 1")
 
         joe = UserProfile.objects.get(username="jd")
-        c.force_login(joe)
+        c.force_authenticate(user=joe)
 
         address = "/api/usersmanagement/teams/"+str(team.id)
 
