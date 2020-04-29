@@ -3,8 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="2708df31-057c-4fda-bca8-011cee0d14fe" name="Default Changelist" comment="Merge branch 'dev' into feature/#4gr6vt&#10;&#10;Conflicts:&#10;&#9;backend/tests/tests_TeamType_integration.py&#10;&#9;backend/tests/tests_team_unitaires.py&#10;&#9;backend/tests/tests_user_integration.py&#10;&#9;backend/tests/tests_user_unitaires.py">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/maintenancemanagement/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/maintenancemanagement/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/maintenancemanagement/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/maintenancemanagement/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/tests_user_unitaires.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_user_unitaires.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/usersmanagement/views/views_teamtypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/usersmanagement/views/views_teamtypes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/usersmanagement/views/views_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/usersmanagement/views/views_user.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -223,10 +224,10 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="390" y="186" key="FileChooserDialogImpl/0.0.1920.1080@0.0.1920.1080" timestamp="1588076784522" />
-    <state x="517" y="192" key="RollbackChangesDialog" timestamp="1588058517767">
+    <state x="517" y="192" key="RollbackChangesDialog" timestamp="1588147293722">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="517" y="192" key="RollbackChangesDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1588058517767" />
+    <state x="517" y="192" key="RollbackChangesDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1588147293722" />
     <state x="388" y="179" key="RollbackChangesDialog/0.23.1440.877@0.23.1440.877" timestamp="1586339852585" />
     <state x="295" y="95" key="SettingsEditor" timestamp="1588076724720">
       <screen x="0" y="0" width="1920" height="1080" />
