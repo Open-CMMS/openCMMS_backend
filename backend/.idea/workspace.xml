@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2708df31-057c-4fda-bca8-011cee0d14fe" name="Default Changelist" comment="Merge branch 'dev' into feature/#4gr6vt&#10;&#10;Conflicts:&#10;&#9;backend/tests/tests_TeamType_integration.py&#10;&#9;backend/tests/tests_team_unitaires.py&#10;&#9;backend/tests/tests_user_integration.py&#10;&#9;backend/tests/tests_user_unitaires.py">
-      <change afterPath="$PROJECT_DIR$/maintenancemanagement/views/views_equipmentType.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maintenancemanagement/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/maintenancemanagement/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maintenancemanagement/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/maintenancemanagement/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/usersmanagement/views/views_teamtypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/usersmanagement/views/views_teamtypes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openCMMS/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/openCMMS/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/tests_team_unitaires.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_team_unitaires.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/tests_user_unitaires.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_user_unitaires.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

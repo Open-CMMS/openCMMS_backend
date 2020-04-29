@@ -1,14 +1,14 @@
 from django.db import models
 from django.db.models import FileField
 
-class Files(models.Model):
-    """
-        Define a file
-    """
-    file = models.FileField(blank=False, null=False)
-    is_notice = models.BooleanField(default=True)
-    def __str__(self):
-        return self.file.name
+# class Files(models.Model):
+#     """
+#         Define a file
+#     """
+#     file = models.FileField(blank=False, null=False)
+#     is_notice = models.BooleanField(default=True)
+#     def __str__(self):
+#         return self.file.name
 
 
 class FieldGroup(models.Model):
@@ -46,7 +46,7 @@ class Equipment(models.Model):
         null = False,
         related_name = "equipment_set",
         related_query_name="equipment")
-    files = models.ManyToManyField(Files,
-        verbose_name = "Files",
-        related_name = "files_set",
-        related_query_name="files")
+    # files = models.ManyToManyField(Files,
+    #     verbose_name = "Files",
+    #     related_name = "files_set",
+    #     related_query_name="files")
