@@ -54,7 +54,7 @@ class Team(Group):
         related_name="team_set",
         related_query_name="team",
         blank=False,
-        null = False
+        null = True
         )
 
     def set_team_type(self,new_team_type):
