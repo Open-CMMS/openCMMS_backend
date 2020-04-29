@@ -93,3 +93,26 @@ class FieldObject(models.Model):
 
 
 
+class EquipmentType(models.Model):
+    """
+        Define an equipment type
+    """
+    name = models.CharField(max_length=100)
+    fields = models.ManyToManyField(Field,
+        verbose_name='Equipment Type Field',
+        blank=True,
+        help_text='Specific fields for this equipment type',
+        related_name="equipmentType_set",
+        related_query_name="equipmentType")
+
+class Equipment(models.Model):
+    """
+        Define an equipment.
+    """
+    name = models.CharField(max_length=100)
+    equipment_type = models.ForeignKey(EquipmentType,
+        verbose_name = "Equipment Type",
+        on_delete = models.CASCADE,
+        null = False,
+        related_name = "equipment_set",
+        related_query_name="equipment")
