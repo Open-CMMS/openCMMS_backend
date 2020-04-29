@@ -51,7 +51,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipmenttype/', format='json')
+        response = client.get('/api/maintenancemanagement/equipmenttypes/', format='json')
         self.assertEqual(serializer.data, response.json())
 
     def test_can_access_equipmenttype_list_without_perm(self):
@@ -62,7 +62,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipmenttype/', format='json')
+        response = client.get('/api/maintenancemanagement/equipmenttypes/', format='json')
         self.assertEqual(response.status_code,401)
 
     def test_add_equipmenttype_with_perm(self):
@@ -73,7 +73,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/equipmenttype/', {'name': 'car'}, format='json')
+        response = client.post('/api/maintenancemanagement/equipmenttypes/', {'name': 'car'}, format='json')
         self.assertEqual(response.status_code,201)
 
     def test_add_equipmenttype_without_perm(self):
@@ -84,7 +84,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/equipmenttype/', {'name': 'tool'}, format='json')
+        response = client.post('/api/maintenancemanagement/equipmenttypes/', {'name': 'tool'}, format='json')
         self.assertEqual(response.status_code,401)
 
     def test_view_equipmenttype_request_with_perm(self):
@@ -97,7 +97,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipmenttype/'+str(tool.id)+"/", format='json')
+        response = client.get('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+"/", format='json')
         self.assertEqual(response.status_code,200)
         self.assertEqual(serializer.data, response.json())
 
@@ -111,7 +111,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipmenttype/'+str(tool.id)+"/", format='json')
+        response = client.get('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+"/", format='json')
         self.assertEqual(response.status_code,401)
 
 
@@ -124,7 +124,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/equipmenttype/'+str(tool.id)+'/',{"name": "car"},format='json')
+        response = client.put('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+'/',{"name": "car"},format='json')
         self.assertEqual(response.status_code,200)
         self.assertTrue(EquipmentType.objects.get(name="car"))
 
@@ -137,7 +137,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/equipmenttype/' + str(tool.id) + '/', {"name": "car"},
+        response = client.put('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/', {"name": "car"},
                               format='json')
         self.assertEqual(response.status_code, 401)
 
@@ -151,8 +151,8 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         tool = EquipmentType.objects.create(name="tool")
-        response_1 = client.get('/api/maintenancemanagement/equipmenttype/'+str(tool.id)+'/', format='json')
-        response_2 = client.delete('/api/maintenancemanagement/equipmenttype/'+str(tool.id)+'/')
+        response_1 = client.get('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+'/', format='json')
+        response_2 = client.delete('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+'/')
         self.assertEqual(response_1.status_code,200)
         self.assertEqual(response_2.status_code,204)
         self.assertFalse(EquipmentType.objects.filter(id=tool.id).exists())
@@ -166,8 +166,8 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         tool = EquipmentType.objects.create(name="tool")
-        response_1 = client.get('/api/maintenancemanagement/equipmenttype/' + str(tool.id) + '/', format='json')
-        response_2 = client.delete('/api/maintenancemanagement/equipmenttype/' + str(tool.id) + '/')
+        response_1 = client.get('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/', format='json')
+        response_2 = client.delete('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/')
         self.assertEqual(response_1.status_code, 200)
         self.assertEqual(response_2.status_code, 204)
         self.assertFalse(EquipmentType.objects.filter(id=tool.id).exists())
