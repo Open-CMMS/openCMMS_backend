@@ -45,6 +45,10 @@ class TaskType(models.Model):
         related_query_name="task_type"
         )
 
+class Files(models.Model):
+    file = models.FileField()
+    is_notice = models.BooleanField(default=true)
+
 class FieldGroup(models.Model):
     name = models.CharField(max_length=50)
     is_equipment = models.BooleanField(default=False)
