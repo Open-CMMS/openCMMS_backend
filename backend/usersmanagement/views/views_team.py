@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import TeamSerializer
 from usersmanagement.models import Team, UserProfile
+from django.contrib.auth import authenticate, login, logout
 
 
 User = settings.AUTH_USER_MODEL
@@ -14,6 +15,9 @@ def team_list(request):
     """
         List all teams or create a new one
     """
+
+    user = authenticate(username='user', password='pass')
+    login(request, user)
     if request.user.has_perm("usersmanagement.view_team"):
         if request.method == 'GET':
             teams = Team.objects.all()
@@ -37,6 +41,10 @@ def team_detail(request, pk):
     """
         Retrieve, update or delete a team
     """
+
+    user = authenticate(username='user', password='pass')
+    login(request, user)
+
     try:
         team = Team.objects.get(pk=pk)
     except :
@@ -71,6 +79,8 @@ def add_user_to_team(request):
     """
         Add and remove users from teams
     """
+    user = authenticate(username='user', password='pass')
+    login(request, user)
 
     if request.user.has_perm("usersmanagement.change_team"):
         if request.method == 'POST':

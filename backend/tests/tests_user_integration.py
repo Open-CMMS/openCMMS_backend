@@ -15,18 +15,10 @@ class UserTests(TestCase):
             Set up a user with permissions
         """
         content_type = ContentType.objects.get_for_model(UserProfile)
-        permission = Permission.objects.create(codename='add_UserProfile',
-                                       name='Can add a user',
-                                       content_type=content_type)
-        permission2 = Permission.objects.create(codename='view_UserProfile',
-                                       name='Can view a user',
-                                       content_type=content_type)  
-        permission3 = Permission.objects.create(codename='delete_UserProfile',
-                                       name='Can delete a user',
-                                       content_type=content_type)
-        permission4 = Permission.objects.create(codename='change_UserProfile',
-                                       name='Can update a user',
-                                       content_type=content_type)                             
+        permission = Permission.objects.get(codename='add_userprofile')
+        permission2 = Permission.objects.get(codename='view_userprofile')  
+        permission3 = Permission.objects.get(codename='delete_userprofile')
+        permission4 = Permission.objects.get(codename='change_userprofile')                             
         user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
         user.first_name='Tom'

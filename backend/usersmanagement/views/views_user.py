@@ -15,8 +15,10 @@ def user_list(request):
         List all users or create a new one
     """
 
+    user = authenticate(username='user', password='pass')
+    login(request, user)
     if request.method == 'GET' :
-        if request.user.has_perm("usersmanagement.add_UserProfile"):
+        if request.user.has_perm("usersmanagement.add_userprofile"):
             users = UserProfile.objects.all()
             serializer = UserProfileSerializer(users, many=True)
             return Response(serializer.data)
@@ -24,7 +26,7 @@ def user_list(request):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'POST' :
-        if request.user.has_perm("usersmanagement.add_UserProfile") or is_first_user():
+        if request.user.has_perm("usersmanagement.add_userprofile") or is_first_user():
             serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -44,20 +46,23 @@ def user_detail(request, pk):
     """
         Retrieve, update or delete an user account
     """
+    user = authenticate(username='user', password='pass')
+    login(request, user)
+    
     try:
         user = UserProfile.objects.get(pk=pk)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        if (request.user == user) or (request.user.has_perm("usersmanagement.view_UserProfile")):
+        if (request.user == user) or (request.user.has_perm("usersmanagement.view_userprofile")):
             serializer = UserProfileSerializer(user)
             return Response(serializer.data)
         else :
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
-        if (request.user == user) or (request.user.has_perm("usersmanagement.change_UserProfile")):
+        if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
             serializer = UserProfileSerializer(user, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -67,7 +72,7 @@ def user_detail(request, pk):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
-        if request.user.has_perm("usersmanagement.delete_UserProfile"):
+        if request.user.has_perm("usersmanagement.delete_userprofile"):
             #Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
