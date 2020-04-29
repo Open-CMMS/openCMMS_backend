@@ -5,9 +5,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maintenancemanagement/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/maintenancemanagement/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maintenancemanagement/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/maintenancemanagement/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/openCMMS/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/openCMMS/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/tests_team_unitaires.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_team_unitaires.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/tests_user_unitaires.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_user_unitaires.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
