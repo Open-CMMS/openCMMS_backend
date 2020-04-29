@@ -5,6 +5,16 @@ from django.contrib.contenttypes.models import ContentType
 
 # Create your models here.
 
+from django.db.models import FileField
+
+class Files(models.Model):
+    """
+        Define a file
+    """
+    file = models.FileField(blank=False, null=False)
+    is_notice = models.BooleanField(default=True)
+    def __str__(self):
+        return self.file.name
 
 class FieldGroup(models.Model):
     name = models.CharField(max_length=50)
@@ -73,6 +83,12 @@ class Equipment(models.Model):
         null = False,
         related_name = "equipment_set",
         related_query_name="equipment")
+    
+    files = models.ManyToManyField(Files,
+        verbose_name = "Equipment File",
+        related_name = "equipment_set",
+        related_query_name="equipment",
+        blank=True)
 
 
 class TaskType(models.Model):
@@ -94,8 +110,8 @@ class TaskType(models.Model):
 class Task(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=2000, default="")
-    end_date = models.DateField() #Correspond à la date butoire
-    time = models.DurationField() #Correspond à la durée forfaitaire
+    end_date = models.DateField(null=True, blank=True) #Correspond à la date butoire
+    time = models.DurationField(null=True, blank=True) #Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
     equipment = models.ForeignKey(Equipment,
         verbose_name="Assigned equipment",
@@ -103,11 +119,13 @@ class Task(models.Model):
         related_name="task_set",
         related_query_name="task",
         on_delete = models.CASCADE,
-        blank = True
+        blank = True,
+        null=True
         )
     teams = models.ManyToManyField(Team,
         verbose_name = "Assigned team(s)",
         blank = True,
+        null=True,
         help_text = "The team(s) assigned to this task",
         related_name = "task_set",
         related_query_name = "task",
@@ -119,9 +137,17 @@ class Task(models.Model):
         related_name="task_set",
         related_query_name="task",
         blank=True,
+        null=True
         )
 
+    files = models.ManyToManyField(Files,
+        verbose_name = "Task File",
+        related_name = "task_set",
+        related_query_name="task",
+        blank=True,
+        null=True)
 
 
 
 
+    
