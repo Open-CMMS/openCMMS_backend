@@ -18,7 +18,6 @@ def team_list(request):
 
     user = authenticate(username='user', password='pass')
     login(request, user)
-
     if request.user.has_perm("usersmanagement.view_team"):
         if request.method == 'GET':
             teams = Team.objects.all()
@@ -80,7 +79,6 @@ def add_user_to_team(request):
     """
         Add and remove users from teams
     """
-
     user = authenticate(username='user', password='pass')
     login(request, user)
 
