@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from maintenancemanagement.serializers import TaskSerializer
 from maintenancemanagement.models import Task
+from usersmanagement.models import Team
 from django.contrib.auth import authenticate, login, logout
 
 @api_view(['GET', 'POST'])
@@ -67,8 +68,8 @@ def add_team_to_task(request):
         id_team ; id of the assigned team
     """
     user = authenticate(username='user', password='pass')
-    login(request, user)
-    if request.user.has_perm("maintencemanagement.change_task"):
+
+    if request.user.has_perm("maintenancemanagement.change_task"):
         if request.method == 'POST':
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
