@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
 from usersmanagement.models import UserProfile
 from openCMMS import settings
-import datetime
+from datetime import timedelta
 
 User = settings.AUTH_USER_MODEL
 
@@ -177,7 +177,7 @@ class TaskTests(TestCase):
 
     def test_can_acces_task_list_with_perm_with_end_date(self):
         """
-            Test if a user with perm receive the data
+            Test if a user with perm receive the data with end_date
         """
         user = self.set_up_perm()
         tasks = Task.objects.all()
@@ -189,7 +189,7 @@ class TaskTests(TestCase):
 
     def test_can_acces_task_list_without_perm_with_end_date(self):
         """
-            Test if a user without perm doesn't receive the data
+            Test if a user without perm doesn't receive the data with end_date
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -199,18 +199,18 @@ class TaskTests(TestCase):
 
     def test_add_task_with_perm_with_end_date(self):
         """
-            Test if a user with perm can add a task
+            Test if a user with perm can add a task with end_date
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'end_date': '2020-04-29'}, format='json')
         self.assertEqual(response.status_code,201)
-        self.assertEqual(response.data['name'], 'verifier pneus')
+        self.assertEqual(response.data['end_date'], '2020-04-29')
 
-    def test_add_task_without_perm_with_end_date_with_end_date(self):
+    def test_add_task_without_perm_with_end_date(self):
         """
-            Test if a user without perm can't add a task
+            Test if a user without perm can't add a task with end_date
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -220,7 +220,7 @@ class TaskTests(TestCase):
 
     def test_view_task_request_with_perm_with_end_date(self):
         """
-            Test if a user with perm can see a task detail
+            Test if a user with perm can see a task detail with end_date
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -228,11 +228,11 @@ class TaskTests(TestCase):
         response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.data['name'],'verifier pneus')
+        self.assertEqual(response.data['end_date'],'2020-04-29')
 
     def test_view_task_request_without_perm_with_end_date(self):
         """
-            Test if a user without perm can't see a task detail
+            Test if a user without perm can't see a task detail with end_date
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -247,21 +247,21 @@ class TaskTests(TestCase):
 
     def test_change_task_with_perm_with_end_date(self):
         """
-            Test if a user with perm can change a task
+            Test if a user with perm can change a task with end_date
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
         pk = response1.data['id']
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'name':'verifier roues'}, format='json')
-        self.assertEqual(response.data['name'],'verifier roues')
+        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'end_date':'2020-03-12'}, format='json')
+        self.assertEqual(response.data['end_date'],'2020-03-12')
         self.assertEqual(response.status_code, 200)
 
 
     def test_change_task_without_perm_with_end_date(self):
         """
-            Test if a user without perm can change a task
+            Test if a user without perm can change a task with end_date
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -271,13 +271,13 @@ class TaskTests(TestCase):
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'name':'verifier roues'}, format='json')
+        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'end_date':'2020-03-12'}, format='json')
         self.assertEqual(response.status_code, 401)
 
 
     def test_delete_task_with_perm_with_end_date(self):
         """
-            Test if a user with perm can delete a task
+            Test if a user with perm can delete a task with end_date
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -290,12 +290,140 @@ class TaskTests(TestCase):
 
     def test_delete_task_without_perm_with_end_date(self):
         """
-            Test if a user without perm can delete a task
+            Test if a user without perm can delete a task with end_date
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
+        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.status_code,401)
+
+    def test_can_acces_task_list_with_perm_with_time(self):
+        """
+            Test if a user with perm receive the data with end_date
+        """
+        user = self.set_up_perm()
+        tasks = Task.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/', format='json')
+        self.assertEqual(response.data,serializer.data)
+
+    def test_can_acces_task_list_without_perm_with_time(self):
+        """
+            Test if a user without perm doesn't receive the data with time
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/', format='json')
+        self.assertEqual(response.status_code,401)
+
+    def test_add_task_with_perm_with_time(self):
+        """
+            Test if a user with perm can add a task with time
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'time': timedelta(days=1, hours=8)}, format='json')
+        self.assertEqual(response.status_code,201)
+        self.assertEqual(response.data['time'], '1 08:00:00')
+
+    def test_add_task_without_perm_with_time(self):
+        """
+            Test if a user without perm can't add a task with time
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'time': timedelta(days=1, hours=8)}, format='json')
+        self.assertEqual(response.status_code,401)
+
+    def test_view_task_request_with_perm_with_time(self):
+        """
+            Test if a user with perm can see a task detail with time
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        pk = response1.data['id']
+        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.data['time'],'1 08:00:00')
+
+    def test_view_task_request_without_perm_with_time(self):
+        """
+            Test if a user without perm can't see a task detail with time
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.status_code,401)
+
+    def test_change_task_with_perm_with_time(self):
+        """
+            Test if a user with perm can change a task with time
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        pk = response1.data['id']
+        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'time': timedelta(days=2, hours=4)}, format='json')
+        self.assertEqual(response.data['time'],'2 04:00:00')
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_change_task_without_perm_with_time(self):
+        """
+            Test if a user without perm can change a task with time
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
+        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'time': timedelta(days=2, hours=4)}, format='json')
+        self.assertEqual(response.status_code, 401)
+
+
+    def test_delete_task_with_perm_with_time(self):
+        """
+            Test if a user with perm can delete a task with time
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        pk = response1.data['id']
+        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.status_code, 204)
+
+
+    def test_delete_task_without_perm_with_time(self):
+        """
+            Test if a user without perm can delete a task with time
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
