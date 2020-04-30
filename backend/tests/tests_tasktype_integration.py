@@ -10,6 +10,7 @@ from usersmanagement.models import UserProfile
 
 class TaskTypeTests(TestCase):
 
+
     def set_up_perm(self):
         """
             Set up a user with permissions
@@ -30,7 +31,6 @@ class TaskTypeTests(TestCase):
         user.user_permissions.add(permission4)
         
         user.save()
-        
         return user
 
 
@@ -56,7 +56,7 @@ class TaskTypeTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasktypes/', format='json')
-        #self.assertEqual(response.data,serializer.data)
+        self.assertEqual(response.data,serializer.data)
 
     def test_can_acces_tasktype_list_without_perm(self):
         """
@@ -66,7 +66,7 @@ class TaskTypeTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasktypes/', format='json')
-        #self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code,401)
 
 
     def test_add_tasktype_with_perm(self):
@@ -77,8 +77,8 @@ class TaskTypeTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.post('/api/maintenancemanagement/tasktypes/', {'name': 'Maintenance Voiture'}, format='json')
-        #self.assertEqual(response.status_code,201)
-        #self.assertEqual(response.data['name'], 'Maintenance Voiture')
+        self.assertEqual(response.status_code,201)
+        self.assertEqual(response.data['name'], 'Maintenance Voiture')
 
     def test_add_tasktype_without_perm(self):
         """
@@ -88,7 +88,7 @@ class TaskTypeTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.post('/api/maintenancemanagement/tasktypes/', {'name': 'Maintenance Voiture'}, format='json')
-        #self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code,401)
 
 
     def test_view_tasktype_with_perm(self):
@@ -101,7 +101,7 @@ class TaskTypeTests(TestCase):
         response1 = client.post('/api/maintenancemanagement/tasktypes/', {'name': 'Maintenance Voiture'}, format='json')
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/tasktypes/'+str(pk)+'/')
-        #self.assertEqual(response.data['name'],'verifier pneus')
+        self.assertEqual(response.data['name'],'verifier pneus')
 
     def test_view_tasktype_without_perm(self):
         """
@@ -116,7 +116,7 @@ class TaskTypeTests(TestCase):
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasktypes/'+str(pk)+'/')
-        #self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code,401)
 
 
     def test_change_tasktype_with_perm(self):
@@ -129,8 +129,8 @@ class TaskTypeTests(TestCase):
         response1 = client.post('/api/maintenancemanagement/tasktypes/', {'name': 'Maintenance Voiture'}, format='json')
         pk = response1.data['id']
         response = client.put('/api/maintenancemanagement/tasktypes/'+str(user.pk)+'/', {'name':'Maintenance Tuture'}, format='json')
-        #self.assertEqual(response.data['name'],'Maintenance Tuture')
-        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'],'Maintenance Tuture')
+        self.assertEqual(response.status_code, 200)
 
 
     def test_change_tasktype_without_perm(self):
@@ -146,7 +146,7 @@ class TaskTypeTests(TestCase):
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
         response = client.put('/api/maintenancemanagement/tasktypes/'+str(user.pk)+'/', {'name':'Maintenance Tuture'}, format='json')
-        #self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 401)
 
 
     def test_delete_tasktype_with_perm(self):
@@ -159,7 +159,7 @@ class TaskTypeTests(TestCase):
         response1 = client.post('/api/maintenancemanagement/tasktypes/', {'name': 'Maintenance Voiture'}, format='json')
         pk = response1.data['id']
         response = client.delete('/api/maintenancemanagement/tasktypes/'+str(pk)+'/')
-        #self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 204)
 
 
     def test_delete_tasktype_without_perm(self):
@@ -175,4 +175,4 @@ class TaskTypeTests(TestCase):
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
         response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        #self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code,401)

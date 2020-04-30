@@ -1,9 +1,8 @@
 from django.urls import path
-from .views import views_equipmentType;
-from .views import views_equipment;
-from .views import views_task;
-
-from maintenancemanagement.views import views_equipment, views_equipmentType;
+from .views import views_equipmentType
+from .views import views_equipment
+from .views import views_task
+from .views import views_taskType
 
 urlpatterns = [
 ]
@@ -22,9 +21,15 @@ urlpatterns_equipmenttype = [
 urlpatterns_task = [
     path('tasks/', views_task.task_list, name='task-list'),
     path('tasks/<int:pk>/', views_task.task_detail, name='task-detail'),
-    path('add_team_to_task', views_task.add_team_to_task, name='add_team_to_task' ),
+    path('addteamtotask', views_task.add_team_to_task, name='add-team-to-task' ),
+]
+
+urlpatterns_tasktype = [
+    path('tasktypes/', views_taskType.taskType_list, name="tasktype-list"),
+    path('tasktypes/<int:pk>', views_taskType.taskType_detail, name='tasktype-detail')
 ]
 
 urlpatterns += urlpatterns_equipment
 urlpatterns += urlpatterns_equipmenttype
 urlpatterns += urlpatterns_task
+urlpatterns += urlpatterns_tasktype
