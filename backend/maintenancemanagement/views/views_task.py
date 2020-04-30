@@ -55,3 +55,31 @@ def task_detail(request, pk):
             task.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST', 'PUT'])
+def add_team_to_task(request):
+    """
+        Assign a team to a task.
+        Parameters 
+        ----------
+        id_task : id of the task to get a team
+        id_team ; id of the assigned team
+    """
+    user = authenticate(username='user', password='pass')
+    login(request, user)
+    if request.user.has_perm("maintencemanagement.change_task"):
+        if request.method == 'POST':
+            task = Task.objects.get(pk=request.data["id_task"])
+            team = Team.objects.get(pk=request.data["id_team"])
+            task.teams.add(team)
+            return Response(status=status.HTTP_201_CREATED)
+
+
+        elif request.method == 'PUT':
+            task = Task.objects.get(pk=request.data["id_task"])
+            team = Team.objects.get(pk=request.data["id_team"])
+            task.teams.remove(user)
+            return Response(status=status.HTTP_201_CREATED)
+
+    return Response(status=status.HTTP_401_UNAUTHORIZED)

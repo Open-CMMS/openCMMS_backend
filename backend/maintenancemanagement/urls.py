@@ -22,6 +22,7 @@ urlpatterns_equipmenttype = [
 urlpatterns_task = [
     path('tasks/', views_task.task_list, name='task-list'),
     path('tasks/<int:pk>/', views_task.task_detail, name='task-detail'),
+    path('add_team_to_task', views_task.add_team_to_task, name='add_team_to_task' ),
 ]
 
 urlpatterns += urlpatterns_equipment

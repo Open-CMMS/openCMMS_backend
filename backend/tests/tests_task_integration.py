@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from maintenancemanagement.models import Task, TaskType
 from maintenancemanagement.serializers import TaskSerializer
+from usersmanagement.models import Team
 from rest_framework.test import APIClient
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
@@ -45,7 +46,6 @@ class TaskTests(TestCase):
         user.first_name='Tom'
         user.save()
         return user
-
 
     def test_can_acces_task_list_with_perm(self):
         """
@@ -430,3 +430,41 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
+    
+    def test_add_team_task_with_authorization(self):
+        """
+            Test if a user with permission can add a team to a task.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        team = Team.objects.create(name="team")
+        task = Task.objects.create(name="tache")
+        response = client.post('/api/maintenancemanagement/add_team_to_task/', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        self.assertEqual(response.status_code, 201)
+
+    def test_add_team_task_with_authorization(self):
+        """
+            Test if a user with permission can remove a team from a task.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        team = Team.objects.create(name="team")
+        task = Task.objects.create(name="tache")
+        response = client.put('/api/maintenancemanagement/add_team_to_task', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        self.assertEqual(response.status_code, 201)
+
+    def test_add_team_task_without_authorization(self):
+        """
+            Test if a user without permission can't remove a team from a task.
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        team = Team.objects.create(name="team")
+        task = Task.objects.create(name="tache")
+        response = client.put('/api/maintenancemanagement/add_team_to_task', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        self.assertEqual(response.status_code, 401)
+
+    
