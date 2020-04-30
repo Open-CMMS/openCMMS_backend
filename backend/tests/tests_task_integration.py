@@ -332,7 +332,7 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'time': timedelta(days=1, hours=8)}, format='json')
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'time': '1 day, 8:00:00'}, format='json')
         self.assertEqual(response.status_code,201)
         self.assertEqual(response.data['time'], '1 08:00:00')
 
