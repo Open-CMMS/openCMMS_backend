@@ -62,10 +62,9 @@ def task_detail(request, pk):
 def add_team_to_task(request):
     """
         Assign a team to a task.
-        Parameters 
-        ----------
+
         id_task : id of the task to get a team
-        id_team ; id of the assigned team
+        id_team : id of the assigned team
     """
     user = authenticate(username='user', password='pass')
 

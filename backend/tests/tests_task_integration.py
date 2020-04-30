@@ -452,7 +452,7 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="tache")
-        response = client.put('/api/maintenancemanagement/add_team_to_task', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        response = client.put('/api/maintenancemanagement/addteamtotask', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
         self.assertEqual(response.status_code, 201)
 
     def test_add_team_task_without_authorization(self):
@@ -464,7 +464,7 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="tache")
-        response = client.put('/api/maintenancemanagement/add_team_to_task', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        response = client.put('/api/maintenancemanagement/addteamtotask', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
         self.assertEqual(response.status_code, 401)
 
     
