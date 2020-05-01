@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
-from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer
+from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer, PermissionSerializer
 from usersmanagement.models import TeamType, UserProfile, Team
 
 User = settings.AUTH_USER_MODEL
@@ -44,7 +44,6 @@ def user_detail(request, pk):
     """
         Retrieve, update or delete an user account
     """
-
     
     try:
         user = UserProfile.objects.get(pk=pk)
@@ -130,6 +129,25 @@ def sign_out(request):
     """
     logout(request)
     return Response(True)
+
+
+@api_view(['GET'])
+def get_user_permissions(request, pk):
+    """
+        List all permissions of a user
+    """
+
+    try :
+        user = UserProfile.objects.get(pk=pk)
+    except :
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.user.has_perm("usersmanagement.add_userprofile"):
+        permissions = user.user_permissions
+        serializer = PermissionSerializer(permissions, many=True)
+        return Response(serializer.data)
+    else:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 def init_database():

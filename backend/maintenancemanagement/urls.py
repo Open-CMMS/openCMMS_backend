@@ -26,7 +26,7 @@ urlpatterns_task = [
 
 urlpatterns_tasktype = [
     path('tasktypes/', views_taskType.taskType_list, name="tasktype-list"),
-    path('tasktypes/<int:pk>', views_taskType.taskType_detail, name='tasktype-detail')
+    path('tasktypes/<int:pk>/', views_taskType.taskType_detail, name='tasktype-detail')
 ]
 
 urlpatterns += urlpatterns_equipment

@@ -97,7 +97,8 @@ class TaskType(models.Model):
         verbose_name="Fields Group",
         help_text="Fields Groups of the Task Type",
         related_name="task_type_set",
-        related_query_name="tasktype"
+        related_query_name="tasktype",
+        blank=True
         )
 
 
@@ -125,7 +126,6 @@ class Task(models.Model):
     teams = models.ManyToManyField(Team,
         verbose_name = "Assigned team(s)",
         blank = True,
-        null=True,
         help_text = "The team(s) assigned to this task",
         related_name = "task_set",
         related_query_name = "task",
@@ -144,8 +144,7 @@ class Task(models.Model):
         verbose_name = "Task File",
         related_name = "task_set",
         related_query_name="task",
-        blank=True,
-        null=True)
+        blank=True,)
 
 
 

@@ -11,13 +11,13 @@ def taskType_list(request):
     """
         Lists all tasktypes or creates a new one
     """
-    if request.user.has_perm("maintenancemanagement.view_task"):
+    if request.user.has_perm("maintenancemanagement.view_tasktype"):
         if request.method == 'GET':
             taskTypes = TaskType.objects.all()
             serializer = TaskTypeSerializer(taskTypes, many=True)
             return Response(serializer.data)
 
-    if request.user.has_perm("maintenancemanagement.add_task"):
+    if request.user.has_perm("maintenancemanagement.add_tasktype"):
         if request.method == 'POST' :
             serializer = TaskTypeSerializer(data=request.data)
             if serializer.is_valid():
@@ -37,13 +37,13 @@ def taskType_detail(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        if request.user.has_perm("maintenancemanagement.view_task"):
+        if request.user.has_perm("maintenancemanagement.view_tasktype"):
             serializer = TaskTypeSerializer(taskType)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
-        if request.user.has_perm("maintenancemanagement.change_task"):
+        if request.user.has_perm("maintenancemanagement.change_tasktype"):
             serializer = TaskTypeSerializer(taskType, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -52,7 +52,7 @@ def taskType_detail(request, pk):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
-        if request.user.has_perm("maintenancemanagement.delete_task"):
+        if request.user.has_perm("maintenancemanagement.delete_tasktype"):
             taskType.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

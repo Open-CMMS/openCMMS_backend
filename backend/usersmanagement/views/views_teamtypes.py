@@ -13,7 +13,7 @@ def teamtypes_list(request):
     """
         List all the team types or add one.
     """
-
+    
     if request.method == 'GET':
         if request.user.has_perm("usersmanagement.view_teamtype"):
             group_types = TeamType.objects.all()
