@@ -11,6 +11,10 @@ def task_list(request):
     """
         List all tasks or create a new one
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+
     if request.user.has_perm("maintenancemanagement.view_task"):
         if request.method == 'GET':
             tasks = Task.objects.all()
@@ -31,6 +35,11 @@ def task_detail(request, pk):
     """
         Retrieve, update or delete a task
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+
+
     try:
         task = Task.objects.get(pk=pk)
     except :
@@ -66,7 +75,8 @@ def add_team_to_task(request):
         id_task : id of the task to get a team
         id_team : id of the assigned team
     """
-    user = authenticate(username='user', password='pass')
+    user = authenticate(username="user", password="pass")
+    login(request, user)
 
     if request.user.has_perm("maintenancemanagement.change_task"):
         if request.method == 'POST':

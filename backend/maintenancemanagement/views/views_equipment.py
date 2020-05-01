@@ -10,6 +10,10 @@ def equipment_list(request):
     """
         List all equipments or create a new one
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+
     if request.user.has_perm("maintenancemanagement.view_equipment"):
         if request.method == 'GET':
             equipments = Equipment.objects.all()
@@ -30,6 +34,10 @@ def equipment_detail(request, pk):
     """
         Retrieve, update or delete an equipment
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+    
     try:
         equipment = Equipment.objects.get(pk=pk)
     except :

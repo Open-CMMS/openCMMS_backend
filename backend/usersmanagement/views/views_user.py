@@ -15,6 +15,9 @@ def user_list(request):
         List all users or create a new one
     """
 
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+
     if request.method == 'GET' :
         if request.user.has_perm("usersmanagement.add_userprofile"):
             users = UserProfile.objects.all()
@@ -44,6 +47,8 @@ def user_detail(request, pk):
     """
         Retrieve, update or delete an user account
     """
+    user = authenticate(username="user", password="pass")
+    login(request, user)
     
     try:
         user = UserProfile.objects.get(pk=pk)

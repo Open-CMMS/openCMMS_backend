@@ -11,6 +11,11 @@ def taskType_list(request):
     """
         Lists all tasktypes or creates a new one
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+
+
     if request.user.has_perm("maintenancemanagement.view_tasktype"):
         if request.method == 'GET':
             taskTypes = TaskType.objects.all()
@@ -31,6 +36,11 @@ def taskType_detail(request, pk):
     """
         Shows details of taskType, updates it or deletes it.
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+
+    
     try:
         taskType = TaskType.objects.get(pk=pk)
     except :
