@@ -118,3 +118,20 @@ class TeamTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamType
         fields = ['id','name','perms','team_set']
+
+
+    def update(self, instance, validated_data):
+        teams = instance.team_set.all()
+
+        for attr, value in validated_data.items():
+            if attr == 'team_set':
+                for t in teams:
+                    if t not in value:
+                        t.delete()
+                instance.team_set.set(value)
+            elif attr == 'perms':
+                instance.perms.set(value)
+            else :
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
