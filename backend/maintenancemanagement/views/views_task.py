@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from maintenancemanagement.serializers import TaskSerializer
-from maintenancemanagement.models import Task
+from maintenancemanagement.models import Task, Field, FieldGroup, FieldValue
 from usersmanagement.models import Team
 from django.contrib.auth import authenticate, login, logout
 
