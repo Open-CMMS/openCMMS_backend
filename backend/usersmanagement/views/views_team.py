@@ -16,8 +16,6 @@ def team_list(request):
         List all teams or create a new one
     """
 
-    user = authenticate(username='user', password='pass')
-    login(request, user)
     if request.user.has_perm("usersmanagement.view_team"):
         if request.method == 'GET':
             teams = Team.objects.all()
@@ -44,9 +42,6 @@ def team_detail(request, pk):
     """
         Retrieve, update or delete a team
     """
-
-    user = authenticate(username='user', password='pass')
-    login(request, user)
 
     try:
         team = Team.objects.get(pk=pk)
@@ -82,8 +77,6 @@ def add_user_to_team(request):
     """
         Add and remove users from teams
     """
-    user = authenticate(username='user', password='pass')
-    login(request, user)
 
     if request.user.has_perm("usersmanagement.change_team"):
         if request.method == 'POST':
