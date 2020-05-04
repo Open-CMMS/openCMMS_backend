@@ -121,7 +121,7 @@ def sign_in(request):
         'message' : 'User logged in successfully',
         'token' : serializer.data['token'],
         'user_id' : serializer.data['user_id'],
-        'user' : UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id']).data,)
+        'user' : UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
     }
     return Response(response, status=status.HTTP_200_OK)
 
