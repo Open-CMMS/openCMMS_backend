@@ -151,7 +151,7 @@ def get_user_permissions(request, pk):
     except :
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("usersmanagement.add_userprofile"):
+    if request.user.has_perm("usersmanagement.add_userprofile") or request.user==user:
         permissions = user.get_all_permissions()
         codename = []
         for perm in permissions:
@@ -183,3 +183,12 @@ def init_database():
     #Adding first user to admins
     user = UserProfile.objects.all()[0]
     user.groups.add(T_Admin)
+
+    Admins._apply_()
+    Admins.save()
+    MMs.save()
+    MTs.save()
+
+    T_Admin.save()
+    T_MM1.save()
+    T_MT1.save()

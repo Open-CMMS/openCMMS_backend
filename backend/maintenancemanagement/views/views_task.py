@@ -105,8 +105,24 @@ def init_database():
     fieldEntierDec = FieldValue.objects.create(value="Entier", field=fieldCriDec)
     #fieldCaseDec = FieldValue.objects.create(value="Case a cocher", field=fieldCriDec)
     #fieldPhotoDec = FieldValue.objects.create(value="Photo", field=fieldCriDec)
-    fieldDecimal = FieldValue.objects.create(value="Décimal", field=fieldCriDec)
-    fieldDuree = FieldValue.objects.create(value="Duree", field=fieldCriDec)
+    fieldDecimalDec = FieldValue.objects.create(value="Décimal", field=fieldCriDec)
+    fieldDureeDec = FieldValue.objects.create(value="Duree", field=fieldCriDec)
 
     fieldCaseFin = FieldValue.objects.create(value="Case a cocher", field=fieldCriFin)
-    field
+    fieldEntierFin = FieldValue.objects.create(value="Valeur numerique à rentrer", field=fieldCriFin)
+    fieldStringFin = FieldValue.objects.create(value="Description", field=fieldCriFin)
+    fieldPhotoFin =FieldValue.objects.create(value="Photo", field=fieldCriFin)
+
+    fieldGr.save()
+    fieldCriDec.save()
+    fieldCriFin.save()
+
+    fieldDateDec.save()
+    fieldEntierDec.save()
+    fieldDecimalDec.save()
+    fieldDureeDec.save()
+
+    fieldCaseFin.save()
+    fieldEntierFin.save()
+    fieldStringFin.save()
+    fieldPhotoFin.save()
