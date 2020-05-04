@@ -100,7 +100,6 @@ def team_task_list(request, pk):
     if request.user.has_perm("maintenancemanagement.view_task"):
         tasks = team.task_set.all()
         serializer = TaskSerializer(tasks, many=True)
-        print(serializer)
         return Response(serializer.data)
     else :
         return Response(status=status.HTTP_401_UNAUTHORIZED)

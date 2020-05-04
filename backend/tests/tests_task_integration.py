@@ -472,15 +472,14 @@ class TaskTests(TestCase):
         task = Task.objects.create(name="task")
         task.teams.add(team)
         task.save()
-        serializer = TaskSerializer(task)
+        tasks = team.task_set.all() #J'ai rajouté cette ligne
+        serializer = TaskSerializer(tasks, many=True) #Ici tu avais juste mis task, sans many, du coup pour lui il est créé à partir d'une seule instance, et pas plusieures
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.get(f'/api/maintenancemanagement/teamtasklist/{team.pk}', format='json')
+        response = client.get("/api/maintenancemanagement/teamtasklist/"+str(team.pk), format='json')
         self.assertEqual(response.status_code, 200)
-        print(f" \n {response.data}")
-        print(f"{serializer.data} \n")
-        self.assertEqual(response.data["name"], serializer.data)
+        self.assertEqual(response.data, serializer.data)
     
     def test_view_team_s_tasks_without_auth(self):
         user = self.set_up_without_perm()
