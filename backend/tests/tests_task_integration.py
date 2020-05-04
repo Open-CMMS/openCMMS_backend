@@ -467,4 +467,25 @@ class TaskTests(TestCase):
         response = client.put('/api/maintenancemanagement/addteamtotask', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
         self.assertEqual(response.status_code, 401)
 
+    def test_view_team_s_tasks_with_auth(self):
+        team = Team.objects.create(name="team")
+        task = Task.objects.create(name="task")
+        task.teams.add(team)
+        task.save()
+        serializer = TaskSerializer(task)
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/teamtasklist', {"id": f"{team.pk}"}, format="json")
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, serializer.data)
+    
+    def test_view_team_s_tasks_without_auth(self):
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        team = Team.objects.create(name="team")
+        task = Task.objects.create(name="task")
+        response = client.get('/api/maintenancemanagement/teamtasklist', {"id_team": f"{team.pk}"}, format="json")
+        self.assertEqual(response.status_code, 401)
     

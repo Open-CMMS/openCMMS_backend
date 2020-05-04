@@ -66,7 +66,6 @@ def add_team_to_task(request):
         id_task : id of the task to get a team
         id_team : id of the assigned team
     """
-    user = authenticate(username='user', password='pass')
 
     if request.user.has_perm("maintenancemanagement.change_task"):
         if request.method == 'POST':
@@ -79,7 +78,28 @@ def add_team_to_task(request):
         elif request.method == 'PUT':
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
-            task.teams.remove(user)
+            task.teams.remove(team)
             return Response(status=status.HTTP_201_CREATED)
 
     return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(["GET"])
+def team_task_list(request):
+    """
+    Gives the team's tasks
+
+    Parameters
+    ----------
+    id_team : id of the wanted team
+    """
+    try:
+        team = Team.objects.get(pk=request.data["id"])
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if true or request.user.has_perm("usermanagement.view_team"):
+        tasks = team.task_set.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+    else :
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
