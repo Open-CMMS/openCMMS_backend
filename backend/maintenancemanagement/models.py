@@ -12,7 +12,7 @@ class Files(models.Model):
         Define a file
     """
     file = models.FileField(blank=False, null=False)
-    is_notice = models.BooleanField(default=True)
+    is_manual = models.BooleanField(default=True)
     def __str__(self):
         return self.file.name
 
@@ -145,6 +145,14 @@ class Task(models.Model):
         related_name = "task_set",
         related_query_name="task",
         blank=True,)
+
+    fields_groups = models.ManyToManyField(FieldGroup,
+        verbose_name="Fields Group",
+        help_text="Fields Groups of the Task for Ending and Auto Trigger",
+        related_name="task__set",
+        related_query_name="task",
+        blank=True,
+        )
 
 
 

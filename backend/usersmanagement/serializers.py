@@ -81,6 +81,7 @@ class TeamSerializer(serializers.ModelSerializer):
         # 'permissions'
 
 
+
 class ContentTypeSerializer(serializers.Serializer):
     app_label = serializers.CharField(max_length=200)
     model = serializers.CharField(max_length=200)
@@ -131,6 +132,7 @@ class TeamTypeSerializer(serializers.ModelSerializer):
                 instance.team_set.set(value)
             elif attr == 'perms':
                 instance.perms.set(value)
+                instance._apply_()
             else :
                 setattr(instance, attr, value)
         instance.save()

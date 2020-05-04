@@ -2,10 +2,11 @@ from rest_framework.response import Response
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, parser_classes
 from django.conf import settings
 from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer, PermissionSerializer
 from usersmanagement.models import TeamType, UserProfile, Team
+from rest_framework.parsers import FormParser
 
 User = settings.AUTH_USER_MODEL
 
@@ -112,6 +113,7 @@ def username_suffix(request):
 
 
 @api_view(['POST'])
+@parser_classes([FormParser])
 def sign_in(request):
     """
         Sign in the user if the password and the login are correct
@@ -141,6 +143,8 @@ def get_user_permissions(request, pk):
     """
         List all permissions of a user
     """
+    user = authenticate(username="user", password="pass")
+    login(request, user)
 
     try :
         user = UserProfile.objects.get(pk=pk)
@@ -148,9 +152,11 @@ def get_user_permissions(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.user.has_perm("usersmanagement.add_userprofile"):
-        permissions = user.user_permissions
-        serializer = PermissionSerializer(permissions, many=True)
-        return Response(serializer.data)
+        permissions = user.get_all_permissions()
+        codename = []
+        for perm in permissions:
+            codename.append(perm.split('.')[1])
+        return Response(codename)
     else:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
