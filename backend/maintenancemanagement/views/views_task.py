@@ -93,3 +93,20 @@ def add_team_to_task(request):
             return Response(status=status.HTTP_201_CREATED)
 
     return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+def init_database():
+    fieldGr = FieldGroup.objects.create(name="Maintenance", is_equipment=False)
+    
+    fieldCriDec = Field.objects.create(name="Trigger Conditions", field_group=fieldGr)
+    fieldCriFin = Field.objects.create(name="End Conditions", field_group=fieldGr)
+
+    fieldDateDec = FieldValue.objects.create(value="Date", field=fieldCriDec)
+    fieldEntierDec = FieldValue.objects.create(value="Entier", field=fieldCriDec)
+    #fieldCaseDec = FieldValue.objects.create(value="Case a cocher", field=fieldCriDec)
+    #fieldPhotoDec = FieldValue.objects.create(value="Photo", field=fieldCriDec)
+    fieldDecimal = FieldValue.objects.create(value="Décimal", field=fieldCriDec)
+    fieldDuree = FieldValue.objects.create(value="Duree", field=fieldCriDec)
+
+    fieldCaseFin = FieldValue.objects.create(value="Case a cocher", field=fieldCriFin)
+    field

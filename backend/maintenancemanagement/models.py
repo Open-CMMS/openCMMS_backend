@@ -58,6 +58,8 @@ class FieldObject(models.Model):
 
     value = models.CharField(max_length=100, default="")
 
+    description = models.CharField(max_length=100, default="")
+
 
 class EquipmentType(models.Model):
     """
