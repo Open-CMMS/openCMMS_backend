@@ -9,6 +9,17 @@ from django.contrib.auth import authenticate, login, logout
 def equipment_list(request):
     """
         List all equipments or create a new one
+
+        Parameter :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response.
+
+        GET request : list all equipments and return the data
+        POST request : create a new equipment, send HTTP 201.  If the request is not valid, send HTTP 400.
+
+        If the user doesn't have the permissions, it will send HTTP 401.
     """
     if request.user.has_perm("maintenancemanagement.view_equipment"):
         if request.method == 'GET':
@@ -29,6 +40,21 @@ def equipment_list(request):
 def equipment_detail(request, pk):
     """
         Retrieve, update or delete an equipment
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+        pk (int) : the id of the equipment
+
+        Return :
+        response (Response) : the response.
+
+        GET request : return the equipment's data.
+        PUT request : change the equipment with the data on the request or if the data isn't well formed, send HTTP 400.
+        DELETE request: delete the equipment and send HTTP 204.
+
+        If the user doesn't have the permissions, it will send HTTP 401.
+        If the id doesn't exist, it will send HTTP 404.
+
     """
     try:
         equipment = Equipment.objects.get(pk=pk)
