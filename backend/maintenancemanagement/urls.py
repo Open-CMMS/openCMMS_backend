@@ -22,7 +22,7 @@ urlpatterns_task = [
     path('tasks/', views_task.task_list, name='task-list'),
     path('tasks/<int:pk>/', views_task.task_detail, name='task-detail'),
     path('addteamtotask', views_task.add_team_to_task, name='add-team-to-task' ),
-    path('teamtasklist', views_task.team_task_list, name='team-task-list')
+    path('teamtasklist/<int:pk>', views_task.team_task_list, name='team-task-list')
 ]
 
 urlpatterns_tasktype = [

@@ -476,9 +476,11 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/teamtasklist', {"id": f"{team.pk}"}, format="json")
-        #self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, serializer.data)
+        response = client.get(f'/api/maintenancemanagement/teamtasklist/{team.pk}', format='json')
+        self.assertEqual(response.status_code, 200)
+        print(f" \n {response.data}")
+        print(f"{serializer.data} \n")
+        self.assertEqual(response.data["name"], serializer.data)
     
     def test_view_team_s_tasks_without_auth(self):
         user = self.set_up_without_perm()
@@ -486,6 +488,6 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="task")
-        response = client.get('/api/maintenancemanagement/teamtasklist', {"id_team": f"{team.pk}"}, format="json")
+        response = client.get(f'/api/maintenancemanagement/teamtasklist/{team.pk}', format='json')
         self.assertEqual(response.status_code, 401)
     

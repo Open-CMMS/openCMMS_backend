@@ -84,7 +84,7 @@ def add_team_to_task(request):
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(["GET"])
-def team_task_list(request):
+def team_task_list(request, pk):
     """
     Gives the team's tasks
 
@@ -93,11 +93,11 @@ def team_task_list(request):
     id_team : id of the wanted team
     """
     try:
-        team = Team.objects.get(pk=request.data["id"])
+        team = Team.objects.get(pk=pk)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if true or request.user.has_perm("usermanagement.view_team"):
+    if request.user.has_perm("maintenancemanagement.view_task"):
         tasks = team.task_set.all()
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
