@@ -80,7 +80,7 @@ def add_team_to_task(request):
         elif request.method == 'PUT':
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
-            task.teams.remove(user)
+            task.teams.remove(team)
             return Response(status=status.HTTP_201_CREATED)
 
     return Response(status=status.HTTP_401_UNAUTHORIZED)
