@@ -46,8 +46,7 @@ class FileTests(TestCase):
         """
         import tempfile
         tmp_file = tempfile.TemporaryFile()
-        tmp_file.write('Coco veut un gateau')
+        tmp_file.write(b'Coco veut un gateau')
         tmp_file.seek(0)
         return tmp_file
-    
-    
+  
