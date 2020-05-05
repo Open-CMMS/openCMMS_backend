@@ -85,6 +85,26 @@ def add_team_to_task(request):
 
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+@api_view(["GET"])
+def team_task_list(request, pk):
+    """
+    Gives the team's tasks
+
+    Parameters
+    ----------
+    id_team : id of the wanted team
+    """
+    try:
+        team = Team.objects.get(pk=pk)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.user.has_perm("maintenancemanagement.view_task"):
+        tasks = team.task_set.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+    else :
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 def init_database():
     fieldGr = FieldGroup.objects.create(name="Maintenance", is_equipment=False)
