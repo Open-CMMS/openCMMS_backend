@@ -20,7 +20,7 @@ class TaskTypeSerializer(serializers.ModelSerializer):
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ['id','file','is_manual']
+        fields = ['id','name','file','is_notice']
 
 class EquipmentSerializer(serializers.ModelSerializer):
     class Meta:
