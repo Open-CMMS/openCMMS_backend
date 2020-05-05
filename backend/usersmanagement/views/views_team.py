@@ -53,7 +53,7 @@ def team_detail(request, pk):
 
         GET request : return the team's data.
         PUT request : change the team with the data on the request or if the data isn't well formed, send HTTP 400.
-        DELETE request: delete the team type and send HTTP 204.
+        DELETE request: delete the team and send HTTP 204.
 
         If the user doesn't have the permissions, it will send HTTP 401.
         If the id doesn't exist, it will send HTTP 404.
