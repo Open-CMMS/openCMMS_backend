@@ -52,4 +52,26 @@ class FileTests(TestCase):
         return tmp_file
   
       
+    def test_can_acces_files_list_with_perm(self):
+        """
+            Test if a user with perm receive the data
+        """
+        user = self.set_up_perm()
+        file = File.objects.all()
+        serializer = FileSerializer(file, many=True)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/files/', format='json')
+        self.assertEqual(response.data,serializer.data)
+
+    def test_can_acces_file_list_without_perm(self):
+        """
+            Test if a user without perm doesn't receive the data
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/files/', format='json')
+        self.assertEqual(response.status_code,401)
+
     
