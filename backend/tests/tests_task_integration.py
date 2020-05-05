@@ -472,8 +472,8 @@ class TaskTests(TestCase):
         task = Task.objects.create(name="task")
         task.teams.add(team)
         task.save()
-        tasks = team.task_set.all() #J'ai rajouté cette ligne
-        serializer = TaskSerializer(tasks, many=True) #Ici tu avais juste mis task, sans many, du coup pour lui il est créé à partir d'une seule instance, et pas plusieures
+        tasks = team.task_set.all()
+        serializer = TaskSerializer(tasks, many=True)
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
