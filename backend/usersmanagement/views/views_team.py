@@ -16,9 +16,6 @@ def team_list(request):
         List all teams or create a new one
     """
 
-    user = authenticate(username="user", password="password")
-    login(request, user)
-
     if request.user.has_perm("usersmanagement.view_team"):
         if request.method == 'GET':
             teams = Team.objects.all()
