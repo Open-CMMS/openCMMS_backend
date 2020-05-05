@@ -66,7 +66,7 @@ class EquipmentType(models.Model):
         Define an equipment type
     """
     name = models.CharField(max_length=100)
-    fields = models.ManyToManyField(Field,
+    fields_groups = models.ManyToManyField(FieldGroup,
         verbose_name='Equipment Type Field',
         blank=True,
         help_text='Specific fields for this equipment type',
@@ -155,6 +155,8 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
         )
+
+    over = models.BooleanField(default=False)
 
 
 
