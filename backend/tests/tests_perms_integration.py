@@ -110,7 +110,7 @@ class permsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_authenticate(user=tom)
 
-        address = "/api/usersmanagement/perms/"+str(perm.id)
+        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
 
         response = c.get(address)
 
@@ -127,7 +127,7 @@ class permsTests(TestCase):
 
         perm = Permission.objects.get(codename="view_permission")
 
-        address = "/api/usersmanagement/perms/"+str(perm.id)
+        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
 
         response = c.get(address)
 
@@ -143,7 +143,7 @@ class permsTests(TestCase):
         c.force_authenticate(user=tom)
 
         perm = Permission.objects.get(codename="view_permission")
-        address = "/api/usersmanagement/perms/"+str(perm.id)
+        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
 
         response = c.put(address,{"name":"new_name"}, format='json')
 
@@ -160,7 +160,7 @@ class permsTests(TestCase):
 
         perm = Permission.objects.get(codename="view_permission")
 
-        address = "/api/usersmanagement/perms/"+str(perm.id)
+        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
 
         response = c.put(address, {"name":"new_name"}, content_type="application/json")
 
@@ -176,13 +176,13 @@ class permsTests(TestCase):
         tom = UserProfile.objects.get(username="tn")
         c.force_authenticate(user=tom)
 
-        address = "/api/usersmanagement/perms/"+str(perm.id)
+        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
 
         response = c.delete(address)
 
         self.assertEqual(response.status_code,204)
         with self.assertRaises(perm.DoesNotExist):
-            perm_final = perm.objects.get(codename="view_permission")
+            perm_final = Permission.objects.get(codename="view_permission")
 
 
     def test_perm_detail_delete_unauthorized(self):
@@ -194,7 +194,7 @@ class permsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_authenticate(user=joe)
 
-        address = "/api/usersmanagement/perms/"+str(perm.id)
+        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
 
         response = c.delete(address)
 
