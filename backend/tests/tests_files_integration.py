@@ -170,4 +170,9 @@ class FileTests(TestCase):
         self.assertEqual(response.status_code, 401)
 
 
-    #Adding this line because of SonarQube
+    # Adding 
+    # this 
+    # line 
+    # because 
+    # of 
+    # SonarQube
