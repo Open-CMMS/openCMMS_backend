@@ -2,10 +2,11 @@ from rest_framework.response import Response
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, parser_classes
 from django.conf import settings
 from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer, PermissionSerializer
 from usersmanagement.models import TeamType, UserProfile, Team
+from rest_framework.parsers import FormParser
 
 User = settings.AUTH_USER_MODEL
 
@@ -167,6 +168,7 @@ def username_suffix(request):
 
 
 @api_view(['POST'])
+@parser_classes([FormParser])
 def sign_in(request):
     """
         \n# Sign in user if username and password are correct
@@ -195,6 +197,7 @@ def sign_in(request):
         'message' : 'User logged in successfully',
         'token' : serializer.data['token'],
         'user_id' : serializer.data['user_id'],
+        'user' : UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
     }
     return Response(response, status=status.HTTP_200_OK)
 
@@ -237,10 +240,12 @@ def get_user_permissions(request, pk):
     except :
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("usersmanagement.add_userprofile"):
-        permissions = user.user_permissions
-        serializer = PermissionSerializer(permissions, many=True)
-        return Response(serializer.data)
+    if request.user.has_perm("usersmanagement.add_userprofile") or request.user==user:
+        permissions = user.get_all_permissions()
+        codename = []
+        for perm in permissions:
+            codename.append(perm.split('.')[1])
+        return Response(codename)
     else:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -258,12 +263,25 @@ def init_database():
     T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 
     #Adding all permissions to admins
-    perms = Permission.objects.all()
-    for perm in perms:
+    permis = Permission.objects.all()
+    for perm in permis:
         Admins.perms.add(perm)
 
     Admins._apply_()
+    Admins.save()
+    Admins = TeamType.objects.get(name="Administrators")
+    T_Admin = Admins.team_set.all()[0]
 
     #Adding first user to admins
     user = UserProfile.objects.all()[0]
     user.groups.add(T_Admin)
+    user.save()
+
+    T_Admin.save()
+    Admins.save()
+    MMs.save()
+    MTs.save()
+
+    T_Admin.save()
+    T_MM1.save()
+    T_MT1.save()    

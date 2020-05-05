@@ -25,6 +25,7 @@ def equipment_list(request):
         - The request must contain name (the name of the equipment (String)) and equipment_type (an id which refers to an equipment type (int))
         - The request can also contain files, a list of id referring to Manual Files (List<int>)
     """
+
     if request.user.has_perm("maintenancemanagement.view_equipment"):
         if request.method == 'GET':
             equipments = Equipment.objects.all()
@@ -65,6 +66,7 @@ def equipment_detail(request, pk):
             - files (List<int>): an id list of the updated list of files
 
     """
+    
     try:
         equipment = Equipment.objects.get(pk=pk)
     except :

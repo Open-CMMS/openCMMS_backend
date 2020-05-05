@@ -48,9 +48,9 @@ class UserLoginSerializer(serializers.Serializer):
     def validate(self, data):
         username = data.get("username", None)
         password = data.get("password", None)
-        user = UserProfile.objects.get(username=username)
+        user = authenticate(username=username, password=password)
+        #user = UserProfile.objects.get(username=username)
         if user.is_active:
-            user = authenticate(username=username, password=password)
             if user is not None:
                 user.nb_tries = 0
                 user.save()
@@ -131,6 +131,7 @@ class TeamTypeSerializer(serializers.ModelSerializer):
                 instance.team_set.set(value)
             elif attr == 'perms':
                 instance.perms.set(value)
+                instance._apply_()
             else :
                 setattr(instance, attr, value)
         instance.save()

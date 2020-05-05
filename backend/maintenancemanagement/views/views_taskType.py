@@ -24,6 +24,8 @@ def taskType_list(request):
         - The request must contain name (the name of the tasktype (String))
         
     """
+
+
     if request.user.has_perm("maintenancemanagement.view_tasktype"):
         if request.method == 'GET':
             taskTypes = TaskType.objects.all()
@@ -61,6 +63,7 @@ def taskType_detail(request, pk):
         The PUT request can contain one or more of the following fields : 
             - name (String): The name of the tasktype
     """
+    
     try:
         taskType = TaskType.objects.get(pk=pk)
     except :

@@ -41,6 +41,7 @@ class TeamType(models.Model):
     def _apply_(self):
         teams_with_this_teamtype = self.team_set.all()
         for team in teams_with_this_teamtype:
+            team.permissions.all().delete()
             team.permissions.set(list(self.perms.all()))
 
 
