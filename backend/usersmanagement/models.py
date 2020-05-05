@@ -60,4 +60,5 @@ class Team(Group):
     def set_team_type(self,new_team_type):
         self.team_type = new_team_type
         self.save()
+        print("Je suis la")
         new_team_type._apply_()

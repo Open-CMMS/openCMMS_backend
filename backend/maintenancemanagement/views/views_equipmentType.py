@@ -14,6 +14,9 @@ def equipmenttype_list(request):
         List all the equipment types or add one.
     """
 
+    user = authenticate(username="user", password="pass")
+    login(request, user)
+
     if request.method == 'GET':
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
             equipment_types = EquipmentType.objects.all()
@@ -37,6 +40,9 @@ def equipmenttype_detail(request, pk):
     """
         Retrieve, update or delete a EquipmentType
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
 
     try:
         equipment_type = EquipmentType.objects.get(pk=pk)

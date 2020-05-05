@@ -7,12 +7,12 @@ from django.contrib.contenttypes.models import ContentType
 
 from django.db.models import FileField
 
-class Files(models.Model):
+class File(models.Model):
     """
         Define a file
     """
     file = models.FileField(blank=False, null=False)
-    is_notice = models.BooleanField(default=True)
+    is_manual = models.BooleanField(default=True)
     def __str__(self):
         return self.file.name
 
@@ -58,6 +58,8 @@ class FieldObject(models.Model):
 
     value = models.CharField(max_length=100, default="")
 
+    description = models.CharField(max_length=100, default="")
+
 
 class EquipmentType(models.Model):
     """
@@ -84,7 +86,7 @@ class Equipment(models.Model):
         related_name = "equipment_set",
         related_query_name="equipment")
     
-    files = models.ManyToManyField(Files,
+    files = models.ManyToManyField(File,
         verbose_name = "Equipment File",
         related_name = "equipment_set",
         related_query_name="equipment",
@@ -140,11 +142,19 @@ class Task(models.Model):
         null=True
         )
 
-    files = models.ManyToManyField(Files,
+    files = models.ManyToManyField(File,
         verbose_name = "Task File",
         related_name = "task_set",
         related_query_name="task",
         blank=True,)
+
+    fields_groups = models.ManyToManyField(FieldGroup,
+        verbose_name="Fields Group",
+        help_text="Fields Groups of the Task for Ending and Auto Trigger",
+        related_name="task__set",
+        related_query_name="task",
+        blank=True,
+        )
 
 
 

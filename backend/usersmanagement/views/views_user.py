@@ -2,10 +2,11 @@ from rest_framework.response import Response
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, parser_classes
 from django.conf import settings
 from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer, PermissionSerializer
 from usersmanagement.models import TeamType, UserProfile, Team
+from rest_framework.parsers import FormParser
 
 User = settings.AUTH_USER_MODEL
 
@@ -14,6 +15,9 @@ def user_list(request):
     """
         List all users or create a new one
     """
+
+    user = authenticate(username="user", password="pass")
+    login(request, user)
 
     if request.method == 'GET' :
         if request.user.has_perm("usersmanagement.add_userprofile"):
@@ -44,6 +48,8 @@ def user_detail(request, pk):
     """
         Retrieve, update or delete an user account
     """
+    user = authenticate(username="user", password="pass")
+    login(request, user)
     
     try:
         user = UserProfile.objects.get(pk=pk)
@@ -107,6 +113,7 @@ def username_suffix(request):
 
 
 @api_view(['POST'])
+@parser_classes([FormParser])
 def sign_in(request):
     """
         Sign in the user if the password and the login are correct
@@ -136,16 +143,20 @@ def get_user_permissions(request, pk):
     """
         List all permissions of a user
     """
+    user = authenticate(username="user", password="pass")
+    login(request, user)
 
     try :
         user = UserProfile.objects.get(pk=pk)
     except :
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("usersmanagement.add_userprofile"):
-        permissions = user.user_permissions
-        serializer = PermissionSerializer(permissions, many=True)
-        return Response(serializer.data)
+    if request.user.has_perm("usersmanagement.add_userprofile") or request.user==user:
+        permissions = user.get_all_permissions()
+        codename = []
+        for perm in permissions:
+            codename.append(perm.split('.')[1])
+        return Response(codename)
     else:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -172,3 +183,12 @@ def init_database():
     #Adding first user to admins
     user = UserProfile.objects.all()[0]
     user.groups.add(T_Admin)
+
+    Admins._apply_()
+    Admins.save()
+    MMs.save()
+    MTs.save()
+
+    T_Admin.save()
+    T_MM1.save()
+    T_MT1.save()

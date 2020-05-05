@@ -13,6 +13,8 @@ def teamtypes_list(request):
     """
         List all the team types or add one.
     """
+    user = authenticate(username="user", password="pass")
+    login(request, user)
     
     if request.method == 'GET':
         if request.user.has_perm("usersmanagement.view_teamtype"):
@@ -36,6 +38,8 @@ def teamtypes_detail(request,pk):
     """
         Retrieve, update or delete a TeamType
     """
+    user = authenticate(username="user", password="pass")
+    login(request, user)
 
     try:
         group_type = TeamType.objects.get(pk=pk)
