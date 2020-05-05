@@ -21,7 +21,7 @@ def taskType_list(request):
         POST request : 
         - create a new tasktype, send HTTP 201.  If the request is not valid, send HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name (the name of the tasktype)
+        - The request must contain name (the name of the tasktype (String))
         
     """
     if request.user.has_perm("maintenancemanagement.view_tasktype"):
@@ -59,7 +59,7 @@ def taskType_detail(request, pk):
         If the id doesn't exist, it will send HTTP 404.
 
         The PUT request can contain one or more of the following fields : 
-            - name : The name of the tasktype
+            - name (String): The name of the tasktype
     """
     try:
         taskType = TaskType.objects.get(pk=pk)

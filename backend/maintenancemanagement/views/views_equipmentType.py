@@ -23,7 +23,7 @@ def equipmenttype_list(request):
         POST request : 
         - create a new equipment type, send HTTP 201.  If the request is not valid, send HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name (the name of the equipment type)
+        - The request must contain name (the name of the equipment type (String))
     """
     if request.method == 'GET':
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
@@ -63,7 +63,7 @@ def equipmenttype_detail(request, pk):
         If the id doesn't exist, it will send HTTP 404.
 
         The PUT request can contain one or more of the following fields : 
-            - name : the name of the equipment type
+            - name (String): the name of the equipment type
 
 
     """

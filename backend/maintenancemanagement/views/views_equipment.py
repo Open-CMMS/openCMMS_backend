@@ -22,8 +22,8 @@ def equipment_list(request):
         POST request : 
         - create a new equipment, send HTTP 201.  If the request is not valid, send HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name (the name of the equipment) and equipment_type (an id which refers to an equipment type)
-        - The request can also contain files, a list of id referring to Manual Files
+        - The request must contain name (the name of the equipment (String)) and equipment_type (an id which refers to an equipment type (int))
+        - The request can also contain files, a list of id referring to Manual Files (List<int>)
     """
     if request.user.has_perm("maintenancemanagement.view_equipment"):
         if request.method == 'GET':
@@ -60,9 +60,9 @@ def equipment_detail(request, pk):
         If the id doesn't exist, it will send HTTP 404.
 
         The PUT request can contain one or more of the following fields : 
-            - name : the name of the equipment
-            - equipment_type : an id of the updated equipment_type
-            - files : an id list of the updated list of files
+            - name (String): the name of the equipment 
+            - equipment_type (int): an id of the updated equipment_type
+            - files (List<int>): an id list of the updated list of files
 
     """
     try:

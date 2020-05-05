@@ -12,7 +12,24 @@ User = settings.AUTH_USER_MODEL
 @api_view(['GET', 'POST'])
 def user_list(request):
     """
-        List all users or create a new one
+        \n# List all users or create a new one
+
+        
+        Parameter :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response.
+
+        GET request : list all users and return the data
+        POST request : 
+        - create a new user, send HTTP 201.  If the request is not valid, send HTTP 400.
+        - If the user doesn't have the permissions, it will send HTTP 401.
+        - The request must contain username (the username of the user (String)) and password (password of the user (String))
+        - The request can also contain :
+            - first_name (String): User first name
+            - last_name (String): User last name
+            - email (String):user mail
     """
 
     if request.method == 'GET' :
@@ -42,7 +59,29 @@ def user_list(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 def user_detail(request, pk):
     """
-        Retrieve, update or delete an user account
+        \n# Retrieve, update or delete an user
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+        id (int) : the id of the user
+
+        Return :
+        response (Response) : the response.
+
+        GET request : return the user's data.
+        PUT request : change the user with the data on the request or if the data isn't well formed, send HTTP 400.
+        DELETE request: delete the tasktype and send HTTP 204.
+
+        If the user doesn't have the permissions, it will send HTTP 401.
+        If the id doesn't exist, it will send HTTP 404.
+
+        The PUT request can contain one or more of the following fields : 
+            - first_name (String): User first_name
+            - last_name (String):user last_name
+            - email (String): user mail
+            - password (String) : user password
+
+        Warning ! You can't change the username !
     """
     
     try:
@@ -80,13 +119,24 @@ def user_detail(request, pk):
 @api_view(['GET'])
 def is_first_user_request(request):
     """
-        Return True if there is no user in the database
+        \n# Check if there is no user in the database
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response
+
+        GET request : return True or False
     """
     if request.method == 'GET':
         users = UserProfile.objects.all()
         return Response(users.count() == 0)
 
 def is_first_user():
+    """
+        Check, for internal needs, if there is an user in the database.
+    """
     users = UserProfile.objects.all()
     return users.count() == 0
 
@@ -94,7 +144,17 @@ def is_first_user():
 @api_view(['GET'])
 def username_suffix(request):
     """
-        Return the suffix to append to the username
+        \n# Tells how many users already have a specific username
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response
+
+        GET request : return how many users already have a specific username
+            param : 
+                - username (String) : The username we want to check
     """
     if request.method == 'GET':
         username_begin = request.GET["username"]
@@ -109,7 +169,23 @@ def username_suffix(request):
 @api_view(['POST'])
 def sign_in(request):
     """
-        Sign in the user if the password and the login are correct
+        \n# Sign in user if username and password are correct
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response
+
+        POST request : 
+            param : 
+                - username (String) : The username we want to sign in
+                - password (String) : The password entered by user
+            response params :
+                - successs : True or False
+                - token : The JWT Token
+                - user_id : The user id
+                - user : All the informations about the user
     """
     serializer = UserLoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
