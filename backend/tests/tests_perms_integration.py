@@ -72,33 +72,6 @@ class permsTests(TestCase):
 
         self.assertEqual(response.status_code,401)
 
-
-    def test_perm_list_post_authorized(self):
-        self.set_up()
-
-        c = APIClient()
-
-        tom = UserProfile.objects.get(username="tn")
-        c.force_authenticate(user=tom)
-
-        response = c.post("/api/usersmanagement/perms/",{"name":"test_perm","codename":"test", "content_type" : ContentType.objects.get_for_model(Team)})
-        perm = Permission.objects.get(pk=response.data['id'])
-        self.assertEqual(response.status_code,201)
-        self.assertTrue(perm.objects.filter(name="test_perm"))
-
-    def test_perm_list_post_unauthorized(self):
-        self.set_up()
-
-        c = APIClient()
-
-        joe = UserProfile.objects.get(username="jd")
-        c.force_authenticate(user=joe)
-
-        response = c.post("/api/usersmanagement/perms/",{"name":"test_perm"})
-
-        self.assertEqual(response.status_code,401)
-
-
     def test_perm_detail_get_authorized(self):
         self.set_up()
 
@@ -130,72 +103,5 @@ class permsTests(TestCase):
         address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
 
         response = c.get(address)
-
-        self.assertEqual(response.status_code,401)
-
-
-    def test_perm_detail_put_change_name_authorized(self):
-        self.set_up()
-
-        c = APIClient()
-
-        tom = UserProfile.objects.get(username="tn")
-        c.force_authenticate(user=tom)
-
-        perm = Permission.objects.get(codename="view_permission")
-        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
-
-        response = c.put(address,{"name":"new_name"}, format='json')
-
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(response.data['name'],"new_name")
-
-    def test_perm_detail_put_unauthorized(self):
-        self.set_up()
-
-        c = APIClient()
-
-        joe = UserProfile.objects.get(username="jd")
-        c.force_authenticate(user=joe)
-
-        perm = Permission.objects.get(codename="view_permission")
-
-        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
-
-        response = c.put(address, {"name":"new_name"}, content_type="application/json")
-
-        self.assertEqual(response.status_code,401)
-
-
-    def test_perm_detail_delete_authorized(self):
-        self.set_up()
-
-        c = APIClient()
-        perm = Permission.objects.get(codename="view_permission")
-
-        tom = UserProfile.objects.get(username="tn")
-        c.force_authenticate(user=tom)
-
-        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
-
-        response = c.delete(address)
-
-        self.assertEqual(response.status_code,204)
-        with self.assertRaises(perm.DoesNotExist):
-            perm_final = Permission.objects.get(codename="view_permission")
-
-
-    def test_perm_detail_delete_unauthorized(self):
-        self.set_up()
-
-        c = APIClient()
-        perm = Permission.objects.get(codename="view_permission")
-
-        joe = UserProfile.objects.get(username="jd")
-        c.force_authenticate(user=joe)
-
-        address = "/api/usersmanagement/perms/"+str(perm.id)+"/"
-
-        response = c.delete(address)
 
         self.assertEqual(response.status_code,401)
