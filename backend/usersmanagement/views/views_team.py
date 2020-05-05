@@ -16,6 +16,9 @@ def team_list(request):
         List all teams or create a new one
     """
 
+    user = authenticate(username="user", password="password")
+    login(request, user)
+
     if request.user.has_perm("usersmanagement.view_team"):
         if request.method == 'GET':
             teams = Team.objects.all()
@@ -59,6 +62,9 @@ def team_detail(request, pk):
             serializer = TeamSerializer(team, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
+                team = Team.objects.get(pk=serializer.data['id'])
+                print(team)
+                team.team_type._apply_()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
