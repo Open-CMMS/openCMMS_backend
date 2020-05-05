@@ -132,5 +132,3 @@ class TeamTypeTests(TestCase):
         team_type = TeamType.objects.get(name="Administrators")
         response = c.delete("/api/usersmanagement/teamtypes/"+str(team_type.id)+"/")
         self.assertEqual(response.status_code,401)
-
-

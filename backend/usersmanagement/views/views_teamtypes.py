@@ -22,7 +22,7 @@ def teamtypes_list(request):
         GET request : list all team types and return the data
         POST request :
         - create a new team type, send HTTP 201.  If the request is not valid, send HTTP 400.
-        - The request must contain name (the name of the team type, string) and team_set (the id's list of the teams belonging to that type, []), can contain perms (the permissions' id list, [])
+        - The request must contain name (the name of the team type, string) and team_set (the id's list of the teams belonging to that type, can be empty, []), can contain perms (the permissions' id list, [])
 
         If the user doesn't have the permissions, it will send HTTP 401.
     """
