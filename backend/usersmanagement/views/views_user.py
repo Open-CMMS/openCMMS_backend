@@ -201,7 +201,13 @@ def sign_in(request):
 @api_view(['GET'])
 def sign_out(request):
     """
-        Sign out the user
+        \n# Sign out the user
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : Return True
     """
     logout(request)
     return Response(True)
@@ -210,7 +216,20 @@ def sign_out(request):
 @api_view(['GET'])
 def get_user_permissions(request, pk):
     """
-        List all permissions of a user
+        \n# Get all permissions of an user
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+        id (int) : the id of the user
+
+        Return :
+        response (Response) : the response.
+
+        GET request : return the user's permission.
+        
+        If the user doesn't have the permissions, it will send HTTP 401.
+        If the id doesn't exist, it will send HTTP 404.
+
     """
 
     try :
