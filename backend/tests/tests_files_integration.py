@@ -42,7 +42,7 @@ class FileTests(TestCase):
     
     def temporary_file(self):
         """
-        Returns a new temporary image file
+        Returns a new temporary file
         """
         import tempfile
         tmp_file = tempfile.TemporaryFile()
@@ -166,5 +166,4 @@ class FileTests(TestCase):
         client.force_authenticate(user=user)
         response = client.delete('/api/maintenancemanagement/files/'+str(pk)+'/')
         self.assertEqual(response.status_code, 401)
-    
     
