@@ -250,6 +250,8 @@ class UserTests(TestCase):
 
         init_database()
 
+        user = UserProfile.objects.all()[0]
+
         self.assertEqual(user.groups.all().count(), 1)
         self.assertEqual(Team.objects.all().count(), 3)
         self.assertEqual(TeamType.objects.all().count(), 3)
