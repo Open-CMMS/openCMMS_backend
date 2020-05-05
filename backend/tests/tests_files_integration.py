@@ -74,19 +74,19 @@ class FileTests(TestCase):
         response = client.get('/api/maintenancemanagement/files/', format='json')
         self.assertEqual(response.status_code,401)
 
-    # def test_add_file_with_perm(self):
-    #     """
-    #         Test if a user with perm can add a file.
-    #     """
-    #     user = self.set_up_perm()
-    #     client = APIClient()
-    #     client.force_authenticate(user=user)
-    #     data = {
-    #         'file': self.temporary_file(),
-    #         'is_manual': 'False'
-    #     }
-    #     response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
-    #     self.assertEqual(response.status_code, 201)
+    def test_add_file_with_perm(self):
+        """
+            Test if a user with perm can add a file.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        self.assertEqual(response.status_code, 201)
     
     def test_add_file_without_perm(self):
         """
