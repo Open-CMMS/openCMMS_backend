@@ -4,19 +4,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import  PermissionSerializer
-from django.contrib.auth import authenticate, login, logout
-
-User = settings.AUTH_USER_MODEL
 
 @api_view(['GET', 'POST'])
 def perms_list(request):
     """
         List all permissions or create a new one
     """
-
-    user = authenticate(username='user', password='pass')
-    login(request, user)
-
     if request.method == 'GET':
         if request.user.has_perm("auth.view_permission"):
             perms = Permission.objects.all()
@@ -40,9 +33,6 @@ def perm_detail(request,pk):
     """
         Retrieve, update or delete a permission
     """
-    user = authenticate(username='user', password='pass')
-    login(request, user)
-
     try:
         perm = Permission.objects.get(pk=pk)
     except :

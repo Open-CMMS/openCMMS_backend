@@ -294,23 +294,3 @@ class TeamsTests(TestCase):
         response = c.delete(address)
 
         self.assertEqual(response.status_code,401)
-
-
-    def test_belongs_to_team_true(self):
-        self.set_up()
-
-        joe = UserProfile.objects.get(username="jd")
-
-        team = Team.objects.get(name="Maintenance Team 1")
-
-        self.assertTrue(belongs_to_team(joe,team))
-
-
-    def test_belongs_to_team_false(self):
-        self.set_up()
-
-        joe = UserProfile.objects.get(username="jd")
-
-        team = Team.objects.get(name="Administrators 1")
-
-        self.assertFalse(belongs_to_team(joe,team))

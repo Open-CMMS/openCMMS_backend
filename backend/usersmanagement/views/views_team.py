@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from usersmanagement.serializers import TeamSerializer
 from usersmanagement.models import Team, UserProfile
-from django.contrib.auth import authenticate, login, logout
 
 @api_view(['GET', 'POST'])
 def team_list(request):
