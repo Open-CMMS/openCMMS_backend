@@ -8,7 +8,9 @@ from django.contrib.auth import authenticate, login, logout
 @api_view(['GET', 'POST'])
 def equipment_list(request):
     """
-        List all equipments or create a new one
+        \n# List all equipments or create a new one
+
+        
 
         Parameter :
         request (HttpRequest) : the request coming from the front-end
@@ -17,9 +19,11 @@ def equipment_list(request):
         response (Response) : the response.
 
         GET request : list all equipments and return the data
-        POST request : create a new equipment, send HTTP 201.  If the request is not valid, send HTTP 400.
-
-        If the user doesn't have the permissions, it will send HTTP 401.
+        POST request : 
+        - create a new equipment, send HTTP 201.  If the request is not valid, send HTTP 400.
+        - If the user doesn't have the permissions, it will send HTTP 401.
+        - The request must contain name (the name of the equipment) and equipment_type (an id which refers to an equipment type)
+        - The request can also contain files, a list of id referring to Manual Files
     """
     if request.user.has_perm("maintenancemanagement.view_equipment"):
         if request.method == 'GET':
@@ -39,11 +43,11 @@ def equipment_list(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 def equipment_detail(request, pk):
     """
-        Retrieve, update or delete an equipment
+        \n# Retrieve, update or delete an equipment
 
         Parameters :
         request (HttpRequest) : the request coming from the front-end
-        pk (int) : the id of the equipment
+        id (int) : the id of the equipment
 
         Return :
         response (Response) : the response.
@@ -54,6 +58,11 @@ def equipment_detail(request, pk):
 
         If the user doesn't have the permissions, it will send HTTP 401.
         If the id doesn't exist, it will send HTTP 404.
+
+        The PUT request can contain one or more of the following fields : 
+            - name : the name of the equipment
+            - equipment_type : an id of the updated equipment_type
+            - files : an id list of the updated list of files
 
     """
     try:
