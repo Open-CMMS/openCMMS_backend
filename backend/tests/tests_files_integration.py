@@ -40,13 +40,4 @@ class FileTests(TestCase):
         user.save()
         return user
     
-    def temporary_file(self):
-        """
-        Returns a new temporary file
-        """
-        import tempfile
-        tmp_file = tempfile.TemporaryFile()
-        tmp_file.write(b'Coco veut un gateau')
-        tmp_file.seek(0)
-        return tmp_file
-  
+    
