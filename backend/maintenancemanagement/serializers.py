@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Equipment, EquipmentType, Files, Task, TaskType, FieldValue
+from .models import Equipment, EquipmentType, Files, Task, TaskType, FieldValue, Field
 
 """
 Serializers enable the link between front-end and back-end
@@ -34,3 +34,8 @@ class FieldValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = FieldValue
         fields = ['id','value','field']
+
+class FieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Field
+        fields = ['id', 'name', 'field_group']

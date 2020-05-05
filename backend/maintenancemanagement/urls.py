@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import views_equipmentType, views_equipment, views_task, views_taskType, views_fieldValue
+from .views import views_equipmentType, views_equipment, views_task, views_taskType, views_fieldValue, views_field
 
 urlpatterns = [
 ]
@@ -27,9 +27,11 @@ urlpatterns_tasktype = [
 ]
 
 urlpatterns_fieldValue = [
-    path('fieldvalues_on_tc/', views_fieldValue.fieldvalues_on_tc, name='fieldvalues-on-tc'),
-    path('fieldvalues_on_ec/', views_fieldValue.fieldvalues_on_ec, name='fieldvalues-on-ec'),
-    path('fieldvalues_on_all/<int:pk>/', views_fieldValue.fieldvalue_on_all, name='fieldvalues-on-all'),
+    path('fieldvalues_on_specific_field/<int:pk>/', views_fieldValue.fieldvalue_on_specific_field, name='fieldvalues-on-all'),
+]
+
+urlpatterns_field = [
+    path('fields/', views_field.field_list, name='field-list'),
 ]
 
 urlpatterns += urlpatterns_equipment
@@ -37,3 +39,4 @@ urlpatterns += urlpatterns_equipmenttype
 urlpatterns += urlpatterns_task
 urlpatterns += urlpatterns_tasktype
 urlpatterns += urlpatterns_fieldValue
+urlpatterns += urlpatterns_field
