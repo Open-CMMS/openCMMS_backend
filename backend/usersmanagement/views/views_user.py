@@ -16,9 +16,6 @@ def user_list(request):
         List all users or create a new one
     """
 
-    user = authenticate(username="user", password="pass")
-    login(request, user)
-
     if request.method == 'GET' :
         if request.user.has_perm("usersmanagement.add_userprofile"):
             users = UserProfile.objects.all()
@@ -48,8 +45,6 @@ def user_detail(request, pk):
     """
         Retrieve, update or delete an user account
     """
-    user = authenticate(username="user", password="pass")
-    login(request, user)
     
     try:
         user = UserProfile.objects.get(pk=pk)
@@ -126,6 +121,7 @@ def sign_in(request):
         'message' : 'User logged in successfully',
         'token' : serializer.data['token'],
         'user_id' : serializer.data['user_id'],
+        'user' : UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
     }
     return Response(response, status=status.HTTP_200_OK)
 
@@ -143,8 +139,6 @@ def get_user_permissions(request, pk):
     """
         List all permissions of a user
     """
-    user = authenticate(username="user", password="pass")
-    login(request, user)
 
     try :
         user = UserProfile.objects.get(pk=pk)

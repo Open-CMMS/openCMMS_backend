@@ -81,7 +81,6 @@ class TeamSerializer(serializers.ModelSerializer):
         # 'permissions'
 
 
-
 class ContentTypeSerializer(serializers.Serializer):
     app_label = serializers.CharField(max_length=200)
     model = serializers.CharField(max_length=200)

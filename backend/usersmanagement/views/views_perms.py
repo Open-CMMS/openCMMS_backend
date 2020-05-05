@@ -14,9 +14,6 @@ def perms_list(request):
         List all permissions or create a new one
     """
 
-    user = authenticate(username='user', password='pass')
-    login(request, user)
-
     if request.method == 'GET':
         if request.user.has_perm("auth.view_permission"):
             perms = Permission.objects.all()
@@ -40,8 +37,6 @@ def perm_detail(request,pk):
     """
         Retrieve, update or delete a permission
     """
-    user = authenticate(username='user', password='pass')
-    login(request, user)
 
     try:
         perm = Permission.objects.get(pk=pk)
