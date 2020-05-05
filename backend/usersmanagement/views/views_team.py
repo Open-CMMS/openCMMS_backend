@@ -16,8 +16,6 @@ def team_list(request):
         List all teams or create a new one
     """
 
-    user = authenticate(username='user', password='pass')
-    login(request, user)
     if request.user.has_perm("usersmanagement.view_team"):
         if request.method == 'GET':
             teams = Team.objects.all()
@@ -30,7 +28,6 @@ def team_list(request):
             if serializer.is_valid():
                 serializer.save()
                 team = Team.objects.get(pk=serializer.data['id'])
-                print(team)
                 team.team_type._apply_()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -44,9 +41,6 @@ def team_detail(request, pk):
     """
         Retrieve, update or delete a team
     """
-
-    user = authenticate(username='user', password='pass')
-    login(request, user)
 
     try:
         team = Team.objects.get(pk=pk)
@@ -64,6 +58,8 @@ def team_detail(request, pk):
             serializer = TeamSerializer(team, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
+                team = Team.objects.get(pk=serializer.data['id'])
+                team.team_type._apply_()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -82,8 +78,6 @@ def add_user_to_team(request):
     """
         Add and remove users from teams
     """
-    user = authenticate(username='user', password='pass')
-    login(request, user)
 
     if request.user.has_perm("usersmanagement.change_team"):
         if request.method == 'POST':
