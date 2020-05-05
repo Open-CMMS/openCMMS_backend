@@ -27,7 +27,7 @@ urlpatterns_tasktype = [
 ]
 
 urlpatterns_fieldValue = [
-    path('fieldvalues_on_specific_field/<int:pk>/', views_fieldValue.fieldvalue_on_specific_field, name='fieldvalues-on-all'),
+    path('fieldvalues_for_field/<int:pk>/', views_fieldValue.fieldValue_for_field, name='fieldvalues-on-all'),
 ]
 
 urlpatterns_field = [
