@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from django.db.models import FileField
 
-class Files(models.Model):
+class File(models.Model):
     """
         Define a file
     """
@@ -84,7 +84,7 @@ class Equipment(models.Model):
         related_name = "equipment_set",
         related_query_name="equipment")
     
-    files = models.ManyToManyField(Files,
+    files = models.ManyToManyField(File,
         verbose_name = "Equipment File",
         related_name = "equipment_set",
         related_query_name="equipment",
@@ -140,7 +140,7 @@ class Task(models.Model):
         null=True
         )
 
-    files = models.ManyToManyField(Files,
+    files = models.ManyToManyField(File,
         verbose_name = "Task File",
         related_name = "task_set",
         related_query_name="task",
