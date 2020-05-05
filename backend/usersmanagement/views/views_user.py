@@ -168,21 +168,25 @@ def init_database():
     T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 
     #Adding all permissions to admins
-    perms = Permission.objects.all()
-    for perm in perms:
+    permis = Permission.objects.all()
+    for perm in permis:
         Admins.perms.add(perm)
 
     Admins._apply_()
+    Admins.save()
+    Admins = TeamType.objects.get(name="Administrators")
+    T_Admin = Admins.team_set.all()[0]
 
     #Adding first user to admins
     user = UserProfile.objects.all()[0]
     user.groups.add(T_Admin)
+    user.save()
 
-    Admins._apply_()
+    T_Admin.save()
     Admins.save()
     MMs.save()
     MTs.save()
 
     T_Admin.save()
     T_MM1.save()
-    T_MT1.save()
+    T_MT1.save()    
