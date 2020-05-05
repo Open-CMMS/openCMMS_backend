@@ -98,22 +98,22 @@ class FileTests(TestCase):
         response = client.post('/api/maintenancemanagement/files/', format='multipart')
         self.assertEqual(response.status_code,401)
 
-    # def test_view_file_request_with_perm(self):
-    #     """
-    #         Test if a user with perm can see a file.
-    #     """
-    #     user = self.set_up_perm()
-    #     client = APIClient()
-    #     client.force_authenticate(user=user)
-    #     data = {
-    #         'file': self.temporary_file(),
-    #         'is_manual': 'False'
-    #     }
-    #     response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
-    #     pk = response1.data['id']
-    #     response = client.get('/api/maintenancemanagement/files/'+str(pk)+'/')
-    #     file = open(response.data["file"])
-    #     self.assertEqual(file.read(), "Coco veut un gateau")
+    def test_view_file_request_with_perm(self):
+        """
+            Test if a user with perm can see a file.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
+        pk = response1.data['id']
+        response = client.get('/api/maintenancemanagement/files/'+str(pk)+'/')
+        file = open(response.data["file"])
+        self.assertEqual(file.read(), "Coco veut un gateau")
     
     # def test_view_task_request_without_perm(self):
     #     """
