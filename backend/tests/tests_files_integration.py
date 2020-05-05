@@ -134,21 +134,21 @@ class FileTests(TestCase):
         response = client.get('/api/maintenancemanagement/files/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
     
-    # def test_delete_file_with_perm(self):
-    #     """
-    #         Test if a user with perm can delete a file
-    #     """
-    #     user = self.set_up_perm()
-    #     client = APIClient()
-    #     client.force_authenticate(user=user)
-    #     data = {
-    #         'file': self.temporary_file(),
-    #         'is_manual': 'False'
-    #     }
-    #     response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
-    #     pk = response1.data['id']
-    #     response = client.delete('/api/maintenancemanagement/files/'+str(pk)+'/')
-    #     self.assertEqual(response.status_code, 204)
+    def test_delete_file_with_perm(self):
+        """
+            Test if a user with perm can delete a file
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
+        pk = response1.data['id']
+        response = client.delete('/api/maintenancemanagement/files/'+str(pk)+'/')
+        self.assertEqual(response.status_code, 204)
     
     # def test_delete_file_without_perm(self):
     #     """
