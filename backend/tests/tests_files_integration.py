@@ -166,6 +166,3 @@ class FileTests(TestCase):
         client.force_authenticate(user=user)
         response = client.delete('/api/maintenancemanagement/files/'+str(pk)+'/')
         self.assertEqual(response.status_code, 401)
-
-
-        
