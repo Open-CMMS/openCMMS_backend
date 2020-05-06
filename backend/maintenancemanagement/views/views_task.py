@@ -4,7 +4,6 @@ from rest_framework.decorators import api_view
 from maintenancemanagement.serializers import TaskSerializer
 from maintenancemanagement.models import Task, Field, FieldGroup, FieldValue
 from usersmanagement.models import Team, UserProfile
-from usersmanagement.serializers import TeamSerializer
 from django.contrib.auth import authenticate, login, logout
 
 @api_view(['GET', 'POST'])
