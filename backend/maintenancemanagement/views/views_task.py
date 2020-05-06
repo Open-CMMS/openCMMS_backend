@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from maintenancemanagement.serializers import TaskSerializer
-from maintenancemanagement.models import Task
+from maintenancemanagement.models import Task, Field, FieldGroup, FieldValue
 from usersmanagement.models import Team
 from django.contrib.auth import authenticate, login, logout
 
@@ -84,3 +84,56 @@ def add_team_to_task(request):
             return Response(status=status.HTTP_201_CREATED)
 
     return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(["GET"])
+def team_task_list(request, pk):
+    """
+    Gives the team's tasks
+
+    Parameters
+    ----------
+    id_team : id of the wanted team
+    """
+    try:
+        team = Team.objects.get(pk=pk)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.user.has_perm("maintenancemanagement.view_task"):
+        tasks = team.task_set.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+    else :
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+def init_database():
+    fieldGr = FieldGroup.objects.create(name="Maintenance", is_equipment=False)
+    
+    fieldCriDec = Field.objects.create(name="Trigger Conditions", field_group=fieldGr)
+    fieldCriFin = Field.objects.create(name="End Conditions", field_group=fieldGr)
+
+    fieldDateDec = FieldValue.objects.create(value="Date", field=fieldCriDec)
+    fieldEntierDec = FieldValue.objects.create(value="Entier", field=fieldCriDec)
+    #fieldCaseDec = FieldValue.objects.create(value="Case a cocher", field=fieldCriDec)
+    #fieldPhotoDec = FieldValue.objects.create(value="Photo", field=fieldCriDec)
+    fieldDecimalDec = FieldValue.objects.create(value="Décimal", field=fieldCriDec)
+    fieldDureeDec = FieldValue.objects.create(value="Duree", field=fieldCriDec)
+
+    fieldCaseFin = FieldValue.objects.create(value="Case a cocher", field=fieldCriFin)
+    fieldEntierFin = FieldValue.objects.create(value="Valeur numerique à rentrer", field=fieldCriFin)
+    fieldStringFin = FieldValue.objects.create(value="Description", field=fieldCriFin)
+    fieldPhotoFin =FieldValue.objects.create(value="Photo", field=fieldCriFin)
+
+    fieldGr.save()
+    fieldCriDec.save()
+    fieldCriFin.save()
+
+    fieldDateDec.save()
+    fieldEntierDec.save()
+    fieldDecimalDec.save()
+    fieldDureeDec.save()
+
+    fieldCaseFin.save()
+    fieldEntierFin.save()
+    fieldStringFin.save()
+    fieldPhotoFin.save()

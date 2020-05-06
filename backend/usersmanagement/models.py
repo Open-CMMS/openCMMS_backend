@@ -41,6 +41,7 @@ class TeamType(models.Model):
     def _apply_(self):
         teams_with_this_teamtype = self.team_set.all()
         for team in teams_with_this_teamtype:
+            team.permissions.all().delete()
             team.permissions.set(list(self.perms.all()))
 
 
@@ -60,5 +61,4 @@ class Team(Group):
     def set_team_type(self,new_team_type):
         self.team_type = new_team_type
         self.save()
-        print("Je suis la")
         new_team_type._apply_()
