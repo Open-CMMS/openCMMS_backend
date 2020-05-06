@@ -21,29 +21,29 @@ class EquipmentTests(TestCase):
         """
             Add view permission to user
         """
-            perm_view = Permission.objects.get(codename="view_equipment")
-            user.user_permissions.set([perm_view])
+        perm_view = Permission.objects.get(codename="view_equipment")
+        user.user_permissions.set([perm_view])
 
     def add_add_perm(self, user):
         """
             Add add permission to user
         """
-            perm_add = Permission.objects.get(codename="add_equipment")
-            user.user_permissions.set([perm_add])
+        perm_add = Permission.objects.get(codename="add_equipment")
+        user.user_permissions.set([perm_add])
 
     def add_change_perm(self, user):
         """
             Add change permission to user
         """
-            perm_change = Permission.objects.get(codename="change_equipment")
-            user.user_permissions.set([perm_change])
+        perm_change = Permission.objects.get(codename="change_equipment")
+        user.user_permissions.set([perm_change])
 
     def add_delete_perm(self, user):
         """
             Add delete permission to user
         """
-            perm_delete = Permission.objects.get(codename="delete_equipment")
-            user.user_permissions.set([perm_delete])
+        perm_delete = Permission.objects.get(codename="delete_equipment")
+        user.user_permissions.set([perm_delete])
 
 
     def test_equipment_list_get_authorized(self):

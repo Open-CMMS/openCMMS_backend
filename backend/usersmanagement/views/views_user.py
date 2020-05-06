@@ -190,16 +190,23 @@ def sign_in(request):
                 - user : All the informations about the user
     """
     serializer = UserLoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    response = {
-        'success' : 'True',
-        'status code' : status.HTTP_200_OK,
-        'message' : 'User logged in successfully',
-        'token' : serializer.data['token'],
-        'user_id' : serializer.data['user_id'],
-        'user' : UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
-    }
-    return Response(response, status=status.HTTP_200_OK)
+    if serializer.is_valid():
+        response = {
+            'success' : 'True',
+            'status code' : status.HTTP_200_OK,
+            'message' : 'User logged in successfully',
+            'token' : serializer.data['token'],
+            'user_id' : serializer.data['user_id'],
+            'user' : UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    else :
+        response = {
+            'success' : 'False',
+            'error' : str(serializer.errors.get('error')[0]),
+            'is_blocked' : str(serializer.errors.get('is_blocked')[0]),
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def sign_out(request):
