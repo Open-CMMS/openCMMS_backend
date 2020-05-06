@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import views_equipmentType, views_equipment, views_task, views_taskType, views_fieldValue, views_field
+from .views import views_equipmentType, views_equipment, views_task, views_taskType, views_fieldValue, views_field, views_file
 
 
 urlpatterns = [
