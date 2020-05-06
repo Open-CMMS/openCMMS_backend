@@ -7,7 +7,16 @@ from maintenancemanagement.serializers import FieldValueSerializer
 @api_view(['GET'])
 def fieldValue_for_field(request, pk):
     """
-        Return the fieldValues for a specific field.
+        \n# List all the fieldValues for a specific field
+
+        Parameter :
+        request (HttpRequest) : the request coming from the front-end
+        pk (int) : id of the specific field
+
+        Return :
+        response (Response) : the response.
+
+        GET request : List all the fieldValues for a specific field
     """
     if request.method == 'GET':
         if request.user.has_perm("maintenancemanagement.view_fieldvalue"):
