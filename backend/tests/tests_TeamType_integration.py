@@ -7,27 +7,45 @@ from rest_framework.test import APIClient
 class TeamTypeTests(TestCase):
 
     def setUp(self):
+        """
+            Set-up team, team type for the tests
+        """
         admin_type = TeamType.objects.create(name="Administrators")
         admin_team = Team.objects.create(name="Administrators")
         admin_team.set_team_type(admin_type)
 
     def add_view_perm(self,user):
+        """
+            Add view permission to user
+        """
         perm_view = Permission.objects.get(codename="view_teamtype")
         user.user_permissions.set([perm_view])
 
     def add_add_perm(self,user):
+        """
+            Add add permission to user
+        """
         perm_add = Permission.objects.get(codename="add_teamtype")
         user.user_permissions.set([perm_add])
 
     def add_change_perm(self,user):
+        """
+            Add change permission to user
+        """
         perm_change = Permission.objects.get(codename="change_teamtype")
         user.user_permissions.set([perm_change])
 
     def add_delete_perm(self,user):
+        """
+            Add delete permission to user
+        """
         perm_delete = Permission.objects.get(codename="delete_teamtype")
         user.user_permissions.set([perm_delete])
 
     def test_teamtypes_list_get_authorized(self):
+        """
+            Test if a user with perm receive the teamtypes' list
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
         teamtypes = TeamType.objects.all()
@@ -39,6 +57,9 @@ class TeamTypeTests(TestCase):
         self.assertEqual(serializer.data, response.json())
 
     def test_teamtypes_list_get_unauthorized(self):
+        """
+            Test if a user without perm can't receive the teamtypes' list
+        """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
         c.force_authenticate(user=user)
@@ -46,6 +67,9 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code,401)
 
     def test_teamtypes_list_post_authorized(self):
+        """
+            Test if a user with perm can add a teamtype
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
         c = APIClient()
@@ -59,6 +83,9 @@ class TeamTypeTests(TestCase):
 
 
     def test_teamtypes_list_post_unauthorized(self):
+        """
+            Test if a user without perm can't add a teamtype
+        """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
         c.force_authenticate(user=user)
@@ -68,6 +95,9 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code,401)
 
     def test_teamtypes_detail_get_authorized(self):
+        """
+            Test if a user with perm can get a teamtype
+        """
         user = UserProfile.objects.create(username="user")
         self.add_view_perm(user)
         c = APIClient()
@@ -80,6 +110,9 @@ class TeamTypeTests(TestCase):
         self.assertEqual(serializer.data, response.json())
 
     def test_teamtypes_detail_get_unauthorized(self):
+        """
+            Test if a user without perm can't get a teamtype
+        """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
         c.force_authenticate(user=user)
@@ -88,6 +121,9 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code,401)
 
     def test_teamtypes_detail_put_authorized(self):
+        """
+            Test if a user with perm can change a teamtype
+        """
         user = UserProfile.objects.create(username="user")
         self.add_change_perm(user)
         c = APIClient()
@@ -103,6 +139,9 @@ class TeamTypeTests(TestCase):
         self.assertTrue(TeamType.objects.get(name="test_teamtype"))
 
     def test_teamtypes_detail_put_unauthorized(self):
+        """
+            Test if a user without perm can't change a teamtype
+        """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
         c.force_authenticate(user=user)
@@ -116,6 +155,9 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_teamtypes_delete_authorized(self):
+        """
+            Test if a user with perm can delete a teamtype
+        """
         user = UserProfile.objects.create(username="user")
         self.add_delete_perm(user)
         c = APIClient()
@@ -126,6 +168,9 @@ class TeamTypeTests(TestCase):
         self.assertFalse(TeamType.objects.filter(id=team_type.id).exists())
 
     def test_teamtypes_delete_authorized(self):
+        """
+            Test if a user without perm can't delete a teamtype
+        """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
         c.force_authenticate(user=user)

@@ -12,6 +12,9 @@ User = settings.AUTH_USER_MODEL
 class TeamsTests(TestCase):
 
     def set_up(self):
+        """
+            Set up team types, teams, users, permissions for the tests
+        """
         #Creation of 3 TeamTypes
         Admins = TeamType.objects.create(name="Administrators")
         MMs = TeamType.objects.create(name="Maintenance Manager")
@@ -60,6 +63,9 @@ class TeamsTests(TestCase):
         joe.save()
 
     def test_add_user_to_team_post_authorized(self):
+        """
+            Test if a user with permission can add a user to a team
+        """
         self.set_up()
         c = APIClient()
 
@@ -76,6 +82,9 @@ class TeamsTests(TestCase):
         self.assertEqual(user.groups.get(name="Administrators 1").name,team.name)
 
     def test_add_user_to_team_post_unauthorized(self):
+        """
+            Test if a user without permission can't add a user to a team
+        """
         self.set_up()
         c = APIClient()
 
@@ -88,6 +97,9 @@ class TeamsTests(TestCase):
 
 
     def test_add_user_to_team_put_authorized(self):
+        """
+            Test if a user with permission can remove a user to a team
+        """
         self.set_up()
         c = APIClient()
 
@@ -103,6 +115,9 @@ class TeamsTests(TestCase):
         self.assertFalse(user.groups.filter(name="Administrators 1").exists())
 
     def test_add_user_to_team_put_unauthorized(self):
+        """
+            Test if a user without permission can't remove a user to a team
+        """
         self.set_up()
         c = APIClient()
 
@@ -115,6 +130,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_list_get_authorized(self):
+        """
+            Test if a user with permission can view the teams' list
+        """
         self.set_up()
 
         teams = Team.objects.all()
@@ -131,6 +149,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_list_get_unauthorized(self):
+        """
+            Test if a user without permission can't view the teams' list
+        """
         self.set_up()
 
         c = APIClient()
@@ -144,6 +165,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_list_post_authorized(self):
+        """
+            Test if a user with permission can add a team
+        """
         self.set_up()
 
         c = APIClient()
@@ -161,6 +185,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_list_post_unauthorized(self):
+        """
+            Test if a user without permission can't add a team
+        """
         self.set_up()
 
         c = APIClient()
@@ -174,6 +201,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_detail_get_authorized(self):
+        """
+            Test if a user with permission can view a team
+        """
         self.set_up()
 
         team = Team.objects.get(name="Administrators 1")
@@ -193,6 +223,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_detail_get_unauthorized(self):
+        """
+            Test if a user without permission can't view a team
+        """
         self.set_up()
 
         c = APIClient()
@@ -210,6 +243,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_detail_put_change_name_authorized(self):
+        """
+            Test if a user with permission can change a team's name
+        """
         self.set_up()
 
         c = APIClient()
@@ -226,6 +262,9 @@ class TeamsTests(TestCase):
         self.assertEqual(response.data['name'],"new_name")
 
     def test_team_detail_put_change_team_type_authorized(self):
+        """
+            Test if a user with permission can change a team's team type
+        """
         self.set_up()
 
         c = APIClient()
@@ -246,6 +285,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_detail_put_unauthorized(self):
+        """
+            Test if a user without permission can't change a team's informations
+        """
         self.set_up()
 
         c = APIClient()
@@ -263,6 +305,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_detail_delete_authorized(self):
+        """
+            Test if a user with permission can delete a team
+        """
         self.set_up()
 
         c = APIClient()
@@ -281,6 +326,9 @@ class TeamsTests(TestCase):
 
 
     def test_team_detail_delete_unauthorized(self):
+        """
+            Test if a user without permission can't delete a team
+        """
         self.set_up()
 
         c = APIClient()

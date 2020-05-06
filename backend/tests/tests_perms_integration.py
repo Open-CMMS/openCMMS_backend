@@ -12,6 +12,9 @@ User = settings.AUTH_USER_MODEL
 class permsTests(TestCase):
 
     def set_up(self):
+        """
+            Set up users and permissions for the tests
+        """
         #Create permisions
         content_type = ContentType.objects.get_for_model(Team)
         permission = Permission.objects.get(codename='add_permission')
@@ -46,6 +49,9 @@ class permsTests(TestCase):
         tom.save()
 
     def test_perms_list_get_authorized(self):
+        """
+            Test if a user with perm receive the permissions' list
+        """
         self.set_up()
 
         perms = Permission.objects.all()
@@ -59,8 +65,10 @@ class permsTests(TestCase):
         response = c.get("/api/usersmanagement/perms/")
         self.assertEqual(serializer.data, response.json())
 
-
     def test_perm_list_get_unauthorized(self):
+        """
+            Test if a user without perm can't receive the permissions' list
+        """
         self.set_up()
 
         c = APIClient()
@@ -73,6 +81,9 @@ class permsTests(TestCase):
         self.assertEqual(response.status_code,401)
 
     def test_perm_detail_get_authorized(self):
+        """
+            Test if a user with perm receive the permission's data
+        """
         self.set_up()
 
         perm = Permission.objects.get(codename="view_permission")
@@ -91,6 +102,9 @@ class permsTests(TestCase):
 
 
     def test_perm_detail_get_unauthorized(self):
+        """
+            Test if a user without perm can't receive the permission's data
+        """
         self.set_up()
 
         c = APIClient()

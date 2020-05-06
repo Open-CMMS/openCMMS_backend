@@ -9,6 +9,9 @@ from django.contrib.contenttypes.models import ContentType
 class TeamsTests(TestCase):
 
     def set_up(self):
+        """
+            Set up team types, teams, users, permissions for the tests
+        """
         #Creation of 3 TeamTypes
         Admins = TeamType.objects.create(name="Administrators")
         MMs = TeamType.objects.create(name="Maintenance Manager")
@@ -55,8 +58,11 @@ class TeamsTests(TestCase):
 
         joe.groups.add(T_MT1)
         joe.save()
-        
+
     def test_belongs_to_team_true(self):
+        """
+            Test if a user belonging to a team send true
+        """
         self.set_up()
 
         joe = UserProfile.objects.get(username="jd")
@@ -67,6 +73,9 @@ class TeamsTests(TestCase):
 
 
     def test_belongs_to_team_false(self):
+        """
+            Test if a user not belonging to a team send false
+        """
         self.set_up()
 
         joe = UserProfile.objects.get(username="jd")
