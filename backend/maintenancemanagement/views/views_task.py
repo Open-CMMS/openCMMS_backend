@@ -153,11 +153,16 @@ def add_team_to_task(request):
 @api_view(["GET"])
 def team_task_list(request, pk):
     """
-    Gives the team's tasks
+        \n# List all the tasks a team is assigned to.
 
-    Parameters
-    ----------
-    id_team : id of the wanted team
+        Parameter :
+        request (HttpRequest) : the request coming from the front-end
+        pk (int) : the team's database id.
+
+        Return :
+        response (Response) : the response.
+
+        GET request : list all tasks of a team.
     """
     try:
         team = Team.objects.get(pk=pk)
