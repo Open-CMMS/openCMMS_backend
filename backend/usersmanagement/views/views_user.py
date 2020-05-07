@@ -45,11 +45,11 @@ def user_list(request):
         if request.user.has_perm("usersmanagement.add_userprofile") or is_first_user():
             serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
                 if is_first_user():
+                    serializer.save()
                     init_database()
-                    user = UserProfile.objects.all()[0]
-                    login(request, user)
+                else :
+                    serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else :
