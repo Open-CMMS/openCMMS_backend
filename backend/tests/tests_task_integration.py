@@ -495,3 +495,38 @@ class TaskTests(TestCase):
         task = Task.objects.create(name="task")
         response = client.get(f'/api/maintenancemanagement/teamtasklist/{team.pk}', format='json')
         self.assertEqual(response.status_code, 401)
+    
+    def test_view_team_s_tasks_with_auth(self):
+        """
+            Tests if a user with permission can access a user's task list.
+        """
+        team = Team.objects.create(name="team")
+        team2 = Team.objects.create(name="team2")
+        task = Task.objects.create(name="task")
+        task.teams.add(team)
+        task.save()
+        user = self.set_up_perm()
+        team.user_set.add(user)
+        team.save()
+        team2.user_set.add(user)
+        team2.save()
+        tasks = team.task_set.all()
+        tasks2 = team2.task_set.all()
+        serializer = TaskSerializer(tasks, many=True)
+        serializer2 = TaskSerializer(tasks2, many=True)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get(f"/api/maintenancemanagement/usertasklist/{user.pk}", format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, serializer.data+serializer2.data)
+    
+    def test_view_team_s_tasks_without_auth(self):
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        team = Team.objects.create(name="team")
+        team.user_set.add(user)
+        team.save()
+        task = Task.objects.create(name="task")
+        response = client.get(f'/api/maintenancemanagement/usertasklist/{user.pk}', format='json')
+        self.assertEqual(response.status_code, 401)

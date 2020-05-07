@@ -8,6 +8,7 @@ __pycache__/
 
 # Testing
 reports/
+media/
 
 #Pipfile
 Pipfile.lock
