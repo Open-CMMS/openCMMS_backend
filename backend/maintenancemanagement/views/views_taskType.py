@@ -9,7 +9,20 @@ from django.contrib.auth import authenticate, login, logout
 @api_view(['GET', 'POST'])
 def taskType_list(request):
     """
-        Lists all tasktypes or creates a new one
+        \n# List all taskstypes or create a new one
+
+        Parameter :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response.
+
+        GET request : list all tasktypes and return the data
+        POST request : 
+        - create a new tasktype, send HTTP 201.  If the request is not valid, send HTTP 400.
+        - If the user doesn't have the permissions, it will send HTTP 401.
+        - The request must contain name (the name of the tasktype (String))
+        
     """
 
 
@@ -31,7 +44,24 @@ def taskType_list(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 def taskType_detail(request, pk):
     """
-        Shows details of taskType, updates it or deletes it.
+        \n# Retrieve, update or delete a tasktype
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+        id (int) : the id of the tasktype
+
+        Return :
+        response (Response) : the response.
+
+        GET request : return the tasktype's data.
+        PUT request : change the tasktype with the data on the request or if the data isn't well formed, send HTTP 400.
+        DELETE request: delete the tasktype and send HTTP 204.
+
+        If the user doesn't have the permissions, it will send HTTP 401.
+        If the id doesn't exist, it will send HTTP 404.
+
+        The PUT request can contain one or more of the following fields : 
+            - name (String): The name of the tasktype
     """
     
     try:

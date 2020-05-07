@@ -11,9 +11,21 @@ User = settings.AUTH_USER_MODEL
 @api_view(['GET', 'POST'])
 def equipmenttype_list(request):
     """
-        List all the equipment types or add one.
-    """
+        \n# List all the equipment types or create a new one
 
+        Parameter :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response.
+
+        GET request : list all equipment types and return the data
+        POST request : 
+        - create a new equipment type, send HTTP 201.  If the request is not valid, send HTTP 400.
+        - If the user doesn't have the permissions, it will send HTTP 401.
+        - The request must contain name : the name of the equipment type (String)
+        - The request must contain equipment_set : a list (which can be empty) of the equipment id (List<int>)
+    """
     if request.method == 'GET':
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
             equipment_types = EquipmentType.objects.all()
@@ -35,7 +47,27 @@ def equipmenttype_list(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 def equipmenttype_detail(request, pk):
     """
-        Retrieve, update or delete a EquipmentType
+        \n# Retrieve, update or delete an equipment type
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+        id (int) : the id of the equipment type
+
+        Return :
+        response (Response) : the response.
+
+        GET request : return the equipment type's data.
+        PUT request : change the equipment type with the data on the request or if the data isn't well formed, send HTTP 400.
+        DELETE request: delete the equipment type and send HTTP 204.
+
+        If the user doesn't have the permissions, it will send HTTP 401.
+        If the id doesn't exist, it will send HTTP 404.
+
+        The PUT request can contain one or more of the following fields : 
+            - name (String): the name of the equipment type
+            - equipment_set (List<int>) : a list of equipment's ids
+
+
     """
 
     try:

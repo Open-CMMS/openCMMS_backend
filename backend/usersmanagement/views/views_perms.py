@@ -4,16 +4,20 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.conf import settings
 from usersmanagement.serializers import  PermissionSerializer
-from django.contrib.auth import authenticate, login, logout
 
-User = settings.AUTH_USER_MODEL
-
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def perms_list(request):
     """
-        List all permissions or create a new one
-    """
+        \n# List all permissions
 
+        Parameter :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response.
+
+        GET request : list all permissions and return the data
+    """
     if request.method == 'GET':
         if request.user.has_perm("auth.view_permission"):
             perms = Permission.objects.all()
@@ -22,22 +26,23 @@ def perms_list(request):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if request.method == 'POST':
-        if request.user.has_perm("auth.add_permission"):
-            serializer = PermissionSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-@api_view(['GET','PUT','DELETE'])
+@api_view(['GET'])
 def perm_detail(request,pk):
     """
-        Retrieve, update or delete a permission
-    """
+        \n# Retrieve a permission
 
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+        pk (int) : the id of the permission
+
+        Return :
+        response (Response) : the response.
+
+        GET request : return the permission's data.
+
+        If the user doesn't have the permissions, it will send HTTP 401.
+        If the id doesn't exist, it will send HTTP 404.
+    """
     try:
         perm = Permission.objects.get(pk=pk)
     except :
@@ -47,23 +52,5 @@ def perm_detail(request,pk):
         if request.user.has_perm("auth.view_permission"):
             serializer = PermissionSerializer(perm)
             return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-    elif request.method == 'PUT':
-        if request.user.has_perm("auth.change_permission"):
-            serializer = PermissionSerializer(perm, data = request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-
-    elif request.method == 'DELETE':
-        if request.user.has_perm("auth.delete_permission"):
-            perm.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
