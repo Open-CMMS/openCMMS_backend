@@ -50,8 +50,8 @@ class UserLoginSerializer(serializers.Serializer):
         password = data.get("password", None)
         user = authenticate(username=username, password=password)
         #user = UserProfile.objects.get(username=username)
-        if user.is_active:
-            if user is not None:
+        if user != None :
+            if user.is_active:
                 user.nb_tries = 0
                 user.save()
                 payload = JWT_PAYLOAD_HANDLER(user)
@@ -62,15 +62,37 @@ class UserLoginSerializer(serializers.Serializer):
                     'token': jwt_token,
                     'username' : username,
                     'user_id' : user.pk,
+                    'is_blocked' : False,
                 }
-            user = UserProfile.objects.get(username=username)
-            user.nb_tries += 1
-            if user.nb_tries == 3 :
-                user.deactivate_user()
-                user.save()
-            raise serializers.ValidationError('Error during authentication.')
         else :
-            raise serializers.ValidationError('A user with this email and password is not found.')
+            user = UserProfile.objects.get(username=username)
+            if user != None :
+                if user.is_active:
+                    user.nb_tries += 1
+                    user.save()
+                    if user.nb_tries == 3 :
+                        user.deactivate_user()
+                        user.save()
+                        raise serializers.ValidationError({
+                            'is_blocked' : (True),
+                            'error' : ("Mot de passe incorrect 3 fois de suite. Vous êtes bloqués."),
+                        })
+                    else :
+                        raise serializers.ValidationError({
+                            'is_blocked' : (False),
+                            'error' : ("Mot de passe incorrect"),
+                        })
+                else :
+                    raise serializers.ValidationError({
+                        'is_blocked' : (True),
+                        'error' : ("Vous vous êtes trompés trop de fois de mot de passe. Vous êtes bloqués."),
+                    })
+
+            raise serializers.ValidationError({
+                        'is_blocked' : (False),
+                        'error' : ("Login incorrect"),
+                    })
+            
 
 
 class TeamSerializer(serializers.ModelSerializer):

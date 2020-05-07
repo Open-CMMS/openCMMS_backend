@@ -468,6 +468,9 @@ class TaskTests(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_view_team_s_tasks_with_auth(self):
+        """
+            Test if a user with permission can view team's task
+        """
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="task")
         task.teams.add(team)
@@ -482,6 +485,9 @@ class TaskTests(TestCase):
         self.assertEqual(response.data, serializer.data)
 
     def test_view_team_s_tasks_without_auth(self):
+        """
+            Test if a user without permission can't view team's task
+        """
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)

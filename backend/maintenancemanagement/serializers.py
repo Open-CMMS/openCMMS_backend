@@ -1,8 +1,7 @@
-from maintenancemanagement.models import Task, TaskType
 from rest_framework import serializers
+from .models import Equipment, EquipmentType, File, Task, TaskType, FieldValue, Field
 
-from rest_framework import serializers
-from .models import Equipment, EquipmentType, File
+
 """
 Serializers enable the link between front-end and back-end
 """
@@ -10,7 +9,7 @@ Serializers enable the link between front-end and back-end
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ['id', 'name', 'description', 'end_date', 'time', 'is_template', 'equipment', 'teams', 'task_type']
+        fields = ['id', 'name', 'description', 'end_date', 'time', 'is_template', 'equipment', 'teams', 'task_type', 'over']
 
 class TaskTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,3 +30,13 @@ class EquipmentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EquipmentType
         fields = ['id', 'name', 'fields_groups']
+
+class FieldValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FieldValue
+        fields = ['id','value','field']
+
+class FieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Field
+        fields = ['id', 'name', 'field_group']
