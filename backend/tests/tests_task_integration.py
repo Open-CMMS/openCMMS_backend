@@ -496,7 +496,7 @@ class TaskTests(TestCase):
         response = client.get(f'/api/maintenancemanagement/teamtasklist/{team.pk}', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_view_team_s_tasks_with_auth(self):
+    def test_view_user_s_tasks_with_auth(self):
         """
             Tests if a user with permission can access a user's task list.
         """
@@ -520,7 +520,10 @@ class TaskTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, serializer.data+serializer2.data)
 
-    def test_view_team_s_tasks_without_auth(self):
+    def test_view_user_s_tasks_without_auth(self):
+        """
+            Test if a user without permissions can see his own tasks
+        """
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
@@ -529,7 +532,7 @@ class TaskTests(TestCase):
         team.save()
         task = Task.objects.create(name="task")
         response = client.get(f'/api/maintenancemanagement/usertasklist/{user.pk}', format='json')
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
 
     def test_view_task_request_without_perm_with_participating(self):
         """

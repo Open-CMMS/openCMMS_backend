@@ -195,7 +195,7 @@ def user_task_list(request, pk):
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("maintenancemanagement.view_task"):
+    if request.user.has_perm("maintenancemanagement.view_task") or request.user==user:
         #id_team = user.groups.all().values_list("id", flat=True).iterator()
         tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
         serializer = TaskSerializer(tasks, many=True)
