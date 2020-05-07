@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from maintenancemanagement.models import Task, TaskType
 from maintenancemanagement.serializers import TaskSerializer
-from usersmanagement.models import Team
+from usersmanagement.models import Team, TeamType
 from rest_framework.test import APIClient
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
@@ -495,7 +495,7 @@ class TaskTests(TestCase):
         task = Task.objects.create(name="task")
         response = client.get(f'/api/maintenancemanagement/teamtasklist/{team.pk}', format='json')
         self.assertEqual(response.status_code, 401)
-    
+
     def test_view_team_s_tasks_with_auth(self):
         """
             Tests if a user with permission can access a user's task list.
@@ -519,7 +519,7 @@ class TaskTests(TestCase):
         response = client.get(f"/api/maintenancemanagement/usertasklist/{user.pk}", format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, serializer.data+serializer2.data)
-    
+
     def test_view_team_s_tasks_without_auth(self):
         user = self.set_up_without_perm()
         client = APIClient()
@@ -530,3 +530,25 @@ class TaskTests(TestCase):
         task = Task.objects.create(name="task")
         response = client.get(f'/api/maintenancemanagement/usertasklist/{user.pk}', format='json')
         self.assertEqual(response.status_code, 401)
+
+    def test_view_task_request_without_perm_with_participating(self):
+        """
+            Test if a user without perm but participating on the task can see the task
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        pk = response1.data['id']
+
+        MTs = TeamType.objects.create(name="Maintenance Team")
+        T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
+        user.groups.add(T_MT1)
+        task = Task.objects.get(id=pk)
+        task.teams.add(T_MT1)
+
+        user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.data['name'],'verifier pneus')
