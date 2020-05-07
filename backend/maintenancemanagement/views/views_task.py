@@ -12,20 +12,20 @@ def task_list(request):
         List all tasks or create a new one
     """
 
-    if request.user.has_perm("maintenancemanagement.view_task"):
-        if request.method == 'GET':
+    #if request.user.has_perm("maintenancemanagement.view_task"):
+    if request.method == 'GET':
             tasks = Task.objects.all()
             serializer = TaskSerializer(tasks, many=True)
             return Response(serializer.data)
 
-    if request.user.has_perm("maintenancemanagement.add_task"):
-        if request.method == 'POST' :
+    #if request.user.has_perm("maintenancemanagement.add_task"):
+    if request.method == 'POST' :
             serializer = TaskSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
+    #return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def task_detail(request, pk):
