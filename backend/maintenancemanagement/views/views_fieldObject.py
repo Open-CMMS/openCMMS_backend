@@ -89,7 +89,7 @@ def fieldObject_detail(request,pk):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
-            return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
