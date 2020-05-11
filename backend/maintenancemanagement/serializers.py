@@ -66,7 +66,7 @@ class FieldObjectSerializer(serializers.ModelSerializer):
     described_object = DescribedObjectRelatedField(queryset= FieldObject.objects.all())
     class Meta:
         model = FieldObject
-        fields = ['described_object','field','field_value','value','description']
+        fields = ['id','described_object','field','field_value','value','description']
 
     def create(self, validated_data):
         return FieldObject.objects.create(
@@ -78,5 +78,12 @@ class FieldObjectSerializer(serializers.ModelSerializer):
             description = self.validated_data['description']
         )
 
-    #TODO fonction pr valider donnée
+    def update(self, instance, validated_data):
+        instance.content_type = ContentType.objects.get(model=self.validated_data['described_object'].partition(":")[0].lower())
+        instance.object_id = self.validated_data['described_object'].partition(":")[2]
+        instance.field = validated_data.get('created', instance.field)
+        instance.field_value = validated_data.get('field_value', instance.field_value)
+        instance.value = validated_data.get('value', instance.value)
+        instance.description = validated_data.get('description', instance.description)
+        return instance
 

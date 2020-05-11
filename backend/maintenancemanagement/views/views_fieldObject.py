@@ -17,13 +17,16 @@ def fieldObject_list(request):
         Return :
         response (Response) : the response.
 
-        GET request : List all fieldObjects
+        GET request : List all fieldObjects and send HTTP 200. If the user doesn't have the permissions, it will send HTTP 401.
         POST request :
         - create a new fieldObject, send HTTP 201.  If the request is not valid, send HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name : the name of the equipment type (String)
-        TODO suite
-        - The request must contain equipment_set : a list (which can be empty) of the equipment id (List<int>)
+        - The request must contain:
+            - described_object(String): The described object of this form: "Object: id", example: "Task: 2"
+            - field(Int): an id which refers to the concerned field
+            - field_value(Int): an id which refers to the concerned field_value
+            - value(String): The value to put for the FieldValue
+            - description(String): The description of value
     """
 
     if request.method == 'GET':
@@ -50,12 +53,19 @@ def fieldObject_detail(request,pk):
         Return :
         response (Response) : the response.
 
-        GET request : Detail the FieldObject
-        POST request :
-        - create a new fieldObject, send HTTP 201.  If the request is not valid, send HTTP 400.
-        - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name : the name of the equipment type (String)
-        TODO suite
+        GET request : Detail the FieldObject, send HTTP 200. If the user doesn't have the permissions, it will send HTTP 401.
+        PUT request :
+        Update the fieldObject, send HTTP 200. If the request is not valid, send HTTP 400.
+        If the user doesn't have the permissions, it will send HTTP 401.
+        - The request must contain:
+            - described_object(String): The described object of this form: "Object: id", example: "Task: 2"
+            - field(Int): an id which refers to the concerned field
+            - field_value(Int): an id which refers to the concerned field_value
+            - value(String): The value to put for the FieldValue
+            - description(String): The description of value
+
+        DELETE request: Delete the fieldObject, send HTTP 204. If the user doesn't have the permissions, it will send HTTP 401.
+
     """
     try:
         field_object = FieldObject.objects.get(pk=pk)

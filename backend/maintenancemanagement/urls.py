@@ -45,6 +45,7 @@ urlpatterns_file = [
 
 urlpatterns_fieldObject = [
     path('fieldobjects/', views_fieldObject.fieldObject_list, name='fieldObject-list'),
+    path('fieldobjects/<int:pk>/', views_fieldObject.fieldObject_detail, name='fieldObject-detail')
 ]
 
 urlpatterns += urlpatterns_equipment
