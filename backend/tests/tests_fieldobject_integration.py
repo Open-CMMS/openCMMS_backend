@@ -106,9 +106,9 @@ class FieldObjectTests(TestCase):
                 "description": "Date de test"
         }
         response = c.post("/api/maintenancemanagement/fieldobjects/", data, format='json')
-        fo = FieldObject.objects.filter(description="Date de test")[0]
+        fo = FieldObject.objects.filter(description="Date de test")
         self.assertEqual(response.status_code,201)
-        self.assertTrue(FieldObject.objects.filter(description="Date de test")[0])
+        self.assertTrue(FieldObject.objects.filter(description="Date de test"))
         self.assertEqual(fo.described_object, Task.objects.get(id=1))
 
 
@@ -130,6 +130,9 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.status_code,401)
     
     def test_fieldObject_details_get_authorized(self):
+        """
+            Test if a user with authorization can see a fieldObject's details
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
         c = APIClient()
@@ -140,6 +143,9 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.data, FieldObjectSerializer(fo).data)
         
     def test_fieldObject_details_get_unauthorized(self):
+        """
+            Test if a user without authorization can't see a fieldObject's details
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
         c.force_authenticate(user=user)
@@ -148,6 +154,9 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.status_code,401)
 
     def test_fieldObject_details_put_authorized(self):
+        """
+            Test if a user with authorization can update a fieldObject
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_update_perm(user)
         c = APIClient()
@@ -163,10 +172,13 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.data["field"], data["field"])
     
     def test_fieldObject_details_put_unauthorized(self):
+        """
+            Test if a user without authorization can't update a fieldObject
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
         c.force_authenticate(user=user)
-        fo = FieldObject.objects.get(content_type=ContentType.objects.get(model='equipment'))
+        fo = FieldObject.objects.get(content_type=ContentType.objects.get(model='task'))
         data = {
                 "described_object": "Task: 1",
                 "field": 1,
@@ -175,6 +187,9 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.status_code,401)
 
     def test_fieldObject_details_delete_authorized(self):
+        """
+            Test if a user with authorization can delete a fieldObject
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_delete_perm(user)
         c = APIClient()
@@ -185,6 +200,9 @@ class FieldObjectTests(TestCase):
 
     
     def test_fieldObject_details_delete_unauthorized(self):
+        """
+            Test if a user without authorization can't delete a fieldObject
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
         c.force_authenticate(user=user)
