@@ -7,6 +7,8 @@ from django.conf import settings
 from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer, PermissionSerializer
 from usersmanagement.models import TeamType, UserProfile, Team
 from rest_framework.parsers import FormParser
+from secrets import token_hex
+from django.core.mail import EmailMessage
 
 User = settings.AUTH_USER_MODEL
 
@@ -50,6 +52,7 @@ def user_list(request):
                     init_database()
                 else :
                     serializer.save()
+                    send_mail_to_setup_password(serializer.data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else :
@@ -255,6 +258,50 @@ def get_user_permissions(request, pk):
         return Response(codename)
     else:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+def send_mail_to_setup_password(data):
+    user = UserProfile.objects.get(pk=data['id'])
+    token = token_hex(16)
+    user.set_password(token)
+    user.save()
+    if (settings.DEBUG == True):
+        url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+    else :
+        url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+
+    
+    email = EmailMessage()
+    email.subject = "Set Your Password"
+    email.body = "You have been invited to join openCMMS. \n To setup your password, please follow this link : " + url
+    email.to = user.email
+
+    email.send()
+
+
+@api_view(['POST'])
+def set_new_password(request):
+    token = request.data['token']
+    print(token)
+    username = request.data['username']
+    print(username)
+    password = request.data['password']
+    print(password)
+    user = UserProfile.objects.get(username=username)
+    if (user.check_password(token)):
+        user.set_password(password)
+        user.save()
+        return Response(status=status.HTTP_200_OK)
+    else :
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['POST'])
+def check_token(request):
+    token = request.data['token']
+    username = request.data['username']
+    user = UserProfile.objects.get(username=username)
+    return Response(user.check_password(token))
+
 
 
 def init_database():

@@ -16,7 +16,9 @@ urlpatterns_users = [
     path('users/username_suffix', views_user.username_suffix, name='username_suffix'),
     path('login', views_user.sign_in, name="sign_in"),
     path('logout', views_user.sign_out, name="sign_out"),
-    path('users/<int:pk>/get_user_permissions', views_user.get_user_permissions, name="get_user_permissions")
+    path('users/<int:pk>/get_user_permissions', views_user.get_user_permissions, name="get_user_permissions"),
+    path('check_token', views_user.check_token, name="check_token"),
+    path('set_password', views_user.set_new_password, name="set_password"),
 ]
 
 
