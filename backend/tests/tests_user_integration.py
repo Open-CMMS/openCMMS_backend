@@ -78,7 +78,7 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'email' : 'test@pic.brasserie-du-slalom.fr'}, format='json')
         self.assertEqual(response.status_code,201)
 
     def test_add_user_without_perm(self):
@@ -88,7 +88,7 @@ class UserTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        response = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'email' : 'test@pic.brasserie-du-slalom.fr'}, format='json')
         self.assertEqual(response.status_code,401)
 
     def test_is_first_user_with_first_user_request(self):
@@ -186,7 +186,7 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey', 'email' : 'test@pic.brasserie-du-slalom.fr'}, format='json')
         pk = response1.data['id']
         response = client.put('/api/usersmanagement/users/'+str(pk)+'/', {'first_name':'Paul'}, format='json')
         self.assertEqual(response.data['first_name'],'Paul')
@@ -198,7 +198,7 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey', 'email' : 'test@pic.brasserie-du-slalom.fr'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
@@ -214,7 +214,7 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey', 'email' : 'test@pic.brasserie-du-slalom.fr'}, format='json')
         pk = response1.data['id']
         response = client.delete('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code, 204)
@@ -226,7 +226,7 @@ class UserTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey'}, format='json')
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin', 'first_name' : 'Joey', 'email' : 'test@pic.brasserie-du-slalom.fr'}, format='json')
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
