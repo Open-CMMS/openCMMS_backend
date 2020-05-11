@@ -40,7 +40,7 @@ def equipmenttype_list(request):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -83,7 +83,7 @@ def equipmenttype_detail(request, pk):
 
     if request.method == 'PUT':
         if request.user.has_perm("maintenancemanagement.change_equipmenttype"):
-            serializer = EquipmentTypeSerializer(equipment_type, data=request.data)
+            serializer = EquipmentTypeSerializer(equipment_type, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)

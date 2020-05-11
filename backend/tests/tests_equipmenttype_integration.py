@@ -73,7 +73,7 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/equipmenttypes/', {'name': 'car'}, format='json')
+        response = client.post('/api/maintenancemanagement/equipmenttypes/', {'name': 'car', 'equipment_set' : []}, format='json')
         self.assertEqual(response.status_code,201)
 
     def test_add_equipmenttype_without_perm(self):

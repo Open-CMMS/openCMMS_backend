@@ -29,7 +29,7 @@ class EquipmentSerializer(serializers.ModelSerializer):
 class EquipmentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EquipmentType
-        fields = ['id', 'name', 'fields_groups']
+        fields = ['id', 'name', 'fields_groups', 'equipment_set']
 
 class FieldValueSerializer(serializers.ModelSerializer):
     class Meta:
