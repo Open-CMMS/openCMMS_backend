@@ -273,8 +273,8 @@ def send_mail_to_setup_password(data):
     
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been invited to join openCMMS. \n To setup your password, please follow this link : " + url
-    email.to = user.email
+    email.body = "You have been invited to join openCMMS. \nTo setup your password, please follow this link : " + url
+    email.to = [user.email]
 
     email.send()
 
