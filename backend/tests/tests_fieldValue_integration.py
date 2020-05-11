@@ -33,7 +33,7 @@ class FieldValueTests(TestCase):
 
     def test_fieldValue_for_field_get_authorized(self):
         """
-            Test if fieldValue_for_field view return all the fieldValues in a list and HTTP 200 for a authorized user.
+            Test if fieldValue_for_field view in GET return all the fieldValues in a list and HTTP 200 for a authorized user.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
@@ -47,7 +47,7 @@ class FieldValueTests(TestCase):
 
     def test_fieldValue_for_field_get_unauthorized(self):
         """
-            Test if fieldValue_for_field view return HTTP 401 for a unauthorized user.
+            Test if fieldValue_for_field view in GET return HTTP 401 for a unauthorized user.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()

@@ -30,16 +30,20 @@ def fieldObject_list(request):
     """
 
     if request.method == 'GET':
-        field_objects = FieldObject.objects.all()
-        serializer = FieldObjectSerializer(field_objects, many=True)
-        return Response(serializer.data)
+        if request.user.has_perm("maintenancemanagement.view_fieldobject"):
+            field_objects = FieldObject.objects.all()
+            serializer = FieldObjectSerializer(field_objects, many=True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'POST':
-        serializer = FieldObjectSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.has_perm("maintenancemanagement.add_fieldobject"):
+            serializer = FieldObjectSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['GET','PUT','DELETE'])
@@ -67,22 +71,29 @@ def fieldObject_detail(request,pk):
         DELETE request: Delete the fieldObject, send HTTP 204. If the user doesn't have the permissions, it will send HTTP 401.
 
     """
+
     try:
         field_object = FieldObject.objects.get(pk=pk)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method =='GET':
-        serializer = FieldObjectSerializer(field_object)
-        return Response(serializer.data)
+        if request.user.has_perm("maintenancemanagement.view_fieldobject"):
+            serializer = FieldObjectSerializer(field_object)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
-        serializer = FieldObjectSerializer(field_object, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.has_perm("maintenancemanagement.change_fieldobject"):
+            serializer = FieldObjectSerializer(field_object, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
-        field_object.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if request.user.has_perm("maintenancemanagement.delete_fieldobject"):
+            field_object.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
