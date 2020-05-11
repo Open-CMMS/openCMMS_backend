@@ -282,11 +282,8 @@ def send_mail_to_setup_password(data):
 @api_view(['POST'])
 def set_new_password(request):
     token = request.data['token']
-    print(token)
     username = request.data['username']
-    print(username)
     password = request.data['password']
-    print(password)
     user = UserProfile.objects.get(username=username)
     if (user.check_password(token)):
         user.set_password(password)
@@ -294,6 +291,8 @@ def set_new_password(request):
         return Response(status=status.HTTP_200_OK)
     else :
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
 
 @api_view(['POST'])
 def check_token(request):
