@@ -98,18 +98,21 @@ class FieldObjectTests(TestCase):
         self.add_add_perm(user)
         c = APIClient()
         c.force_authenticate(user=user)
+        une_tache = Task.objects.get(name="uneTache")
+        des_conditions = Field.objects.get(name="Des Conditions")
+        condition_date = FieldValue.objects.get(value="Durée")
         data = {
-                "described_object": "Task: 1",
-                "field": 1,
-                "field_value": 1,
+                "described_object": "Task: "+str(une_tache.id),
+                "field": des_conditions.id,
+                "field_value": condition_date.id,
                 "value": "02/03/20",
                 "description": "Date de test"
         }
         response = c.post("/api/maintenancemanagement/fieldobjects/", data, format='json')
-        fo = FieldObject.objects.filter(description="Date de test")
+        fo = FieldObject.objects.get(description="Date de test")
         self.assertEqual(response.status_code,201)
         self.assertTrue(FieldObject.objects.filter(description="Date de test"))
-        self.assertEqual(fo.described_object, Task.objects.get(id=1))
+        self.assertEqual(fo.described_object, Task.objects.get(id=une_tache.id))
 
 
     def test_fieldObject_list_post_unauthorized(self):
@@ -162,9 +165,11 @@ class FieldObjectTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         fo = FieldObject.objects.get(content_type=ContentType.objects.get(model='equipment'))
+        une_tache = Task.objects.get(name="uneTache")
+        des_conditions = Field.objects.get(name="Des Conditions")
         data = {
-                "described_object": "Task: 1",
-                "field": 1,
+                "described_object": "Task: "+str(une_tache.id),
+                "field": des_conditions.id,
         }
         response = c.put(f"/api/maintenancemanagement/fieldobjects/{fo.pk}/", data, format="json")
         self.assertEqual(response.status_code,200)
