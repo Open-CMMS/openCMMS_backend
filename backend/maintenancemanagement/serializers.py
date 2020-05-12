@@ -31,6 +31,23 @@ class EquipmentTypeSerializer(serializers.ModelSerializer):
         model = EquipmentType
         fields = ['id', 'name', 'fields_groups', 'equipment_set']
 
+    def update(self, instance, validated_data):
+        equipments = instance.equipment_set.all()
+
+        for attr, value in validated_data.items():
+            if attr == 'equipment_set':
+                for e in equipments:
+                    if e not in value:
+                        e.delete()
+                instance.equipment_set.set(value)
+            elif attr == 'fields_groups':
+                instance.fields_groups.set(value)
+                instance._apply_()
+            else :
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
+
 class FieldValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = FieldValue
