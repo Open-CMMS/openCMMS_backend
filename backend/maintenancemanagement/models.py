@@ -148,13 +148,6 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,)
 
-    fields_groups = models.ManyToManyField(FieldGroup,
-        verbose_name="Fields Group",
-        help_text="Fields Groups of the Task for Ending and Auto Trigger",
-        related_name="task__set",
-        related_query_name="task",
-        blank=True,
-        )
 
     over = models.BooleanField(default=False)
 
