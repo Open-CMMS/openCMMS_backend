@@ -204,6 +204,8 @@ def sign_in(request):
         }
         return Response(response, status=status.HTTP_200_OK)
     else :
+        if str(serializer.errors.get('is_blocked')[0])=='True':
+            send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
         response = {
             'success' : 'False',
             'error' : str(serializer.errors.get('error')[0]),
@@ -274,6 +276,25 @@ def send_mail_to_setup_password(data):
     email = EmailMessage()
     email.subject = "Set Your Password"
     email.body = "You have been invited to join openCMMS. \nTo setup your password, please follow this link : " + url
+    email.to = [user.email]
+
+    email.send()
+
+
+def send_mail_to_setup_password_after_blocking(id):
+    user = UserProfile.objects.get(pk=id)
+    token = token_hex(16)
+    user.set_password(token)
+    user.save()
+    if (settings.DEBUG == True):
+        url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+    else :
+        url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+
+    
+    email = EmailMessage()
+    email.subject = "Set Your Password"
+    email.body = "You have been blocked after 3 unsuccessful login. \nTo setup your new password, please follow this link : " + url
     email.to = [user.email]
 
     email.send()
