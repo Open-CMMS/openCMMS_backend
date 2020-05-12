@@ -76,6 +76,7 @@ class UserLoginSerializer(serializers.Serializer):
                         raise serializers.ValidationError({
                             'is_blocked' : (True),
                             'error' : ("Mot de passe incorrect 3 fois de suite. Vous êtes bloqués."),
+                            'user_id' : (user.pk),
                         })
                     else :
                         raise serializers.ValidationError({
@@ -85,6 +86,7 @@ class UserLoginSerializer(serializers.Serializer):
                 else :
                     raise serializers.ValidationError({
                         'is_blocked' : (True),
+                        'user_id' : (user.pk),
                         'error' : ("Vous vous êtes trompés trop de fois de mot de passe. Vous êtes bloqués."),
                     })
 
