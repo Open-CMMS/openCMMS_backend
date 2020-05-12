@@ -308,6 +308,8 @@ def set_new_password(request):
     user = UserProfile.objects.get(username=username)
     if (user.check_password(token)):
         user.set_password(password)
+        user.nb_tries = 0
+        user.reactivate_user()
         user.save()
         return Response(status=status.HTTP_200_OK)
     else :
