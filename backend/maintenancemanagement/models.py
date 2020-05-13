@@ -104,11 +104,6 @@ class TaskType(models.Model):
         )
 
 
-#class Files(models.Model):
-#    file = models.FileField()
-#    is_notice = models.BooleanField(default=True)
-
-
 
 class Task(models.Model):
     name = models.CharField(max_length=100)

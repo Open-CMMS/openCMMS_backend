@@ -37,17 +37,17 @@ def task_list(request):
 
     if request.user.has_perm("maintenancemanagement.view_task"):
         if request.method == 'GET':
-            tasks = Task.objects.all()
-            serializer = TaskSerializer(tasks, many=True)
-            return Response(serializer.data)
+                tasks = Task.objects.all()
+                serializer = TaskSerializer(tasks, many=True)
+                return Response(serializer.data)
 
     if request.user.has_perm("maintenancemanagement.add_task"):
         if request.method == 'POST' :
-            serializer = TaskSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                serializer = TaskSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET', 'PUT', 'DELETE'])

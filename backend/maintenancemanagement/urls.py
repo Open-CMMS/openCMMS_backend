@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import views_equipmentType, views_equipment, views_task, views_taskType, views_fieldValue, views_field, views_file
+from .views import views_equipmentType, views_equipment, views_task, views_taskType, views_fieldValue, views_field, views_file, views_fieldObject
 
 
 urlpatterns = [
@@ -43,6 +43,11 @@ urlpatterns_file = [
     path('files/<int:pk>/', views_file.file_detail, name='file-detail')
 ]
 
+urlpatterns_fieldObject = [
+    path('fieldobjects/', views_fieldObject.fieldObject_list, name='fieldObject-list'),
+    path('fieldobjects/<int:pk>/', views_fieldObject.fieldObject_detail, name='fieldObject-detail')
+]
+
 urlpatterns += urlpatterns_equipment
 urlpatterns += urlpatterns_equipmenttype
 urlpatterns += urlpatterns_task
@@ -50,3 +55,4 @@ urlpatterns += urlpatterns_tasktype
 urlpatterns += urlpatterns_fieldValue
 urlpatterns += urlpatterns_field
 urlpatterns += urlpatterns_file
+urlpatterns += urlpatterns_fieldObject
