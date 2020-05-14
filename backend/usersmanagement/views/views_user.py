@@ -17,7 +17,7 @@ def user_list(request):
     """
         \n# List all users or create a new one
 
-        
+
         Parameter :
         request (HttpRequest) : the request coming from the front-end
 
@@ -25,7 +25,7 @@ def user_list(request):
         response (Response) : the response.
 
         GET request : list all users and return the data
-        POST request : 
+        POST request :
         - create a new user, send HTTP 201.  If the request is not valid, send HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
         - The request must contain username (the username of the user (String)) and password (password of the user (String))
@@ -79,7 +79,7 @@ def user_detail(request, pk):
         If the user doesn't have the permissions, it will send HTTP 401.
         If the id doesn't exist, it will send HTTP 404.
 
-        The PUT request can contain one or more of the following fields : 
+        The PUT request can contain one or more of the following fields :
             - first_name (String): User first_name
             - last_name (String):user last_name
             - email (String): user mail
@@ -87,7 +87,7 @@ def user_detail(request, pk):
 
         Warning ! You can't change the username !
     """
-    
+
     try:
         user = UserProfile.objects.get(pk=pk)
     except:
@@ -157,7 +157,7 @@ def username_suffix(request):
         response (Response) : the response
 
         GET request : return how many users already have a specific username
-            param : 
+            param :
                 - username (String) : The username we want to check
     """
     if request.method == 'GET':
@@ -182,8 +182,8 @@ def sign_in(request):
         Return :
         response (Response) : the response
 
-        POST request : 
-            param : 
+        POST request :
+            param :
                 - username (String) : The username we want to sign in
                 - password (String) : The password entered by user
             response params :
@@ -241,7 +241,7 @@ def get_user_permissions(request, pk):
         response (Response) : the response.
 
         GET request : return the user's permission.
-        
+
         If the user doesn't have the permissions, it will send HTTP 401.
         If the id doesn't exist, it will send HTTP 404.
 
@@ -263,6 +263,12 @@ def get_user_permissions(request, pk):
 
 
 def send_mail_to_setup_password(data):
+    """
+        \n# Send an email to setup a password for a new user
+
+        Parameters :
+        data (HttpRequest) : the request coming from the front-end
+    """
     user = UserProfile.objects.get(pk=data['id'])
     token = token_hex(16)
     user.set_password(token)
@@ -272,7 +278,7 @@ def send_mail_to_setup_password(data):
     else :
         url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
 
-    
+
     email = EmailMessage()
     email.subject = "Set Your Password"
     email.body = "You have been invited to join openCMMS. \nTo setup your password, please follow this link : " + url
@@ -282,6 +288,12 @@ def send_mail_to_setup_password(data):
 
 
 def send_mail_to_setup_password_after_blocking(id):
+    """
+        \n# Send an email to setup a password for a block user
+
+        Parameters :
+        id (pk) : the id of the user who is blocked
+    """
     user = UserProfile.objects.get(pk=id)
     token = token_hex(16)
     user.set_password(token)
@@ -291,7 +303,7 @@ def send_mail_to_setup_password_after_blocking(id):
     else :
         url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
 
-    
+
     email = EmailMessage()
     email.subject = "Set Your Password"
     email.body = "You have been blocked after 3 unsuccessful login. \nTo setup your new password, please follow this link : " + url
@@ -302,6 +314,15 @@ def send_mail_to_setup_password_after_blocking(id):
 
 @api_view(['POST'])
 def set_new_password(request):
+    """
+        \n# Set a new password for a user
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        Response (response) : the response (200 if the password is changed, 401 if the user doesn't have the permission)
+    """
     token = request.data['token']
     username = request.data['username']
     password = request.data['password']
@@ -319,6 +340,15 @@ def set_new_password(request):
 
 @api_view(['POST'])
 def check_token(request):
+    """
+        \n# Check the token of the user
+
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        Response (response) : True if the token is correct else False
+    """
     token = request.data['token']
     username = request.data['username']
     user = UserProfile.objects.get(username=username)
@@ -360,4 +390,4 @@ def init_database():
 
     T_Admin.save()
     T_MM1.save()
-    T_MT1.save()    
+    T_MT1.save()
