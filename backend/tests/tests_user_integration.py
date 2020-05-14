@@ -16,9 +16,9 @@ class UserTests(TestCase):
         """
         content_type = ContentType.objects.get_for_model(UserProfile)
         permission = Permission.objects.get(codename='add_userprofile')
-        permission2 = Permission.objects.get(codename='view_userprofile')  
+        permission2 = Permission.objects.get(codename='view_userprofile')
         permission3 = Permission.objects.get(codename='delete_userprofile')
-        permission4 = Permission.objects.get(codename='change_userprofile')                             
+        permission4 = Permission.objects.get(codename='change_userprofile')
         user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
         user.first_name='Tom'
@@ -234,6 +234,42 @@ class UserTests(TestCase):
         response = client.delete('/api/usersmanagement/users/'+str(pk)+'/')
         self.assertEqual(response.status_code,401)
 
+    def test_get_user_permissions_with_perm(self):
+        """
+            Test if a user with perm can see the permissions of a user
+        """
+        user = self.set_up_perm()
+        pk = UserProfile.objects.get(username='tom').pk
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/usersmanagement/users/'+str(pk)+'/get_user_permissions')
+        self.assertEqual(len(response.data),4)
+
+    def test_get_user_permissions_without_perm_but_self(self):
+        """
+            Test if a user without perm can see the permissions of himself
+        """
+        user = self.set_up_without_perm()
+        pk = UserProfile.objects.get(username='tom').pk
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/usersmanagement/users/'+str(pk)+'/get_user_permissions')
+        self.assertEqual(len(response.data),0)
+
+    def test_get_user_permissions_without_perm(self):
+        """
+            Test if a user without perm can see the permissions of himself
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post('/api/usersmanagement/users/', {'username': 'joey', 'password' : 'machin'}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
+        response = client.get('/api/usersmanagement/users/'+str(pk)+'/get_user_permissions')
+        self.assertEqual(response.status_code,401)
 
     def test_init_database(self):
         """
