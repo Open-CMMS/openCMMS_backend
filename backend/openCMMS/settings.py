@@ -165,7 +165,7 @@ CORS_REPLACE_HTTPS_REFERER = True
 AUTH_LDAP_SERVER_URI = "ldap://192.168.101.12:389"
 
 AUTH_LDAP_BIND_DN = "cn=Administrator,cn=Users,dc=lxc,dc=pic,dc=brasserie-du-slalom,dc=fr"
-AUTH_LDAP_BIND_PASSWORD = "P@ssword01"
+AUTH_LDAP_BIND_PASSWORD = "P@ssword01!"
 
 AUTH_LDAP_USER_ATTR_MAP = {
     "first_name": "givenName",
