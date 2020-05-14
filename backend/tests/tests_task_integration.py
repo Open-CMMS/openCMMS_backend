@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from maintenancemanagement.models import Task, TaskType
+from maintenancemanagement.models import Task, TaskType, File
 from maintenancemanagement.serializers import TaskSerializer
 from usersmanagement.models import Team, TeamType
 from rest_framework.test import APIClient
@@ -36,7 +36,6 @@ class TaskTests(TestCase):
 
         return user
 
-
     def set_up_without_perm(self):
         """
             Set up a user without permissions
@@ -46,6 +45,23 @@ class TaskTests(TestCase):
         user.first_name='Tom'
         user.save()
         return user
+
+    def temporary_file(self):
+        """
+        Returns a new temporary file
+        """
+        import tempfile
+        tmp_file = tempfile.TemporaryFile()
+        tmp_file.write(b'Coco veut un gateau')
+        tmp_file.seek(0)
+        return tmp_file
+
+    def add_add_perm_file(self, user):
+        """
+            Add add permission for file
+        """
+        permission = Permission.objects.get(codename='add_file')
+        user.user_permissions.add(permission)
 
     def test_can_acces_task_list_with_perm(self):
         """
@@ -555,3 +571,179 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
         self.assertEqual(response.data['name'],'verifier pneus')
+
+    def test_add_task_with_perm_with_file(self):
+        """
+            Test if a user with perm can add a task with a file
+        """
+        user = self.set_up_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        pk = response1.data['id']
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk]}, format='json')
+        self.assertEqual(response.status_code,201)
+        self.assertEqual(response.data['files'], [pk])
+
+    def test_add_task_without_perm_with_file(self):
+        """
+            Test if a user without perm can't add a task with a file
+        """
+        user = self.set_up_without_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        pk = response1.data['id']
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk]}, format='json')
+        self.assertEqual(response.status_code,401)
+
+    def test_view_task_request_with_perm_with_file(self):
+        """
+            Test if a user with perm can see a task detail with a file
+        """
+        user = self.set_up_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        pk_file = response1.data['id']
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_file]}, format='json')
+        pk = response1.data['id']
+        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.data['files'],[pk_file])
+
+    def test_view_task_request_without_perm_with_file(self):
+        """
+            Test if a user without perm can't see a task detail with a file
+        """
+        user = self.set_up_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        pk_file = response1.data['id']
+        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','files': [pk_file]}, format='json')
+        pk = response1.data['id']
+        user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.status_code,401)
+
+    def test_add_task_with_perm_with_file(self):
+        """
+            Test if a user with perm can add a task with multiple files
+        """
+        user = self.set_up_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        data2 = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
+        pk_1 = response1.data['id']
+        pk_2 = response2.data['id']
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
+        self.assertEqual(response.status_code,201)
+        self.assertEqual(response.data['files'], [pk_1,pk_2])
+
+    def test_add_task_without_perm_with_file(self):
+        """
+            Test if a user without perm can't add a task with multiple files
+        """
+        user = self.set_up_without_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        data2 = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
+        pk_1 = response1.data['id']
+        pk_2 = response2.data['id']
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
+        self.assertEqual(response.status_code,401)
+
+    def test_view_task_request_with_perm_with_files(self):
+        """
+            Test if a user with perm can see a task detail with multiple files
+        """
+        user = self.set_up_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        data2 = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
+        pk_1 = response1.data['id']
+        pk_2 = response2.data['id']
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
+        pk = response.data['id']
+        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.data['files'],[pk_1,pk_2])
+
+    def test_view_task_request_without_perm_with_files(self):
+        """
+            Test if a user without perm can't see a task detail with multiple files
+        """
+        user = self.set_up_perm()
+        self.add_add_perm_file(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        data2 = {
+            'file': self.temporary_file(),
+            'is_manual': 'False'
+        }
+        response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
+        pk_1 = response1.data['id']
+        pk_2 = response2.data['id']
+        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
+        pk = response.data['id']
+        user.user_permissions.clear()
+        user = UserProfile.objects.get(id=user.pk)
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        self.assertEqual(response.status_code,401)
