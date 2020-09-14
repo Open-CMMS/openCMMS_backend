@@ -27,7 +27,13 @@ SECRET_KEY = 'k&-js5nc7p%#$pk_bj+3fqd0($w5!6^#dy+a+b&p6($3r$a-%k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['application.lxc.pic.brasserie-du-slalom.fr', '127.0.0.1', 'dev.lxc.pic.brasserie-du-slalom.fr']
+ALLOWED_HOSTS = ['application.lxc.pic.brasserie-du-slalom.fr', 
+                '127.0.0.1', 
+                'dev.lxc.pic.brasserie-du-slalom.fr',
+                'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/login/?next=/api/admin/',
+                'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/',
+                'https://dev.lxc.pic.brasserie-du-slalom.fr',
+                ]
 
 
 # Application definition
@@ -156,6 +162,9 @@ CSRF_TRUSTED_ORIGINS = ['application.lxc.pic.brasserie-du-slalom.fr/',
                         'application.lxc.pic.brasserie-du-slalom.fr',
                         'https://application.lxc.pic.brasserie-du-slalom.fr',
                         'https://application.lxc.pic.brasserie-du-slalom.fr/',
+                        'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/login/?next=/api/admin/',
+                        'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/',
+                        'https://dev.lxc.pic.brasserie-du-slalom.fr',
                         '127.0.0.1:8000',
                         '128.0.0.1:8000/']
 
