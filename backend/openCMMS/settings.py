@@ -162,9 +162,9 @@ CSRF_TRUSTED_ORIGINS = ['application.lxc.pic.brasserie-du-slalom.fr/',
                         'application.lxc.pic.brasserie-du-slalom.fr',
                         'https://application.lxc.pic.brasserie-du-slalom.fr',
                         'https://application.lxc.pic.brasserie-du-slalom.fr/',
-                        'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/login/?next=/api/admin/',
-                        'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/',
-                        'https://dev.lxc.pic.brasserie-du-slalom.fr',
+                        'dev.lxc.pic.brasserie-du-slalom.fr/api/admin/login/?next=/api/admin/',
+                        'dev.lxc.pic.brasserie-du-slalom.fr/api/admin/',
+                        'dev.lxc.pic.brasserie-du-slalom.fr',
                         '127.0.0.1:8000',
                         '128.0.0.1:8000/']
 
