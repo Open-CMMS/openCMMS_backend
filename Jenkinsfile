@@ -189,7 +189,8 @@ pipeline {
             steps("Deploy to distant server") {
                 sh '''
                     ssh root@192.168.101.14 'rm -rf /root/backend/*';
-                    scp -r -p $WORKSPACE/backend/* root@192.168.101.14:/root/backend/; 
+                    scp -r -p $WORKSPACE/backend/* root@192.168.101.14:/root/backend/;
+                    ssh root@192.168.101.14 systemctl restart gunicorn.service 
                 '''
             }
         }

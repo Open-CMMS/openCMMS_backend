@@ -106,6 +106,16 @@ if 'test' in sys.argv:
         'PORT': '',
     }
 
+if os.getenv('ENVIRONMENT') == 'DEV':
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'django',
+        'USER': 'django',
+        'PASSWORD': 'django',
+        'HOST': '192.168.101.11',
+        'PORT': '',
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
