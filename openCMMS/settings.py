@@ -96,7 +96,7 @@ DATABASES = {
     }
 }
 
-if 'test' in sys.argv:
+if 'test' or 'pytest' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'django',
