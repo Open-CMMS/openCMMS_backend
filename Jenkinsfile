@@ -13,10 +13,8 @@ pipeline {
                 }
             }
             steps("Set up env"){
-                dir("./backend"){
-                    sh "pipenv install -d"
-                    sh "echo $GIT_BRANCH"
-                }
+                sh "pipenv install -d"
+                sh "echo $GIT_BRANCH"
             }
         }
 
@@ -29,14 +27,12 @@ pipeline {
                 }
             }
             steps("Execution des tests et realisation de la couverture de tests"){
-                dir("./backend"){
-                    sh """
-                        rm -f reports/*.xml 
-                        rm -f -r reports/coverage_html
-                        pipenv run coverage run --include=./*/*.py -m pytest tests/*.py  --junitxml=reports/tests.xml
-                        pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
-                        """
-                }
+                sh """
+                    rm -f reports/*.xml 
+                    rm -f -r reports/coverage_html
+                    pipenv run coverage run --include=./**/*.py -m pytest tests/*.py  --junitxml=reports/tests.xml
+                    pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
+                    """
             }
             post {
                 always {
@@ -44,7 +40,7 @@ pipeline {
                     cobertura (
                         autoUpdateHealth: false,
                         autoUpdateStability: false,
-                        coberturaReportFile: 'backend/reports/coverage.xml',
+                        coberturaReportFile: 'reports/coverage.xml',
                         lineCoverageTargets: '70, 0, 70',
                         maxNumberOfBuilds: 0, methodCoverageTargets: '70, 0, 70',
                         onlyStable: false,
@@ -54,7 +50,7 @@ pipeline {
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
                         keepAll: true,
-                        reportDir: 'backend/reports/coverage_html',
+                        reportDir: 'reports/coverage_html',
                         reportFiles: 'index.html',
                         reportName: 'HTML Report',
                         reportTitles: ''])
@@ -71,22 +67,20 @@ pipeline {
                 }
             }
             steps("Execution des tests et realisation de la couverture de tests"){
-                dir("./backend"){
-                    sh """
-                        rm -f reports/*.xml 
-                        rm -f -r reports/coverage_html
-                        pipenv run coverage run --include=./*/*.py -m pytest tests/*.py  --junitxml=reports/tests.xml
-                        pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
-                        """
-                }
+                sh """
+                    rm -f reports/*.xml 
+                    rm -f -r reports/coverage_html
+                    pipenv run coverage run --include=./**/*.py -m pytest tests/*.py  --junitxml=reports/tests.xml
+                    pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
+                    """
             }
             post {
                 always {
-                    junit "backend/reports/tests.xml"
+                    junit "reports/tests.xml"
                     cobertura (
                         autoUpdateHealth: false,
                         autoUpdateStability: false,
-                        coberturaReportFile: 'backend/reports/coverage.xml',
+                        coberturaReportFile: 'reports/coverage.xml',
                         lineCoverageTargets: '70, 0, 70',
                         maxNumberOfBuilds: 0, methodCoverageTargets: '70, 0, 70',
                         onlyStable: false,
@@ -96,7 +90,7 @@ pipeline {
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
                         keepAll: true,
-                        reportDir: 'backend/reports/coverage_html',
+                        reportDir: 'reports/coverage_html',
                         reportFiles: 'index.html',
                         reportName: 'HTML Report',
                         reportTitles: ''])
@@ -112,27 +106,22 @@ pipeline {
                     return GIT_BRANCH =~ "feature/*" || GIT_BRANCH =~ "dev"
                 }
             }
-            steps("Pylint"){
-                dir("./backend"){
-                    
-                    sh """
-                        pipenv run flake8 --docstring-convention=pep257 --format=pylint --exit-zero  */*.py > ./reports/flake8.report
-                        """
-                }
+            steps("Flake8"){
+                sh """
+                    pipenv run flake8
+                    """
             }
             post{
                 always{
-                    dir("./backend"){
-                        recordIssues(
-                            tool: flake8(pattern: 'reports/flake8.report'),
-                            //tool: [pyLint(pattern: "backend/reports/pylint.report"), pyDocStyle(pattern: "backend/reports/pylint.report")],
-                            //unstableTotalAll: 20,
-                            //failedTotalAll: 30,
-                            //aggregatingResults: true
-                        )
-                    }
+                    recordIssues(
+                        tool: flake8(pattern: 'reports/flake8.report'),
+                        //tool: [pyLint(pattern: "reports/pylint.report"), pyDocStyle(pattern: "backend/reports/pylint.report")],
+                        //unstableTotalAll: 20,
+                        //failedTotalAll: 30,
+                        //aggregatingResults: true
+                    )
                     /*recordIssues(
-                        tool: pyDocStyle(pattern: "backend/reports/pylint.report"),
+                        tool: pyDocStyle(pattern: "reports/pylint.report"),
                         unstableTotalAll: 20,
                         failedTotalAll: 30,
                         aggregatingResults: true
@@ -150,9 +139,7 @@ pipeline {
                 }
             }
             steps("Application de black (?)"){
-                dir("./backend"){
-                    sh "pipenv run black  ./*/*.py"
-                }
+                sh "pipenv run black  **/*.py"
             }
         }
 
@@ -169,7 +156,7 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh "ls backend/reports/"
+                    sh "ls reports/"
                     sh "${scannerHome}/bin/sonar-scanner -X"
                 }
                 timeout(time: 1, unit: 'HOURS') {
@@ -189,7 +176,7 @@ pipeline {
             steps("Deploy to distant server") {
                 sh '''
                     ssh root@192.168.101.14 'rm -rf /root/backend/*';
-                    scp -r -p $WORKSPACE/backend/* root@192.168.101.14:/root/backend/;
+                    scp -r -p $WORKSPACE/* root@192.168.101.14:/root/backend/;
                     ssh root@192.168.101.14 systemctl restart gunicorn.service 
                 '''
             }
@@ -209,14 +196,12 @@ pipeline {
             //steps("Deploy to distant server") {
             //    sh '''
             //        ssh root@192.168.101.9 'rm -rf /root/backend/*';
-            //        scp -r -p $WORKSPACE/backend/* root@192.168.101.9:/root/backend/; 
+            //        scp -r -p $WORKSPACE/* root@192.168.101.9:/root/backend/; 
             //    '''
             //}
             steps("Set up env"){
-                dir("./backend"){
-                    //sh "pipenv install -d"
-                    sh "echo $GIT_BRANCH"
-                }
+                //sh "pipenv install -d"
+                sh "echo $GIT_BRANCH"
             }
         }
     }
