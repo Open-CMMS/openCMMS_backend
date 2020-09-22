@@ -108,7 +108,7 @@ pipeline {
             }
             steps("Flake8"){
                 sh """
-                    pipenv run flake8
+                    pipenv run flake8 > ./reports/flake8.report
                     """
             }
             post{
