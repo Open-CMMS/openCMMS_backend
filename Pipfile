@@ -19,6 +19,7 @@ pytest-django = "*"
 coverage = "*"
 flake8 = "*"
 flake8-docstrings = "*"
+flake8-django = "*"
 pep8-naming = "*"
 black = "==18.6b4"
 isort = "*"
@@ -26,4 +27,3 @@ yapf = "*"
 
 [requires]
 python_version = "3.7"
-
