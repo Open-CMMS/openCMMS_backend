@@ -5,6 +5,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [("maintenancemanagement", "0007_fieldobject_description")]
+    dependencies = [
+        ('maintenancemanagement', '0007_fieldobject_description'),
+    ]
 
-    operations = [migrations.RenameModel(old_name="Files", new_name="File")]
+    operations = [
+        migrations.RenameModel(
+            old_name='Files',
+            new_name='File',
+        ),
+    ]

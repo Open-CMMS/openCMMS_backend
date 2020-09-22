@@ -5,12 +5,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [("maintenancemanagement", "0006_auto_20200504_1221")]
+    dependencies = [
+        ('maintenancemanagement', '0006_auto_20200504_1221'),
+    ]
 
     operations = [
         migrations.AddField(
-            model_name="fieldobject",
-            name="description",
-            field=models.CharField(default="", max_length=100),
-        )
+            model_name='fieldobject',
+            name='description',
+            field=models.CharField(default='', max_length=100),
+        ),
     ]

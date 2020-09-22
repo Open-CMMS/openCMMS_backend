@@ -5,6 +5,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [("maintenancemanagement", "0009_auto_20200505_2145")]
+    dependencies = [
+        ('maintenancemanagement', '0009_auto_20200505_2145'),
+    ]
 
-    operations = [migrations.RemoveField(model_name="task", name="fields_groups")]
+    operations = [
+        migrations.RemoveField(
+            model_name='task',
+            name='fields_groups',
+        ),
+    ]

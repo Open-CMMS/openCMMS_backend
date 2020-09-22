@@ -6,56 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("usersmanagement", "0003_auto_20200429_0911"),
-        ("maintenancemanagement", "0004_auto_20200429_1400"),
+        ('usersmanagement', '0003_auto_20200429_0911'),
+        ('maintenancemanagement', '0004_auto_20200429_1400'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="task",
-            name="fields_groups",
-            field=models.ManyToManyField(
-                blank=True,
-                help_text="Fields Groups of the Task for Ending and Auto Trigger",
-                related_name="task__set",
-                related_query_name="task",
-                to="maintenancemanagement.FieldGroup",
-                verbose_name="Fields Group",
-            ),
+            model_name='task',
+            name='fields_groups',
+            field=models.ManyToManyField(blank=True, help_text='Fields Groups of the Task for Ending and Auto Trigger', related_name='task__set', related_query_name='task', to='maintenancemanagement.FieldGroup', verbose_name='Fields Group'),
         ),
         migrations.AlterField(
-            model_name="task",
-            name="files",
-            field=models.ManyToManyField(
-                blank=True,
-                related_name="task_set",
-                related_query_name="task",
-                to="maintenancemanagement.Files",
-                verbose_name="Task File",
-            ),
+            model_name='task',
+            name='files',
+            field=models.ManyToManyField(blank=True, related_name='task_set', related_query_name='task', to='maintenancemanagement.Files', verbose_name='Task File'),
         ),
         migrations.AlterField(
-            model_name="task",
-            name="teams",
-            field=models.ManyToManyField(
-                blank=True,
-                help_text="The team(s) assigned to this task",
-                related_name="task_set",
-                related_query_name="task",
-                to="usersmanagement.Team",
-                verbose_name="Assigned team(s)",
-            ),
+            model_name='task',
+            name='teams',
+            field=models.ManyToManyField(blank=True, help_text='The team(s) assigned to this task', related_name='task_set', related_query_name='task', to='usersmanagement.Team', verbose_name='Assigned team(s)'),
         ),
         migrations.AlterField(
-            model_name="tasktype",
-            name="fields_groups",
-            field=models.ManyToManyField(
-                blank=True,
-                help_text="Fields Groups of the Task Type",
-                related_name="task_type_set",
-                related_query_name="tasktype",
-                to="maintenancemanagement.FieldGroup",
-                verbose_name="Fields Group",
-            ),
+            model_name='tasktype',
+            name='fields_groups',
+            field=models.ManyToManyField(blank=True, help_text='Fields Groups of the Task Type', related_name='task_type_set', related_query_name='tasktype', to='maintenancemanagement.FieldGroup', verbose_name='Fields Group'),
         ),
     ]

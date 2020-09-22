@@ -1,12 +1,12 @@
 from django.contrib.auth.models import Permission
-from django.test import Client, TestCase
-from usersmanagement.models import Team, TeamType
-
+from django.test import TestCase, Client
+from usersmanagement.models import TeamType,Team
 
 class TeamTypeTests(TestCase):
+
     def setUp(self):
         """
-        Set up permissions, team, team type for the tests
+            Set up permissions, team, team type for the tests
         """
         perm_1 = Permission.objects.get(id=1)
         perm_2 = Permission.objects.get(id=2)
@@ -17,35 +17,33 @@ class TeamTypeTests(TestCase):
 
     def test_create_get_team_type(self):
         """
-        Test the creation of a team type in the model
+            Test the creation of a team type in the model
         """
         MaintenanceManager_type = TeamType.objects.create(name="Maintenance Manager")
-        self.assertEqual(
-            MaintenanceManager_type, TeamType.objects.get(name="Maintenance Manager")
-        )
+        self.assertEqual(MaintenanceManager_type, TeamType.objects.get(name="Maintenance Manager"))
 
     def test_add_perm(self):
         """
-        Test the addition of a permission on a team type
+            Test the addition of a permission on a team type
         """
         perm = Permission.objects.get(id=1)
         MaintenanceManager_type = TeamType.objects.create(name="Maintenance Manager")
         MaintenanceManager_type.perms.add(perm)
-        self.assertEqual(MaintenanceManager_type.perms.get(id=1), perm)
+        self.assertEqual(MaintenanceManager_type.perms.get(id=1),perm)
 
     def test_apply_(self):
         """
-        Test add a set of permissions to a set of teams
+            Test add a set of permissions to a set of teams
         """
         admin_type = TeamType.objects.get(name="Administrators")
         admin_type._apply_()
         admin_team = Team.objects.get(name="Administrators")
-        self.assertEqual(admin_team.permissions.get(id=1), Permission.objects.get(id=1))
+        self.assertEqual(admin_team.permissions.get(id=1),Permission.objects.get(id=1))
         self.assertEqual(admin_team.permissions.get(id=2), Permission.objects.get(id=2))
 
     def test_apply_change_teamtype(self):
         """
-        Test change teamtype
+            Test change teamtype
         """
         perm_3 = Permission.objects.get(id=3)
         MaintenanceManager_type = TeamType.objects.create(name="Maintenance Manager")
