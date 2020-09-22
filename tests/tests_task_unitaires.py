@@ -1,9 +1,10 @@
-from django.test import TestCase, RequestFactory
-from rest_framework.test import APIClient
-from usersmanagement.models import UserProfile, Team, TeamType
-from maintenancemanagement.views.views_task import participate_to_task
-from maintenancemanagement.models import Task
 from django.contrib.contenttypes.models import ContentType
+from django.test import RequestFactory, TestCase
+from maintenancemanagement.models import Task
+from maintenancemanagement.views.views_task import participate_to_task
+from rest_framework.test import APIClient
+from usersmanagement.models import Team, TeamType, UserProfile
+
 
 class TeamsTests(TestCase):
 
@@ -17,17 +18,13 @@ class TeamsTests(TestCase):
         T_MT2 = Team.objects.create(name="Maintenance Team 2", team_type=MTs)
 
         #User creation
-        tom = UserProfile.objects.create(first_name="Tom",
-                                       last_name="N",
-                                       email="tom.n@ac.com",
-                                       password="truc",
-                                       username = "tn")
+        tom = UserProfile.objects.create(
+            first_name="Tom", last_name="N", email="tom.n@ac.com", password="truc", username="tn"
+        )
 
-        joe = UserProfile.objects.create(first_name="Joe",
-                                       last_name="D",
-                                       email="joe.d@ll.com",
-                                       password="bouh",
-                                       username = "jd")
+        joe = UserProfile.objects.create(
+            first_name="Joe", last_name="D", email="joe.d@ll.com", password="bouh", username="jd"
+        )
 
         tom.groups.add(T_MT1)
         tom.save()
@@ -35,7 +32,7 @@ class TeamsTests(TestCase):
         joe.groups.add(T_MT2)
         joe.save()
 
-        task = Task.objects.create(name="something",description="things to do")
+        task = Task.objects.create(name="something", description="things to do")
         task.teams.add(T_MT1)
         task.save()
 
@@ -49,8 +46,7 @@ class TeamsTests(TestCase):
 
         task = Task.objects.get(name="something")
 
-        self.assertTrue(participate_to_task(tom,task))
-
+        self.assertTrue(participate_to_task(tom, task))
 
     def test_participate_to_task_false(self):
         """
@@ -62,4 +58,4 @@ class TeamsTests(TestCase):
 
         task = Task.objects.get(name="something")
 
-        self.assertFalse(participate_to_task(joe,task))
+        self.assertFalse(participate_to_task(joe, task))

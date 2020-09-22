@@ -1,13 +1,8 @@
 from django.urls import path
-from .views import views_user;
-from .views import views_team;
-from .views import views_perms;
-from .views import views_teamtypes;
 
+from .views import views_perms, views_team, views_teamtypes, views_user
 
-urlpatterns = [
-]
-
+urlpatterns = []
 
 urlpatterns_users = [
     path('users/', views_user.user_list, name='user-list'),
@@ -21,12 +16,10 @@ urlpatterns_users = [
     path('set_password', views_user.set_new_password, name="set_password"),
 ]
 
-
 urlpatterns_perms = [
     path('perms/', views_perms.perms_list, name='perms-list'),
     path('perms/<int:pk>/', views_perms.perm_detail, name='perm-detail')
 ]
-
 
 urlpatterns_teams = [
     path('add_user_to_team', views_team.add_user_to_team, name="add_user_to_team"),
@@ -38,7 +31,6 @@ url_patterns_teamtypes = [
     path('teamtypes/', views_teamtypes.teamtypes_list, name='teamtypes-list'),
     path('teamtypes/<int:pk>/', views_teamtypes.teamtypes_detail, name='teamtypes-detail')
 ]
-
 
 urlpatterns += urlpatterns_users
 urlpatterns += urlpatterns_perms

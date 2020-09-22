@@ -1,10 +1,10 @@
-from django.test import TestCase
 from django.contrib.auth.models import Permission
-from rest_framework.test import APIClient
-from openCMMS import settings
+from django.test import TestCase
 from maintenancemanagement.models import Field, FieldGroup
-from usersmanagement.models import UserProfile
 from maintenancemanagement.serializers import FieldSerializer
+from openCMMS import settings
+from rest_framework.test import APIClient
+from usersmanagement.models import UserProfile
 
 User = settings.AUTH_USER_MODEL
 
@@ -21,7 +21,7 @@ class FieldTests(TestCase):
         a_field_group = FieldGroup.objects.create(name="aFieldGroup", is_equipment=True)
         return a_field_group
 
-    def add_view_perm(self,user):
+    def add_view_perm(self, user):
         """
             Add view permission to user
         """

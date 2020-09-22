@@ -1,9 +1,10 @@
-from rest_framework.response import Response
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.conf import settings
-from usersmanagement.serializers import  PermissionSerializer
+from rest_framework.response import Response
+from usersmanagement.serializers import PermissionSerializer
+
 
 @api_view(['GET'])
 def perms_list(request):
@@ -26,8 +27,9 @@ def perms_list(request):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+
 @api_view(['GET'])
-def perm_detail(request,pk):
+def perm_detail(request, pk):
     """
         \n# Retrieve a permission
 
@@ -45,7 +47,7 @@ def perm_detail(request,pk):
     """
     try:
         perm = Permission.objects.get(pk=pk)
-    except :
+    except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':

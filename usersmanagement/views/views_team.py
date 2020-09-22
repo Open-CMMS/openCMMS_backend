@@ -1,8 +1,9 @@
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from usersmanagement.serializers import TeamSerializer
+from rest_framework.response import Response
 from usersmanagement.models import Team, UserProfile
+from usersmanagement.serializers import TeamSerializer
+
 
 @api_view(['GET', 'POST'])
 def team_list(request):
@@ -28,7 +29,7 @@ def team_list(request):
             return Response(serializer.data)
 
     if request.user.has_perm("usersmanagement.add_team"):
-        if request.method == 'POST' :
+        if request.method == 'POST':
             serializer = TeamSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -37,8 +38,6 @@ def team_list(request):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -67,7 +66,7 @@ def team_detail(request, pk):
     """
     try:
         team = Team.objects.get(pk=pk)
-    except :
+    except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
@@ -78,7 +77,7 @@ def team_detail(request, pk):
 
     elif request.method == 'PUT':
         if request.user.has_perm("usersmanagement.change_team"):
-            serializer = TeamSerializer(team, data = request.data, partial=True)
+            serializer = TeamSerializer(team, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 team = Team.objects.get(pk=serializer.data['id'])
@@ -92,8 +91,6 @@ def team_detail(request, pk):
             team.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-
 
 
 @api_view(['POST', 'PUT'])
@@ -119,7 +116,6 @@ def add_user_to_team(request):
             team.user_set.add(user)
             return Response(status=status.HTTP_201_CREATED)
 
-
         elif request.method == 'PUT':
             user = UserProfile.objects.get(pk=request.data["id_user"])
             team = Team.objects.get(pk=request.data["id_team"])
@@ -127,7 +123,6 @@ def add_user_to_team(request):
             return Response(status=status.HTTP_201_CREATED)
 
     return Response(status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 def belongs_to_team(user, team):

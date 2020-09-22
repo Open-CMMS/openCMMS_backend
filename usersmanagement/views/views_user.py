@@ -1,16 +1,20 @@
-from rest_framework.response import Response
-from django.contrib.auth.models import Permission
+from secrets import token_hex
+
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import Permission
+from django.core.mail import EmailMessage
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
-from django.conf import settings
-from usersmanagement.serializers import UserProfileSerializer, UserLoginSerializer, PermissionSerializer
-from usersmanagement.models import TeamType, UserProfile, Team
 from rest_framework.parsers import FormParser
-from secrets import token_hex
-from django.core.mail import EmailMessage
+from rest_framework.response import Response
+from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.serializers import (
+    PermissionSerializer, UserLoginSerializer, UserProfileSerializer,
+)
 
 User = settings.AUTH_USER_MODEL
+
 
 @api_view(['GET', 'POST'])
 def user_list(request):
@@ -35,29 +39,28 @@ def user_list(request):
             - email (String):user mail
     """
 
-    if request.method == 'GET' :
+    if request.method == 'GET':
         if request.user.has_perm("usersmanagement.add_userprofile"):
             users = UserProfile.objects.all()
             serializer = UserProfileSerializer(users, many=True)
             return Response(serializer.data)
-        else :
+        else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'POST' :
+    elif request.method == 'POST':
         if request.user.has_perm("usersmanagement.add_userprofile") or is_first_user():
             serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():
                 if is_first_user():
                     serializer.save()
                     init_database()
-                else :
+                else:
                     serializer.save()
                     send_mail_to_setup_password(serializer.data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else :
+        else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -97,17 +100,17 @@ def user_detail(request, pk):
         if (request.user == user) or (request.user.has_perm("usersmanagement.view_userprofile")):
             serializer = UserProfileSerializer(user)
             return Response(serializer.data)
-        else :
+        else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
         if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
-            serializer = UserProfileSerializer(user, data = request.data, partial=True)
+            serializer = UserProfileSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else :
+        else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'DELETE':
@@ -115,9 +118,8 @@ def user_detail(request, pk):
             #Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        else :
+        else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 @api_view(['GET'])
@@ -136,6 +138,7 @@ def is_first_user_request(request):
     if request.method == 'GET':
         users = UserProfile.objects.all()
         return Response(users.count() == 0)
+
 
 def is_first_user():
     """
@@ -162,12 +165,11 @@ def username_suffix(request):
     """
     if request.method == 'GET':
         username_begin = request.GET["username"]
-        users = UserProfile.objects.filter(username__startswith = username_begin)
-        if users.count()==0:
+        users = UserProfile.objects.filter(username__startswith=username_begin)
+        if users.count() == 0:
             return Response("")
-        else :
-            return Response (str(users.count()))
-
+        else:
+            return Response(str(users.count()))
 
 
 @api_view(['POST'])
@@ -195,23 +197,24 @@ def sign_in(request):
     serializer = UserLoginSerializer(data=request.data)
     if serializer.is_valid():
         response = {
-            'success' : 'True',
-            'status code' : status.HTTP_200_OK,
-            'message' : 'User logged in successfully',
-            'token' : serializer.data['token'],
-            'user_id' : serializer.data['user_id'],
-            'user' : UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
+            'success': 'True',
+            'status code': status.HTTP_200_OK,
+            'message': 'User logged in successfully',
+            'token': serializer.data['token'],
+            'user_id': serializer.data['user_id'],
+            'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
         }
         return Response(response, status=status.HTTP_200_OK)
-    else :
-        if str(serializer.errors.get('is_blocked')[0])=='True':
+    else:
+        if str(serializer.errors.get('is_blocked')[0]) == 'True':
             send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
         response = {
-            'success' : 'False',
-            'error' : str(serializer.errors.get('error')[0]),
-            'is_blocked' : str(serializer.errors.get('is_blocked')[0]),
+            'success': 'False',
+            'error': str(serializer.errors.get('error')[0]),
+            'is_blocked': str(serializer.errors.get('is_blocked')[0]),
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 def sign_out(request):
@@ -247,12 +250,12 @@ def get_user_permissions(request, pk):
 
     """
 
-    try :
+    try:
         user = UserProfile.objects.get(pk=pk)
-    except :
+    except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("usersmanagement.add_userprofile") or request.user==user:
+    if request.user.has_perm("usersmanagement.add_userprofile") or request.user == user:
         permissions = user.get_all_permissions()
         codename = []
         for perm in permissions:
@@ -275,9 +278,8 @@ def send_mail_to_setup_password(data):
     user.save()
     if (settings.DEBUG == True):
         url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
-    else :
+    else:
         url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
-
 
     email = EmailMessage()
     email.subject = "Set Your Password"
@@ -300,9 +302,8 @@ def send_mail_to_setup_password_after_blocking(id):
     user.save()
     if (settings.DEBUG == True):
         url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
-    else :
+    else:
         url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
-
 
     email = EmailMessage()
     email.subject = "Set Your Password"
@@ -333,9 +334,8 @@ def set_new_password(request):
         user.reactivate_user()
         user.save()
         return Response(status=status.HTTP_200_OK)
-    else :
+    else:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 @api_view(['POST'])
@@ -353,7 +353,6 @@ def check_token(request):
     username = request.data['username']
     user = UserProfile.objects.get(username=username)
     return Response(user.check_password(token))
-
 
 
 def init_database():

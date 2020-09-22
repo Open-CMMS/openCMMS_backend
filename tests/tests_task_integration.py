@@ -1,15 +1,16 @@
-from django.test import TestCase, Client
-from maintenancemanagement.models import Task, TaskType, File
-from maintenancemanagement.serializers import TaskSerializer
-from usersmanagement.models import Team, TeamType
-from rest_framework.test import APIClient
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import Permission
-from usersmanagement.models import UserProfile
-from openCMMS import settings
 from datetime import timedelta
 
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.test import Client, TestCase
+from maintenancemanagement.models import File, Task, TaskType
+from maintenancemanagement.serializers import TaskSerializer
+from openCMMS import settings
+from rest_framework.test import APIClient
+from usersmanagement.models import Team, TeamType, UserProfile
+
 User = settings.AUTH_USER_MODEL
+
 
 class TaskTests(TestCase):
 
@@ -24,7 +25,7 @@ class TaskTests(TestCase):
 
         user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
-        user.first_name='Tom'
+        user.first_name = 'Tom'
         user.save()
 
         user.user_permissions.add(permission)
@@ -42,7 +43,7 @@ class TaskTests(TestCase):
         """
         user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
-        user.first_name='Tom'
+        user.first_name = 'Tom'
         user.save()
         return user
 
@@ -73,7 +74,7 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
-        self.assertEqual(response.data,serializer.data)
+        self.assertEqual(response.data, serializer.data)
 
     def test_can_acces_task_list_without_perm(self):
         """
@@ -83,7 +84,7 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
-        self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code, 401)
 
     def test_add_task_with_perm(self):
         """
@@ -92,8 +93,14 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
-        self.assertEqual(response.status_code,201)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], 'verifier pneus')
 
     def test_add_task_without_perm(self):
@@ -103,8 +110,14 @@ class TaskTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
-        self.assertEqual(response.status_code,401)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_view_task_request_with_perm(self):
         """
@@ -113,10 +126,16 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.data['name'],'verifier pneus')
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.data['name'], 'verifier pneus')
 
     def test_view_task_request_without_perm(self):
         """
@@ -125,13 +144,19 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_change_task_with_perm(self):
         """
@@ -140,12 +165,19 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'name':'verifier roues'}, format='json')
-        self.assertEqual(response.data['name'],'verifier roues')
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'name': 'verifier roues'}, format='json'
+        )
+        self.assertEqual(response.data['name'], 'verifier roues')
         self.assertEqual(response.status_code, 200)
-
 
     def test_change_task_without_perm(self):
         """
@@ -154,14 +186,21 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'name':'verifier roues'}, format='json')
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'name': 'verifier roues'}, format='json'
+        )
         self.assertEqual(response.status_code, 401)
-
 
     def test_delete_task_with_perm(self):
         """
@@ -170,11 +209,16 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 204)
-
 
     def test_delete_task_without_perm(self):
         """
@@ -183,13 +227,19 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_can_acces_task_list_with_perm_with_end_date(self):
         """
@@ -201,7 +251,7 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
-        self.assertEqual(response.data,serializer.data)
+        self.assertEqual(response.data, serializer.data)
 
     def test_can_acces_task_list_without_perm_with_end_date(self):
         """
@@ -211,7 +261,7 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
-        self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code, 401)
 
     def test_add_task_with_perm_with_end_date(self):
         """
@@ -220,8 +270,15 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'end_date': '2020-04-29'}, format='json')
-        self.assertEqual(response.status_code,201)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['end_date'], '2020-04-29')
 
     def test_add_task_without_perm_with_end_date(self):
@@ -231,8 +288,15 @@ class TaskTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'end_date': '2020-04-29'}, format='json')
-        self.assertEqual(response.status_code,401)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_view_task_request_with_perm_with_end_date(self):
         """
@@ -241,10 +305,17 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.data['end_date'],'2020-04-29')
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.data['end_date'], '2020-04-29')
 
     def test_view_task_request_without_perm_with_end_date(self):
         """
@@ -253,13 +324,20 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_change_task_with_perm_with_end_date(self):
         """
@@ -268,12 +346,20 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'end_date':'2020-03-12'}, format='json')
-        self.assertEqual(response.data['end_date'],'2020-03-12')
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'end_date': '2020-03-12'}, format='json'
+        )
+        self.assertEqual(response.data['end_date'], '2020-03-12')
         self.assertEqual(response.status_code, 200)
-
 
     def test_change_task_without_perm_with_end_date(self):
         """
@@ -282,14 +368,22 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'end_date':'2020-03-12'}, format='json')
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'end_date': '2020-03-12'}, format='json'
+        )
         self.assertEqual(response.status_code, 401)
-
 
     def test_delete_task_with_perm_with_end_date(self):
         """
@@ -298,11 +392,17 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 204)
-
 
     def test_delete_task_without_perm_with_end_date(self):
         """
@@ -311,13 +411,20 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','end_date': '2020-04-29'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'end_date': '2020-04-29'
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_can_acces_task_list_with_perm_with_time(self):
         """
@@ -329,7 +436,7 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
-        self.assertEqual(response.data,serializer.data)
+        self.assertEqual(response.data, serializer.data)
 
     def test_can_acces_task_list_without_perm_with_time(self):
         """
@@ -339,7 +446,7 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
-        self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code, 401)
 
     def test_add_task_with_perm_with_time(self):
         """
@@ -348,8 +455,15 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'time': '1 day, 8:00:00'}, format='json')
-        self.assertEqual(response.status_code,201)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': '1 day, 8:00:00'
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['time'], '1 08:00:00')
 
     def test_add_task_without_perm_with_time(self):
@@ -359,8 +473,15 @@ class TaskTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'time': timedelta(days=1, hours=8)}, format='json')
-        self.assertEqual(response.status_code,401)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': timedelta(days=1, hours=8)
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_view_task_request_with_perm_with_time(self):
         """
@@ -369,10 +490,17 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': timedelta(days=1, hours=8)
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.data['time'],'1 08:00:00')
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.data['time'], '1 08:00:00')
 
     def test_view_task_request_without_perm_with_time(self):
         """
@@ -381,13 +509,20 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': timedelta(days=1, hours=8)
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_change_task_with_perm_with_time(self):
         """
@@ -396,12 +531,20 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': timedelta(days=1, hours=8)
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'time': timedelta(days=2, hours=4)}, format='json')
-        self.assertEqual(response.data['time'],'2 04:00:00')
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'time': timedelta(days=2, hours=4)}, format='json'
+        )
+        self.assertEqual(response.data['time'], '2 04:00:00')
         self.assertEqual(response.status_code, 200)
-
 
     def test_change_task_without_perm_with_time(self):
         """
@@ -410,14 +553,22 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': timedelta(days=1, hours=8)
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/tasks/'+str(pk)+'/', {'time': timedelta(days=2, hours=4)}, format='json')
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'time': timedelta(days=2, hours=4)}, format='json'
+        )
         self.assertEqual(response.status_code, 401)
-
 
     def test_delete_task_with_perm_with_time(self):
         """
@@ -426,11 +577,17 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': timedelta(days=1, hours=8)
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
+        response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 204)
-
 
     def test_delete_task_without_perm_with_time(self):
         """
@@ -439,13 +596,20 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','time': timedelta(days=1, hours=8)}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'time': timedelta(days=1, hours=8)
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.delete('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_add_team_task_with_authorization(self):
         """
@@ -456,7 +620,13 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="tache")
-        response = client.post('/api/maintenancemanagement/add_team_to_task/', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        response = client.post(
+            '/api/maintenancemanagement/add_team_to_task/', {
+                "id_team": f"{team.pk}",
+                "id_task": f"{task.pk}"
+            },
+            format="json"
+        )
         self.assertEqual(response.status_code, 201)
 
     def test_add_team_task_with_authorization(self):
@@ -468,7 +638,13 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="tache")
-        response = client.put('/api/maintenancemanagement/addteamtotask', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        response = client.put(
+            '/api/maintenancemanagement/addteamtotask', {
+                "id_team": f"{team.pk}",
+                "id_task": f"{task.pk}"
+            },
+            format="json"
+        )
         self.assertEqual(response.status_code, 201)
 
     def test_add_team_task_without_authorization(self):
@@ -480,7 +656,13 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="tache")
-        response = client.put('/api/maintenancemanagement/addteamtotask', {"id_team": f"{team.pk}", "id_task": f"{task.pk}" }, format="json")
+        response = client.put(
+            '/api/maintenancemanagement/addteamtotask', {
+                "id_team": f"{team.pk}",
+                "id_task": f"{task.pk}"
+            },
+            format="json"
+        )
         self.assertEqual(response.status_code, 401)
 
     def test_view_team_s_tasks_with_auth(self):
@@ -496,7 +678,7 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.get("/api/maintenancemanagement/teamtasklist/"+str(team.pk), format='json')
+        response = client.get("/api/maintenancemanagement/teamtasklist/" + str(team.pk), format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, serializer.data)
 
@@ -534,7 +716,7 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         response = client.get(f"/api/maintenancemanagement/usertasklist/{user.pk}", format='json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, serializer.data+serializer2.data)
+        self.assertEqual(response.data, serializer.data + serializer2.data)
 
     def test_view_user_s_tasks_without_auth(self):
         """
@@ -557,7 +739,13 @@ class TaskTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu'}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
         pk = response1.data['id']
 
         MTs = TeamType.objects.create(name="Maintenance Team")
@@ -569,8 +757,8 @@ class TaskTests(TestCase):
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.data['name'],'verifier pneus')
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.data['name'], 'verifier pneus')
 
     def test_add_task_with_perm_with_file(self):
         """
@@ -580,14 +768,18 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk = response1.data['id']
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk]}, format='json')
-        self.assertEqual(response.status_code,201)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['files'], [pk])
 
     def test_add_task_without_perm_with_file(self):
@@ -598,14 +790,18 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk = response1.data['id']
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk]}, format='json')
-        self.assertEqual(response.status_code,401)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_view_task_request_with_perm_with_file(self):
         """
@@ -615,16 +811,20 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk_file = response1.data['id']
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_file]}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk_file]
+            },
+            format='json'
+        )
         pk = response1.data['id']
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.data['files'],[pk_file])
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.data['files'], [pk_file])
 
     def test_view_task_request_without_perm_with_file(self):
         """
@@ -634,19 +834,23 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk_file = response1.data['id']
-        response1 = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu','files': [pk_file]}, format='json')
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk_file]
+            },
+            format='json'
+        )
         pk = response1.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_add_task_with_perm_with_file(self):
         """
@@ -656,21 +860,22 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_1 = response1.data['id']
         pk_2 = response2.data['id']
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
-        self.assertEqual(response.status_code,201)
-        self.assertEqual(response.data['files'], [pk_1,pk_2])
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk_1, pk_2]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['files'], [pk_1, pk_2])
 
     def test_add_task_without_perm_with_file(self):
         """
@@ -680,20 +885,21 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_1 = response1.data['id']
         pk_2 = response2.data['id']
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
-        self.assertEqual(response.status_code,401)
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk_1, pk_2]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_view_task_request_with_perm_with_files(self):
         """
@@ -703,22 +909,23 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_1 = response1.data['id']
         pk_2 = response2.data['id']
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk_1, pk_2]
+            },
+            format='json'
+        )
         pk = response.data['id']
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.data['files'],[pk_1,pk_2])
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.data['files'], [pk_1, pk_2])
 
     def test_view_task_request_without_perm_with_files(self):
         """
@@ -728,22 +935,23 @@ class TaskTests(TestCase):
         self.add_add_perm_file(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         response2 = client.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_1 = response1.data['id']
         pk_2 = response2.data['id']
-        response = client.post('/api/maintenancemanagement/tasks/', {'name': 'verifier pneus', 'description' : 'faut verfier les pneus de la voiture ta vu', 'files': [pk_1,pk_2]}, format='json')
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu',
+                'files': [pk_1, pk_2]
+            },
+            format='json'
+        )
         pk = response.data['id']
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/tasks/'+str(pk)+'/')
-        self.assertEqual(response.status_code,401)
+        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)

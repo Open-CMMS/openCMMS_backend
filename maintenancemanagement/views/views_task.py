@@ -1,11 +1,12 @@
-from rest_framework.response import Response
+from django.contrib.auth import authenticate, login, logout
+from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
+from maintenancemanagement.serializers import TaskSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
-from maintenancemanagement.serializers import TaskSerializer
-from maintenancemanagement.models import Task, Field, FieldGroup, FieldValue
+from rest_framework.response import Response
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.views.views_team import belongs_to_team
-from django.contrib.auth import authenticate, login, logout
+
 
 @api_view(['GET', 'POST'])
 def task_list(request):
@@ -37,18 +38,19 @@ def task_list(request):
 
     if request.user.has_perm("maintenancemanagement.view_task"):
         if request.method == 'GET':
-                tasks = Task.objects.all()
-                serializer = TaskSerializer(tasks, many=True)
-                return Response(serializer.data)
+            tasks = Task.objects.all()
+            serializer = TaskSerializer(tasks, many=True)
+            return Response(serializer.data)
 
     if request.user.has_perm("maintenancemanagement.add_task"):
-        if request.method == 'POST' :
-                serializer = TaskSerializer(data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if request.method == 'POST':
+            serializer = TaskSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def task_detail(request, pk):
@@ -85,18 +87,18 @@ def task_detail(request, pk):
 
     try:
         task = Task.objects.get(pk=pk)
-    except :
+    except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        if request.user.has_perm("maintenancemanagement.view_task") or participate_to_task(request.user,task):
+        if request.user.has_perm("maintenancemanagement.view_task") or participate_to_task(request.user, task):
             serializer = TaskSerializer(task)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     elif request.method == 'PUT':
         if request.user.has_perm("maintenancemanagement.change_task"):
-            serializer = TaskSerializer(task, data = request.data, partial=True)
+            serializer = TaskSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -141,7 +143,6 @@ def add_team_to_task(request):
             task.teams.add(team)
             return Response(status=status.HTTP_201_CREATED)
 
-
         elif request.method == 'PUT':
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
@@ -149,6 +150,7 @@ def add_team_to_task(request):
             return Response(status=status.HTTP_201_CREATED)
 
     return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(["GET"])
 def team_task_list(request, pk):
@@ -173,8 +175,9 @@ def team_task_list(request, pk):
         tasks = team.task_set.all()
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
-    else :
+    else:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(["GET"])
 def user_task_list(request, pk):
@@ -195,21 +198,22 @@ def user_task_list(request, pk):
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("maintenancemanagement.view_task") or request.user==user:
+    if request.user.has_perm("maintenancemanagement.view_task") or request.user == user:
         #id_team = user.groups.all().values_list("id", flat=True).iterator()
         tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
-    else :
+    else:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-def participate_to_task(user,task):
+
+def participate_to_task(user, task):
     """
         \n# Check if a user is assigned to the task
 
     """
     for team in task.teams.values_list("id", flat=True).iterator():
-        belong = belongs_to_team(user,Team.objects.get(id=team))
+        belong = belongs_to_team(user, Team.objects.get(id=team))
         if belong:
             return True
     return False
@@ -231,7 +235,7 @@ def init_database():
     fieldCaseFin = FieldValue.objects.create(value="Case a cocher", field=fieldCriFin)
     fieldEntierFin = FieldValue.objects.create(value="Valeur numerique à rentrer", field=fieldCriFin)
     fieldStringFin = FieldValue.objects.create(value="Description", field=fieldCriFin)
-    fieldPhotoFin =FieldValue.objects.create(value="Photo", field=fieldCriFin)
+    fieldPhotoFin = FieldValue.objects.create(value="Photo", field=fieldCriFin)
 
     fieldGr.save()
     fieldCriDec.save()

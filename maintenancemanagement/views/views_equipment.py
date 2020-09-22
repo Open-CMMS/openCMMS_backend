@@ -1,9 +1,10 @@
-from rest_framework.response import Response
+from django.contrib.auth import authenticate, login, logout
+from maintenancemanagement.models import Equipment
+from maintenancemanagement.serializers import EquipmentSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
-from maintenancemanagement.serializers import EquipmentSerializer
-from maintenancemanagement.models import Equipment
-from django.contrib.auth import authenticate, login, logout
+from rest_framework.response import Response
+
 
 @api_view(['GET', 'POST'])
 def equipment_list(request):
@@ -33,13 +34,14 @@ def equipment_list(request):
             return Response(serializer.data)
 
     if request.user.has_perm("maintenancemanagement.add_equipment"):
-        if request.method == 'POST' :
+        if request.method == 'POST':
             serializer = EquipmentSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def equipment_detail(request, pk):
@@ -66,10 +68,10 @@ def equipment_detail(request, pk):
             - files (List<int>): an id list of the updated list of files
 
     """
-    
+
     try:
         equipment = Equipment.objects.get(pk=pk)
-    except :
+    except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
@@ -80,7 +82,7 @@ def equipment_detail(request, pk):
 
     elif request.method == 'PUT':
         if request.user.has_perm("maintenancemanagement.change_equipment"):
-            serializer = EquipmentSerializer(equipment, data = request.data, partial=True)
+            serializer = EquipmentSerializer(equipment, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)

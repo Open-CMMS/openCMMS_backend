@@ -1,12 +1,11 @@
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework import status
-
 from maintenancemanagement.models import FieldObject
 from maintenancemanagement.serializers import FieldObjectSerializer
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
-@api_view(['GET','POST'])
+@api_view(['GET', 'POST'])
 def fieldObject_list(request):
     """
         \n# List all fieldObjects or create a new one.
@@ -46,8 +45,8 @@ def fieldObject_list(request):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET','PUT','DELETE'])
-def fieldObject_detail(request,pk):
+@api_view(['GET', 'PUT', 'DELETE'])
+def fieldObject_detail(request, pk):
     """
         Retrieve, update or delete a fieldObject.
 
@@ -77,7 +76,7 @@ def fieldObject_detail(request,pk):
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method =='GET':
+    if request.method == 'GET':
         if request.user.has_perm("maintenancemanagement.view_fieldobject"):
             serializer = FieldObjectSerializer(field_object)
             return Response(serializer.data)

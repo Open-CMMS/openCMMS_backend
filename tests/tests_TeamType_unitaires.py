@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Permission
-from django.test import TestCase, Client
-from usersmanagement.models import TeamType,Team
+from django.test import Client, TestCase
+from usersmanagement.models import Team, TeamType
+
 
 class TeamTypeTests(TestCase):
 
@@ -29,7 +30,7 @@ class TeamTypeTests(TestCase):
         perm = Permission.objects.get(id=1)
         MaintenanceManager_type = TeamType.objects.create(name="Maintenance Manager")
         MaintenanceManager_type.perms.add(perm)
-        self.assertEqual(MaintenanceManager_type.perms.get(id=1),perm)
+        self.assertEqual(MaintenanceManager_type.perms.get(id=1), perm)
 
     def test_apply_(self):
         """
@@ -38,7 +39,7 @@ class TeamTypeTests(TestCase):
         admin_type = TeamType.objects.get(name="Administrators")
         admin_type._apply_()
         admin_team = Team.objects.get(name="Administrators")
-        self.assertEqual(admin_team.permissions.get(id=1),Permission.objects.get(id=1))
+        self.assertEqual(admin_team.permissions.get(id=1), Permission.objects.get(id=1))
         self.assertEqual(admin_team.permissions.get(id=2), Permission.objects.get(id=2))
 
     def test_apply_change_teamtype(self):

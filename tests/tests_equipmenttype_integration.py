@@ -1,14 +1,15 @@
-from django.test import TestCase
 from django.contrib.auth.models import Permission
+from django.test import TestCase
 from maintenancemanagement.models import EquipmentType
 from maintenancemanagement.serializers import EquipmentTypeSerializer
-from usersmanagement.models import UserProfile
-from rest_framework.test import APIClient
 from openCMMS import settings
+from rest_framework.test import APIClient
+from usersmanagement.models import UserProfile
 
 User = settings.AUTH_USER_MODEL
 
 #note à la personne faisant passer les tests : il faudra sûrement changer les imports et checker les URL
+
 
 class EquipmentTypeTests(TestCase):
 
@@ -22,7 +23,7 @@ class EquipmentTypeTests(TestCase):
         permission4 = Permission.objects.get(codename='change_equipmenttype')
         user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
-        user.first_name='Tom'
+        user.first_name = 'Tom'
         user.save()
         user.user_permissions.add(permission)
         user.user_permissions.add(permission2)
@@ -37,7 +38,7 @@ class EquipmentTypeTests(TestCase):
         """
         user = UserProfile.objects.create(username='tom')
         user.set_password('truc')
-        user.first_name='Tom'
+        user.first_name = 'Tom'
         user.save()
         return user
 
@@ -63,7 +64,7 @@ class EquipmentTypeTests(TestCase):
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/equipmenttypes/', format='json')
-        self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code, 401)
 
     def test_add_equipmenttype_with_perm(self):
         """
@@ -73,8 +74,13 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.post('/api/maintenancemanagement/equipmenttypes/', {'name': 'car', 'equipment_set' : []}, format='json')
-        self.assertEqual(response.status_code,201)
+        response = client.post(
+            '/api/maintenancemanagement/equipmenttypes/', {
+                'name': 'car',
+                'equipment_set': []
+            }, format='json'
+        )
+        self.assertEqual(response.status_code, 201)
 
     def test_add_equipmenttype_without_perm(self):
         """
@@ -85,7 +91,7 @@ class EquipmentTypeTests(TestCase):
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
         response = client.post('/api/maintenancemanagement/equipmenttypes/', {'name': 'tool'}, format='json')
-        self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code, 401)
 
     def test_view_equipmenttype_request_with_perm(self):
         """
@@ -97,8 +103,8 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+"/", format='json')
-        self.assertEqual(response.status_code,200)
+        response = client.get('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + "/", format='json')
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
     def test_view_equipmenttype_request_without_perm(self):
@@ -111,9 +117,8 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+"/", format='json')
-        self.assertEqual(response.status_code,401)
-
+        response = client.get('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + "/", format='json')
+        self.assertEqual(response.status_code, 401)
 
     def test_change_equipmenttype_request_with_perm(self):
         """
@@ -124,8 +129,10 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+'/',{"name": "car"},format='json')
-        self.assertEqual(response.status_code,200)
+        response = client.put(
+            '/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/', {"name": "car"}, format='json'
+        )
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(EquipmentType.objects.get(name="car"))
 
     def test_change_equipmenttype_request_without_perm(self):
@@ -137,10 +144,10 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
-        response = client.put('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/', {"name": "car"},
-                              format='json')
+        response = client.put(
+            '/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/', {"name": "car"}, format='json'
+        )
         self.assertEqual(response.status_code, 401)
-
 
     def test_delete_equipmenttype_request_with_perm(self):
         """
@@ -151,10 +158,10 @@ class EquipmentTypeTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         tool = EquipmentType.objects.create(name="tool")
-        response_1 = client.get('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+'/', format='json')
-        response_2 = client.delete('/api/maintenancemanagement/equipmenttypes/'+str(tool.id)+'/')
-        self.assertEqual(response_1.status_code,200)
-        self.assertEqual(response_2.status_code,204)
+        response_1 = client.get('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/', format='json')
+        response_2 = client.delete('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/')
+        self.assertEqual(response_1.status_code, 200)
+        self.assertEqual(response_2.status_code, 204)
         self.assertFalse(EquipmentType.objects.filter(id=tool.id).exists())
 
     def test_delete_equipmenttype_request_without_perm(self):

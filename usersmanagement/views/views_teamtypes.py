@@ -1,14 +1,15 @@
-from rest_framework.response import Response
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.conf import settings
-from usersmanagement.serializers import TeamTypeSerializer
+from rest_framework.response import Response
 from usersmanagement.models import TeamType
-from django.contrib.auth import authenticate, login, logout
+from usersmanagement.serializers import TeamTypeSerializer
 
 User = settings.AUTH_USER_MODEL
 
-@api_view(['GET','POST'])
+
+@api_view(['GET', 'POST'])
 def teamtypes_list(request):
     """
         \n# List all the team types or create a new one
@@ -33,7 +34,7 @@ def teamtypes_list(request):
             serializer = TeamTypeSerializer(group_types, many=True)
             return Response(serializer.data)
         else:
-           return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'POST':
         if request.user.has_perm("usersmanagement.add_teamtype"):
@@ -44,8 +45,9 @@ def teamtypes_list(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+
 @api_view(['GET', 'PUT', 'DELETE'])
-def teamtypes_detail(request,pk):
+def teamtypes_detail(request, pk):
     """
         \n# Retrieve, update or delete a team type
 
@@ -81,7 +83,7 @@ def teamtypes_detail(request,pk):
 
     if request.method == 'PUT':
         if request.user.has_perm("usersmanagement.change_teamtype"):
-            serializer = TeamTypeSerializer(group_type, data = request.data)
+            serializer = TeamTypeSerializer(group_type, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)

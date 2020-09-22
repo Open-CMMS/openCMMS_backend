@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import UserProfile,TeamType, Team
 from django.contrib.auth.admin import UserAdmin
+
+from .models import Team, TeamType, UserProfile
 
 # Register your models here.
 

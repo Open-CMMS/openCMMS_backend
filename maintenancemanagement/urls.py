@@ -1,15 +1,16 @@
 from django.urls import path
-from .views import views_equipmentType, views_equipment, views_task, views_taskType, views_fieldValue, views_field, views_file, views_fieldObject
 
+from .views import (
+    views_equipment, views_equipmentType, views_field, views_fieldObject,
+    views_fieldValue, views_file, views_task, views_taskType,
+)
 
-urlpatterns = [
-]
+urlpatterns = []
 
 urlpatterns_equipment = [
     path('equipments/', views_equipment.equipment_list, name='equipment-list'),
     path('equipments/<int:pk>/', views_equipment.equipment_detail, name='equipment-detail'),
 ]
-
 
 urlpatterns_equipmenttype = [
     path('equipmenttypes/', views_equipmentType.equipmenttype_list, name='equipmenttype-list'),
@@ -19,7 +20,7 @@ urlpatterns_equipmenttype = [
 urlpatterns_task = [
     path('tasks/', views_task.task_list, name='task-list'),
     path('tasks/<int:pk>/', views_task.task_detail, name='task-detail'),
-    path('addteamtotask', views_task.add_team_to_task, name='add-team-to-task' ),
+    path('addteamtotask', views_task.add_team_to_task, name='add-team-to-task'),
     path('teamtasklist/<int:pk>', views_task.team_task_list, name='team-task-list'),
     path('usertasklist/<int:pk>', views_task.user_task_list, name='team-task-list')
 ]
@@ -28,7 +29,6 @@ urlpatterns_tasktype = [
     path('tasktypes/', views_taskType.taskType_list, name="tasktype-list"),
     path('tasktypes/<int:pk>/', views_taskType.taskType_detail, name='tasktype-detail')
 ]
-
 
 urlpatterns_fieldValue = [
     path('fieldvalues_for_field/<int:pk>/', views_fieldValue.fieldValue_for_field, name='fieldvalues-on-all'),

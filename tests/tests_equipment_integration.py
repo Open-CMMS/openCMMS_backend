@@ -1,12 +1,13 @@
-from django.test import TestCase
 from django.contrib.auth.models import Permission
+from django.test import TestCase
 from maintenancemanagement.models import Equipment, EquipmentType, File
-from usersmanagement.models import UserProfile
-from rest_framework.test import APIClient
 from maintenancemanagement.serializers import EquipmentSerializer
 from openCMMS import settings
+from rest_framework.test import APIClient
+from usersmanagement.models import UserProfile
 
 User = settings.AUTH_USER_MODEL
+
 
 class EquipmentTests(TestCase):
 
@@ -14,7 +15,7 @@ class EquipmentTests(TestCase):
         """
             Set up an equipment with a name, an equipment type
         """
-        v= EquipmentType.objects.create(name="Voiture")
+        v = EquipmentType.objects.create(name="Voiture")
         Equipment.objects.create(name="Peugeot Partner", equipment_type=v)
 
     def temporary_file(self):
@@ -62,7 +63,6 @@ class EquipmentTests(TestCase):
         perm_delete = Permission.objects.get(codename="delete_equipment")
         user.user_permissions.set([perm_delete])
 
-
     def test_equipment_list_get_authorized(self):
         """
             Test if a user with perm receive the equipments' list
@@ -74,7 +74,7 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         response = c.get("/api/maintenancemanagement/equipments/")
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
     def test_equipment_list_get_unauthorized(self):
@@ -97,11 +97,14 @@ class EquipmentTests(TestCase):
         self.add_add_perm(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id
-        }, format='json')
-        self.assertEqual(response.status_code,201)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
         self.assertTrue(Equipment.objects.get(name="Renault Kangoo"))
 
     def test_equipment_list_post_unauthorized(self):
@@ -111,10 +114,12 @@ class EquipmentTests(TestCase):
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
         c.force_authenticate(user=user)
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name" : "Renault Kangoo",
-                     "equipment_type" : EquipmentType.objects.get(name="Voiture").id
-        })
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id
+            }
+        )
         self.assertEqual(response.status_code, 401)
 
     def test_equipment_detail_get_authorized(self):
@@ -128,8 +133,8 @@ class EquipmentTests(TestCase):
 
         equipment = Equipment.objects.get(name="Peugeot Partner")
         serializer = EquipmentSerializer(equipment)
-        response = c.get("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,200)
+        response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
     def test_equipment_detail_get_unauthorized(self):
@@ -142,8 +147,8 @@ class EquipmentTests(TestCase):
 
         equipment = Equipment.objects.get(name="Peugeot Partner")
         serializer = EquipmentSerializer(equipment)
-        response = c.get("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,401)
+        response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 401)
 
     def test_equipment_detail_put_authorized(self):
         """
@@ -154,11 +159,11 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        response = c.put("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/",
-                         {
-                             "name":"Renault Trafic"
-                         }, format='json')
-        self.assertEqual(response.status_code,200)
+        response = c.put(
+            "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {"name": "Renault Trafic"},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(Equipment.objects.get(name="Renault Trafic"))
 
     def test_equipment_detail_put_unauthorized(self):
@@ -169,11 +174,11 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        response = c.put("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/",
-                         {
-                             "name":"Renault Trafic"
-                         }, format='json')
-        self.assertEqual(response.status_code,401)
+        response = c.put(
+            "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {"name": "Renault Trafic"},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_equipment_detail_delete_authorized(self):
         """
@@ -184,10 +189,9 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        response = c.delete("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,204)
+        response = c.delete("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 204)
         self.assertFalse(Equipment.objects.filter(id=equipment.id).exists())
-
 
     def test_equipment_detail_delete_unauthorized(self):
         """
@@ -197,8 +201,8 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        response = c.delete("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,401)
+        response = c.delete("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 401)
 
     def test_equipment_list_post_authorized_with_file(self):
         """
@@ -209,18 +213,18 @@ class EquipmentTests(TestCase):
         self.add_add_perm(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk = response1.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk]
-        }, format='json')
-        self.assertEqual(response.status_code,201)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
 
     def test_equipment_list_post_unauthorized_with_file(self):
         """
@@ -230,18 +234,18 @@ class EquipmentTests(TestCase):
         self.add_add_perm_file(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk = response1.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk]
-        }, format='json')
-        self.assertEqual(response.status_code,401)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_equipment_detail_get_authorized_with_file(self):
         """
@@ -253,21 +257,21 @@ class EquipmentTests(TestCase):
         self.add_add_perm_file(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk = response1.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk]
-        }, format='json')
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk]
+            },
+            format='json'
+        )
         equipment = Equipment.objects.get(name="Renault Kangoo")
         serializer = EquipmentSerializer(equipment)
-        response = c.get("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,200)
+        response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
     def test_equipment_detail_get_unauthorized_with_file(self):
@@ -279,21 +283,21 @@ class EquipmentTests(TestCase):
         self.add_add_perm_file(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk = response1.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk]
-        }, format='json')
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk]
+            },
+            format='json'
+        )
         equipment = Equipment.objects.get(name="Renault Kangoo")
         serializer = EquipmentSerializer(equipment)
-        response = c.get("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,401)
+        response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 401)
 
     def test_equipment_list_post_authorized_with_files(self):
         """
@@ -304,24 +308,21 @@ class EquipmentTests(TestCase):
         self.add_add_perm(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'True'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'True'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         response2 = c.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_1 = response1.data['id']
         pk_2 = response2.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk_1,pk_2]
-        }, format='json')
-        self.assertEqual(response.status_code,201)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk_1, pk_2]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
 
     def test_equipment_list_post_unauthorized_with_files(self):
         """
@@ -331,24 +332,21 @@ class EquipmentTests(TestCase):
         self.add_add_perm_file(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'True'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'True'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         response2 = c.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_1 = response1.data['id']
         pk_2 = response2.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk_1,pk_2]
-        }, format='json')
-        self.assertEqual(response.status_code,401)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk_1, pk_2]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_equipment_detail_get_authorized_with_files(self):
         """
@@ -360,27 +358,24 @@ class EquipmentTests(TestCase):
         self.add_add_perm_file(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'True'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'True'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         response2 = c.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_1 = response1.data['id']
         pk_2 = response2.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk_1,pk_2]
-        }, format='json')
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk_1, pk_2]
+            },
+            format='json'
+        )
         equipment = Equipment.objects.get(name="Renault Kangoo")
         serializer = EquipmentSerializer(equipment)
-        response = c.get("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,200)
+        response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
     def test_equipment_detail_get_unauthorized_with_files(self):
@@ -392,24 +387,21 @@ class EquipmentTests(TestCase):
         self.add_add_perm_file(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        data = {
-            'file': self.temporary_file(),
-            'is_manual': 'False'
-        }
-        data2 = {
-            'file': self.temporary_file(),
-            'is_manual': 'True'
-        }
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data2 = {'file': self.temporary_file(), 'is_manual': 'True'}
         response1 = c.post("/api/maintenancemanagement/files/", data, format='multipart')
         pk_1 = response1.data['id']
         response2 = c.post("/api/maintenancemanagement/files/", data2, format='multipart')
         pk_2 = response2.data['id']
-        response = c.post("/api/maintenancemanagement/equipments/", {
-            "name": "Renault Kangoo",
-            "equipment_type": EquipmentType.objects.get(name="Voiture").id,
-            "files": [pk_1,pk_2]
-        }, format='json')
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name": "Renault Kangoo",
+                "equipment_type": EquipmentType.objects.get(name="Voiture").id,
+                "files": [pk_1, pk_2]
+            },
+            format='json'
+        )
         equipment = Equipment.objects.get(name="Renault Kangoo")
         serializer = EquipmentSerializer(equipment)
-        response = c.get("/api/maintenancemanagement/equipments/"+str(equipment.id)+"/")
-        self.assertEqual(response.status_code,401)
+        response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
+        self.assertEqual(response.status_code, 401)

@@ -1,10 +1,13 @@
-from django.test import TestCase, RequestFactory
-from rest_framework.test import APIClient
-from usersmanagement.models import UserProfile, Team, TeamType
 from django.contrib.auth.models import Permission
-from usersmanagement.views.views_team import belongs_to_team
-from usersmanagement.serializers import UserProfileSerializer, TeamSerializer, PermissionSerializer
 from django.contrib.contenttypes.models import ContentType
+from django.test import RequestFactory, TestCase
+from rest_framework.test import APIClient
+from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.serializers import (
+    PermissionSerializer, TeamSerializer, UserProfileSerializer,
+)
+from usersmanagement.views.views_team import belongs_to_team
+
 
 class TeamsTests(TestCase):
 
@@ -30,23 +33,21 @@ class TeamsTests(TestCase):
         T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 
         #User creation
-        tom = UserProfile.objects.create(first_name="Tom",
-                                       last_name="N",
-                                       email="tom.n@ac.com",
-                                       password="truc",
-                                       username = "tn")
+        tom = UserProfile.objects.create(
+            first_name="Tom", last_name="N", email="tom.n@ac.com", password="truc", username="tn"
+        )
 
-        joe = UserProfile.objects.create(first_name="Joe",
-                                       last_name="D",
-                                       email="joe.d@ll.com",
-                                       password="bouh",
-                                       username = "jd")
+        joe = UserProfile.objects.create(
+            first_name="Joe", last_name="D", email="joe.d@ll.com", password="bouh", username="jd"
+        )
 
-        joey = UserProfile.objects.create(first_name="Joey",
-                                       last_name="Bidouille",
-                                       email="joey.bidouille@machin.com",
-                                       password="brico",
-                                       username = "jbi")
+        joey = UserProfile.objects.create(
+            first_name="Joey",
+            last_name="Bidouille",
+            email="joey.bidouille@machin.com",
+            password="brico",
+            username="jbi"
+        )
 
         tom.groups.add(T_Admin)
         tom.save()
@@ -69,8 +70,7 @@ class TeamsTests(TestCase):
 
         team = Team.objects.get(name="Maintenance Team 1")
 
-        self.assertTrue(belongs_to_team(joe,team))
-
+        self.assertTrue(belongs_to_team(joe, team))
 
     def test_belongs_to_team_false(self):
         """
@@ -82,4 +82,4 @@ class TeamsTests(TestCase):
 
         team = Team.objects.get(name="Administrators 1")
 
-        self.assertFalse(belongs_to_team(joe,team))
+        self.assertFalse(belongs_to_team(joe, team))

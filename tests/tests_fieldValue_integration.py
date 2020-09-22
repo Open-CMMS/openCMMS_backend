@@ -1,10 +1,10 @@
-from django.test import TestCase
 from django.contrib.auth.models import Permission
-from rest_framework.test import APIClient
-from openCMMS import settings
-from usersmanagement.models import UserProfile
-from maintenancemanagement.models import Field, FieldValue, FieldGroup
+from django.test import TestCase
+from maintenancemanagement.models import Field, FieldGroup, FieldValue
 from maintenancemanagement.serializers import FieldValueSerializer
+from openCMMS import settings
+from rest_framework.test import APIClient
+from usersmanagement.models import UserProfile
 
 User = settings.AUTH_USER_MODEL
 
@@ -19,9 +19,9 @@ class FieldValueTests(TestCase):
             Set-up FieldGroup, Field and FieldValues for the tests
         """
         field_maintenance = FieldGroup.objects.create(name="Maintenance")
-        des_conditions = Field.objects.create(name="Des Conditions", field_group = field_maintenance)
-        FieldValue.objects.create(value = "Date", field = des_conditions)
-        FieldValue.objects.create(value = "Durée", field = des_conditions)
+        des_conditions = Field.objects.create(name="Des Conditions", field_group=field_maintenance)
+        FieldValue.objects.create(value="Date", field=des_conditions)
+        FieldValue.objects.create(value="Durée", field=des_conditions)
 
     def add_view_perm(self, user):
         """
@@ -41,7 +41,10 @@ class FieldValueTests(TestCase):
         serializer = FieldValueSerializer(fields_value, many=True)
         c = APIClient()
         c.force_authenticate(user=user)
-        response = c.get("/api/maintenancemanagement/fieldvalues_for_field/"+str(Field.objects.get(name="Des Conditions").id)+"/")
+        response = c.get(
+            "/api/maintenancemanagement/fieldvalues_for_field/" + str(Field.objects.get(name="Des Conditions").id) +
+            "/"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
@@ -52,5 +55,8 @@ class FieldValueTests(TestCase):
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
         c.force_authenticate(user=user)
-        response = c.get("/api/maintenancemanagement/fieldvalues_for_field/"+str(Field.objects.get(name="Des Conditions").id)+"/")
+        response = c.get(
+            "/api/maintenancemanagement/fieldvalues_for_field/" + str(Field.objects.get(name="Des Conditions").id) +
+            "/"
+        )
         self.assertEqual(response.status_code, 401)
