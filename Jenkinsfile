@@ -36,7 +36,7 @@ pipeline {
             }
             post {
                 always {
-                    junit "backend/reports/tests.xml"
+                    junit "reports/tests.xml"
                     cobertura (
                         autoUpdateHealth: false,
                         autoUpdateStability: false,
