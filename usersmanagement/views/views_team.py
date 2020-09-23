@@ -1,4 +1,4 @@
-"""This module expose the Team model."""
+"""This modules expose the Team model."""
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.serializers import TeamSerializer
 

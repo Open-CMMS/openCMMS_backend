@@ -1,4 +1,4 @@
-"""This module expose the permissions."""
+"""This module exposes the permissions."""
 from usersmanagement.serializers import PermissionSerializer
 
 from django.contrib.auth.models import Permission
