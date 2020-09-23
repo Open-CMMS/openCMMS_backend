@@ -1,12 +1,13 @@
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.serializers import TeamSerializer
 
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-@api_view(['GET', 'POST'])
-def team_list(request):
+
+class TeamList(APIView):
     """
         \n# List all the teams or create a new one
 
@@ -18,18 +19,25 @@ def team_list(request):
 
         GET request : list all teams and return the data
         POST request :
-        - create a new team, send HTTP 201.  If the request is not valid, send HTTP 400.
+        - create a new team, send HTTP 201.  If the request is not valid, send\
+            HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name (the name of the team, string) and team_type (the id of the team_type, int), can contain user_set (the users' id list, [])
+        - The request must contain name (the name of the team, string) and\
+            team_type (the id of the team_type, int), can contain user_set\
+                 (the users' id list, [])
     """
-    if request.user.has_perm("usersmanagement.view_team"):
-        if request.method == 'GET':
+
+    def get(self, request, format='None'):
+        """Define what happen if a request is made using GET method."""
+        if request.user.has_perm("usersmanagement.view_team"):
             teams = Team.objects.all()
             serializer = TeamSerializer(teams, many=True)
             return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED
 
-    if request.user.has_perm("usersmanagement.add_team"):
-        if request.method == 'POST':
+    def post(self, requets, format='None'):
+        """Define what happen if a request is made using POST method."""
+        if request.user.has_perm("usersmanagement.add_team"):
             serializer = TeamSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -37,7 +45,8 @@ def team_list(request):
                 team.team_type._apply_()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
