@@ -26,12 +26,12 @@ urlpatterns_task = [
 ]
 
 urlpatterns_tasktype = [
-    path('tasktypes/', views_taskType.taskType_list, name="tasktype-list"),
-    path('tasktypes/<int:pk>/', views_taskType.taskType_detail, name='tasktype-detail')
+    path('tasktypes/', views_taskType.task_type_list, name="tasktype-list"),
+    path('tasktypes/<int:pk>/', views_taskType.task_type_detail, name='tasktype-detail')
 ]
 
 urlpatterns_fieldValue = [
-    path('fieldvalues_for_field/<int:pk>/', views_fieldValue.fieldValue_for_field, name='fieldvalues-on-all'),
+    path('fieldvalues_for_field/<int:pk>/', views_fieldValue.field_value_for_field, name='fieldvalues-on-all'),
 ]
 
 urlpatterns_field = [
@@ -44,8 +44,8 @@ urlpatterns_file = [
 ]
 
 urlpatterns_fieldObject = [
-    path('fieldobjects/', views_fieldObject.fieldObject_list, name='fieldObject-list'),
-    path('fieldobjects/<int:pk>/', views_fieldObject.fieldObject_detail, name='fieldObject-detail')
+    path('fieldobjects/', views_fieldObject.field_object_list, name='fieldObject-list'),
+    path('fieldobjects/<int:pk>/', views_fieldObject.field_object_detail, name='fieldObject-detail')
 ]
 
 urlpatterns += urlpatterns_equipment

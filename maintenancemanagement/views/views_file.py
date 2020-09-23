@@ -1,8 +1,11 @@
-from maintenancemanagement.models import File
-from maintenancemanagement.serializers import FileSerializer
+"""This module defines the views corresponding to the files."""
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from ..models import File
+from ..serializers import FileSerializer
 
 # Create your views here.
 
@@ -10,7 +13,8 @@ from rest_framework.response import Response
 @api_view(['GET', 'POST'])
 def file_list(request):
     """
-        List all Files or add one.
+        List all Files or add one. taskType_detailtaskType_detailtaskType_\
+            detailtaskType_detailtaskType_detailtaskType_detailtaskType_detailtaskType_detailtaskType_detail
     """
 
     if request.method == 'GET':

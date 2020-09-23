@@ -73,9 +73,9 @@ class FieldObjectTests(TestCase):
         perm_delete = Permission.objects.get(codename="delete_fieldobject")
         user.user_permissions.set([perm_delete])
 
-    def test_fieldObject_list_get_authorized(self):
+    def test_field_object_list_get_authorized(self):
         """
-            Test if a fieldObject_list in GET return all the fieldObject and HTTP200 for a authorized user.
+            Test if a field_object_list in GET return all the fieldObject and HTTP200 for a authorized user.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
@@ -87,9 +87,9 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_fieldObject_list_get_unauthorized(self):
+    def test_field_object_list_get_unauthorized(self):
         """
-            Test if fieldObject_list view in GET return HTTP 401 for a unauthorized user.
+            Test if field_object_list view in GET return HTTP 401 for a unauthorized user.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
@@ -97,9 +97,9 @@ class FieldObjectTests(TestCase):
         response = c.get("/api/maintenancemanagement/fieldobjects/")
         self.assertEqual(response.status_code, 401)
 
-    def test_fieldObject_list_post_authorized(self):
+    def test_field_object_list_post_authorized(self):
         """
-            Test if fieldObject_list view in POST add a fieldObject and return HTTP 201
+            Test if field_object_list view in POST add a fieldObject and return HTTP 201
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -121,9 +121,9 @@ class FieldObjectTests(TestCase):
         self.assertTrue(FieldObject.objects.filter(description="Date de test"))
         self.assertEqual(fo.described_object, Task.objects.get(id=une_tache.id))
 
-    def test_fieldObject_list_post_unauthorized(self):
+    def test_field_object_list_post_unauthorized(self):
         """
-            Test if fieldObject_list view in POST return HTTP 401 for a unauthorized user.
+            Test if field_object_list view in POST return HTTP 401 for a unauthorized user.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
@@ -138,7 +138,7 @@ class FieldObjectTests(TestCase):
         response = c.post("/api/maintenancemanagement/fieldobjects/", data, format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_fieldObject_details_get_authorized(self):
+    def test_field_object_details_get_authorized(self):
         """
             Test if a user with authorization can see a fieldObject's details
         """
@@ -151,7 +151,7 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FieldObjectSerializer(fo).data)
 
-    def test_fieldObject_details_get_unauthorized(self):
+    def test_field_object_details_get_unauthorized(self):
         """
             Test if a user without authorization can't see a fieldObject's details
         """
@@ -162,7 +162,7 @@ class FieldObjectTests(TestCase):
         response = c.get(f"/api/maintenancemanagement/fieldobjects/{fo.pk}/")
         self.assertEqual(response.status_code, 401)
 
-    def test_fieldObject_details_put_authorized(self):
+    def test_field_object_details_put_authorized(self):
         """
             Test if a user with authorization can update a fieldObject
         """
@@ -182,7 +182,7 @@ class FieldObjectTests(TestCase):
         self.assertEqual(response.data["described_object"], data["described_object"])
         self.assertEqual(response.data["field"], data["field"])
 
-    def test_fieldObject_details_put_unauthorized(self):
+    def test_field_object_details_put_unauthorized(self):
         """
             Test if a user without authorization can't update a fieldObject
         """
@@ -197,7 +197,7 @@ class FieldObjectTests(TestCase):
         response = c.put(f"/api/maintenancemanagement/fieldobjects/{fo.pk}/", data, format="json")
         self.assertEqual(response.status_code, 401)
 
-    def test_fieldObject_details_delete_authorized(self):
+    def test_field_object_details_delete_authorized(self):
         """
             Test if a user with authorization can delete a fieldObject
         """
@@ -209,7 +209,7 @@ class FieldObjectTests(TestCase):
         response = c.delete(f"/api/maintenancemanagement/fieldobjects/{fo.pk}/")
         self.assertEqual(response.status_code, 204)
 
-    def test_fieldObject_details_delete_unauthorized(self):
+    def test_field_object_details_delete_unauthorized(self):
         """
             Test if a user without authorization can't delete a fieldObject
         """

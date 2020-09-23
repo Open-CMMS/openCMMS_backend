@@ -41,7 +41,7 @@ class TaskTypeTests(TestCase):
         user.save()
         return user
 
-    def test_can_acces_tasktype_list_with_perm(self):
+    def test_can_acces_task_type_list_with_perm(self):
         """
             Test if a user with perm receive the data of tasktype
         """
@@ -53,7 +53,7 @@ class TaskTypeTests(TestCase):
         response = client.get('/api/maintenancemanagement/tasktypes/', format='json')
         self.assertEqual(response.data, serializer.data)
 
-    def test_can_acces_tasktype_list_without_perm(self):
+    def test_can_acces_task_type_list_without_perm(self):
         """
             Test if a user without perm doesn't receive the data of tasktype
         """

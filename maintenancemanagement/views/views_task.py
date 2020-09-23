@@ -1,11 +1,13 @@
-from django.contrib.auth import authenticate, login, logout
-from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
-from maintenancemanagement.serializers import TaskSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.views.views_team import belongs_to_team
+
+from ...usersmanagement.models import Team, UserProfile
+from ...usersmanagement.views.views_team import belongs_to_team
+from ..models import Field, FieldGroup, FieldValue, Task
+from ..serializers import TaskSerializer
+
+VIEW_TASK = "maintenancemanagement.view_task"
 
 
 @api_view(['GET', 'POST'])
@@ -13,7 +15,7 @@ def task_list(request):
     """
         \n# List all tasks or create a new one
 
-        
+
 
         Parameter :
         request (HttpRequest) : the request coming from the front-end
@@ -22,33 +24,34 @@ def task_list(request):
         response (Response) : the response.
 
         GET request : list all tasks and return the data
-        POST request : 
-        - create a new task, send HTTP 201.  If the request is not valid, send HTTP 400.
+        POST request :
+        - create a new task, send HTTP 201.  If the request is not valid,\
+             send HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name (the name of the task (String)) and description (a description of the task (String))
+        - The request must contain name (the name of the task (String)) and \
+            description (a description of the task (String))
         - The request can also contain :
             - end_date (String): Date (format DD-MM-YYYY) of the deadline
             - time (String): estimated duration of the task
-            - is_template (Boolean): boolean to specify if this task is just a template or not
+            - is_template (Boolean): boolean to specify if this task is \
+                just a template or not
             - equipment (int): an id which refers to the concerned equipment
             - teams (List<int>): an id list of the teams in charge of this task
             - task_type (int): an id which refers to the task_type of this task
             - files (List<int>): an id list of the files explaining this task
     """
 
-    if request.user.has_perm("maintenancemanagement.view_task"):
-        if request.method == 'GET':
-            tasks = Task.objects.all()
-            serializer = TaskSerializer(tasks, many=True)
-            return Response(serializer.data)
+    if request.user.has_perm(VIEW_TASK) and request.method == 'GET':
+        tasks = Task.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
 
-    if request.user.has_perm("maintenancemanagement.add_task"):
-        if request.method == 'POST':
-            serializer = TaskSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if request.user.has_perm("maintenancemanagement.add_task") and request.method == 'POST':
+        serializer = TaskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -65,18 +68,20 @@ def task_detail(request, pk):
         response (Response) : the response.
 
         GET request : return the task's data.
-        PUT request : change the task with the data on the request or if the data isn't well formed, send HTTP 400.
+        PUT request : change the task with the data on the request \
+            or if the data isn't well formed, send HTTP 400.
         DELETE request: delete the task and send HTTP 204.
 
         If the user doesn't have the permissions, it will send HTTP 401.
         If the id doesn't exist, it will send HTTP 404.
 
-        The PUT request can contain one or more of the following fields : 
+        The PUT request can contain one or more of the following fields :
             - name (String): The name of the task
             - description (String): The description of the task
             - end_date (String): Date (format DD-MM-YYYY) of the deadline
             - time (String): estimated duration of the task
-            - is_template (Boolean): boolean to specify if this task is just a template or not
+            - is_template (Boolean): boolean to specify if this task is just \
+                a template or not
             - equipment (int): an id which refers to the concerned equipment
             - teams (List<int>): an id list of the teams in charge of this task
             - task_type (int): an id which refers to the task_type of this task
@@ -91,7 +96,7 @@ def task_detail(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        if request.user.has_perm("maintenancemanagement.view_task") or participate_to_task(request.user, task):
+        if request.user.has_perm(VIEW_TASK) or participate_to_task(request.user, task):
             serializer = TaskSerializer(task)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -128,10 +133,11 @@ def add_team_to_task(request):
         PUT request : remove team from task
 
         If the user doesn't have the permissions, it will send HTTP 401.
-        
+
         Both request must contain :
             - id_task : the id of the task we want to edit
-            - id_team : the id ot the team we want to add/remove to/from the task
+            - id_team : the id ot the team we want to add/remove \
+                to/from the task
 
 
     """
@@ -171,7 +177,7 @@ def team_task_list(request, pk):
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("maintenancemanagement.view_task"):
+    if request.user.has_perm(VIEW_TASK):
         tasks = team.task_set.all()
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
@@ -198,8 +204,7 @@ def user_task_list(request, pk):
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("maintenancemanagement.view_task") or request.user == user:
-        #id_team = user.groups.all().values_list("id", flat=True).iterator()
+    if request.user.has_perm(VIEW_TASK) or request.user == user:
         tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
@@ -220,33 +225,31 @@ def participate_to_task(user, task):
 
 
 def init_database():
-    fieldGr = FieldGroup.objects.create(name="Maintenance", is_equipment=False)
+    field_gr = FieldGroup.objects.create(name="Maintenance", is_equipment=False)
 
-    fieldCriDec = Field.objects.create(name="Trigger Conditions", field_group=fieldGr)
-    fieldCriFin = Field.objects.create(name="End Conditions", field_group=fieldGr)
+    field_cri_dec = Field.objects.create(name="Trigger Conditions", field_group=field_gr)
+    field_cri_fin = Field.objects.create(name="End Conditions", field_group=field_gr)
 
-    fieldDateDec = FieldValue.objects.create(value="Date", field=fieldCriDec)
-    fieldEntierDec = FieldValue.objects.create(value="Entier", field=fieldCriDec)
-    #fieldCaseDec = FieldValue.objects.create(value="Case a cocher", field=fieldCriDec)
-    #fieldPhotoDec = FieldValue.objects.create(value="Photo", field=fieldCriDec)
-    fieldDecimalDec = FieldValue.objects.create(value="Décimal", field=fieldCriDec)
-    fieldDureeDec = FieldValue.objects.create(value="Duree", field=fieldCriDec)
+    field_date_dec = FieldValue.objects.create(value="Date", field=field_cri_dec)
+    field_entier_dec = FieldValue.objects.create(value="Entier", field=field_cri_dec)
+    field_decimal_dec = FieldValue.objects.create(value="Décimal", field=field_cri_dec)
+    field_duree_dec = FieldValue.objects.create(value="Duree", field=field_cri_dec)
 
-    fieldCaseFin = FieldValue.objects.create(value="Case a cocher", field=fieldCriFin)
-    fieldEntierFin = FieldValue.objects.create(value="Valeur numerique à rentrer", field=fieldCriFin)
-    fieldStringFin = FieldValue.objects.create(value="Description", field=fieldCriFin)
-    fieldPhotoFin = FieldValue.objects.create(value="Photo", field=fieldCriFin)
+    field_case_fin = FieldValue.objects.create(value="Case a cocher", field=field_cri_fin)
+    field_entier_fin = FieldValue.objects.create(value="Valeur numerique à rentrer", field=field_cri_fin)
+    field_string_fin = FieldValue.objects.create(value="Description", field=field_cri_fin)
+    field_photo_fin = FieldValue.objects.create(value="Photo", field=field_cri_fin)
 
-    fieldGr.save()
-    fieldCriDec.save()
-    fieldCriFin.save()
+    field_gr.save()
+    field_cri_dec.save()
+    field_cri_fin.save()
 
-    fieldDateDec.save()
-    fieldEntierDec.save()
-    fieldDecimalDec.save()
-    fieldDureeDec.save()
+    field_date_dec.save()
+    field_entier_dec.save()
+    field_decimal_dec.save()
+    field_duree_dec.save()
 
-    fieldCaseFin.save()
-    fieldEntierFin.save()
-    fieldStringFin.save()
-    fieldPhotoFin.save()
+    field_case_fin.save()
+    field_entier_fin.save()
+    field_string_fin.save()
+    field_photo_fin.save()
