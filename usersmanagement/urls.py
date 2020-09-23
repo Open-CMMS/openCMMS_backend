@@ -18,12 +18,12 @@ urlpatterns_users = [
 ]
 
 urlpatterns_perms = [
-    path('perms/', views_perms.perms_list, name='perms-list'),
-    path('perms/<int:pk>/', views_perms.perm_detail, name='perm-detail')
+    path('perms/', views_perms.PermsList.as_view(), name='perms-list'),
+    path('perms/<int:pk>/', views_perms.PermDetail.as_view(), name='perm-detail')
 ]
 
 urlpatterns_teams = [
-    path('add_user_to_team', views_team.add_user_to_team, name="add_user_to_team"),
+    path('add_user_to_team', views_team.AddUserToTeam.as_view(), name="add_user_to_team"),
     path('teams/', views_team.TeamList.as_view(), name='team-list'),
     path('teams/<int:pk>', views_team.TeamDetail.as_view(), name='team-detail'),
 ]
