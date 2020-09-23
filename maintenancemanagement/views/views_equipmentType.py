@@ -1,9 +1,12 @@
+"""This module defines the views corresponding to the equipment types."""
+
 from django.conf import settings
-from maintenancemanagement.models import EquipmentType
-from maintenancemanagement.serializers import EquipmentTypeSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from ..models import EquipmentType
+from ..serializers import EquipmentTypeSerializer
 
 User = settings.AUTH_USER_MODEL
 
@@ -20,11 +23,14 @@ def equipmenttype_list(request):
         response (Response) : the response.
 
         GET request : list all equipment types and return the data
-        POST request : 
-        - create a new equipment type, send HTTP 201.  If the request is not valid, send HTTP 400.
+        POST request :
+        - create a new equipment type, send HTTP 201.  If the request \
+            is not valid, send HTTP 400.
         - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name : the name of the equipment type (String)
-        - The request must contain equipment_set : a list (which can be empty) of the equipment id (List<int>)
+        - The request must contain name : the name of the equipment \
+            type (String)
+        - The request must contain equipment_set : a list (which can \
+            be empty) of the equipment id (List<int>)
     """
     if request.method == 'GET':
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
@@ -57,13 +63,14 @@ def equipmenttype_detail(request, pk):
         response (Response) : the response.
 
         GET request : return the equipment type's data.
-        PUT request : change the equipment type with the data on the request or if the data isn't well formed, send HTTP 400.
+        PUT request : change the equipment type with the data on the request \
+            or if the data isn't well formed, send HTTP 400.
         DELETE request: delete the equipment type and send HTTP 204.
 
         If the user doesn't have the permissions, it will send HTTP 401.
         If the id doesn't exist, it will send HTTP 404.
 
-        The PUT request can contain one or more of the following fields : 
+        The PUT request can contain one or more of the following fields :
             - name (String): the name of the equipment type
             - equipment_set (List<int>) : a list of equipment's ids
 

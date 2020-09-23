@@ -1,12 +1,15 @@
-from maintenancemanagement.models import Field, FieldValue
-from maintenancemanagement.serializers import FieldValueSerializer
+"""This module defines the views corresponding to the field values."""
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from ..models import Field, FieldValue
+from ..serializers import FieldValueSerializer
+
 
 @api_view(['GET'])
-def fieldValue_for_field(request, pk):
+def field_value_for_field(request, pk):
     """
         \n# List all the fieldValues for a specific field
 

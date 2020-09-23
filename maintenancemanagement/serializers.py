@@ -2,10 +2,15 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
 from .models import (
-    Equipment, EquipmentType, Field, FieldObject, FieldValue, File, Task,
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldObject,
+    FieldValue,
+    File,
+    Task,
     TaskType,
 )
-
 """
 Serializers enable the link between front-end and back-end
 """
