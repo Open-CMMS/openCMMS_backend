@@ -1,3 +1,4 @@
+"""This module routes the url to the views of the app."""
 from django.urls import path
 
 from .views import views_perms, views_team, views_teamtypes, views_user
