@@ -23,8 +23,8 @@ urlpatterns_perms = [
 
 urlpatterns_teams = [
     path('add_user_to_team', views_team.add_user_to_team, name="add_user_to_team"),
-    path('teams/', views_team.team_list, name='team-list'),
-    path('teams/<int:pk>', views_team.team_detail, name='team-detail'),
+    path('teams/', views_team.TeamList.as_view(), name='team-list'),
+    path('teams/<int:pk>', views_team.TeamDetail.as_view(), name='team-detail'),
 ]
 
 url_patterns_teamtypes = [
