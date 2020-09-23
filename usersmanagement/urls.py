@@ -1,3 +1,4 @@
+"""This module handles the routing of our django appp."""
 from django.urls import path
 
 from .views import views_perms, views_team, views_teamtypes, views_user
@@ -22,7 +23,7 @@ urlpatterns_perms = [
 ]
 
 urlpatterns_teams = [
-    path('add_user_to_team', views_team.add_user_to_team, name="add_user_to_team"),
+    path('add_user_to_team', views_team.AddUserToTeam.as_view(), name="add_user_to_team"),
     path('teams/', views_team.TeamList.as_view(), name='team-list'),
     path('teams/<int:pk>', views_team.TeamDetail.as_view(), name='team-detail'),
 ]
