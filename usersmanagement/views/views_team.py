@@ -180,11 +180,29 @@ the data isn't well formed, send HTTP 400.
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['POST', 'PUT'])
-def add_user_to_team(request):
-    """
-        \n# Add and remove users from team
+class AddUserToTeam(APIView):
+    """# Add and remove users from team.
 
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    response (Response) : the response.
+
+    POST request : add a user to a team and send HTTP 201, must contain\
+            id_user (the id of the user to add, int) and id_team (the id of\
+                the team where the user will be add, int)
+    PUT request : remove a user from a team and send HTTP 201, must\
+        contain id_user (the id of the user to remove, int) and\
+            id_team (the id of the team where the user will be remove, int)
+
+    If the user doesn't have the permissions, it will send HTTP 401.
+    """
+
+    def post(self, request):
+        """# Implements the POST method.
+
+        ```
         Parameters :
         request (HttpRequest) : the request coming from the front-end
 
@@ -192,39 +210,50 @@ def add_user_to_team(request):
         response (Response) : the response.
 
         POST request : add a user to a team and send HTTP 201, must contain\
-             id_user (the id of the user to add, int) and id_team (the id of\
-                 the team where the user will be add, int)
-        PUT request : remove a user from a team and send HTTP 201, must\
-            contain id_user (the id of the user to remove, int) and\
-                id_team (the id of the team where the user will be remove, int)
-
-        If the user doesn't have the permissions, it will send HTTP 401.
-    """
-    if request.user.has_perm("usersmanagement.change_team"):
-        if request.method == 'POST':
+id_user (the id of the user to add, int) and id_team (the id of the team where\
+the user will be add, int)
+        ```
+        """
+        if request.user.has_perm("usersmanagement.change_team"):
             user = UserProfile.objects.get(pk=request.data["id_user"])
             team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.add(user)
             return Response(status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        elif request.method == 'PUT':
+    def put(self, request):
+        """# Implements PUT method.
+
+        ```
+        Parameters :
+        request (HttpRequest) : the request coming from the front-end
+
+        Return :
+        response (Response) : the response.
+
+        PUT request : remove a user from a team and send HTTP 201, must\
+contain id_user (the id of the user to remove, int) and id_team (the id of the\
+team where the user will be remove, int)
+        ```
+        """
+        if request.user.has_perm("usersmanagement.change_team"):
             user = UserProfile.objects.get(pk=request.data["id_user"])
             team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.remove(user)
             return Response(status=status.HTTP_201_CREATED)
-
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 def belongs_to_team(user, team):
-    """
-        \n# Check if a user belong to the team
+    """Check if a user belong to the team.
 
-        Parameters :
+    Parameters :
         user (UserProfile) : the user to check
         team (Team) : the team to check
 
-        Return :
+    Return :
         boolean : True if the user belongs to team, else False
     """
     return user.groups.filter(id=team.id).exists()
