@@ -1,11 +1,11 @@
 """This module defines the views corresponding to the field objects."""
 
+from maintenancemanagement.models import FieldObject
+from maintenancemanagement.serializers import FieldObjectSerializer
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from ..models import FieldObject
-from ..serializers import FieldObjectSerializer
 
 
 @api_view(['GET', 'POST'])

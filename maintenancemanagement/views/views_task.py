@@ -1,11 +1,11 @@
+from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
+from maintenancemanagement.serializers import TaskSerializer
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.views.views_team import belongs_to_team
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from ...usersmanagement.models import Team, UserProfile
-from ...usersmanagement.views.views_team import belongs_to_team
-from ..models import Field, FieldGroup, FieldValue, Task
-from ..serializers import TaskSerializer
 
 VIEW_TASK = "maintenancemanagement.view_task"
 

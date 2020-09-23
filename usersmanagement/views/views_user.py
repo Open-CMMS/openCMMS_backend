@@ -23,7 +23,7 @@ User = settings.AUTH_USER_MODEL
 @api_view(['GET', 'POST'])
 def user_list(request):
     """
-        \n# List all users or create a new one
+        # List all users or create a new one
 
 
         Parameter :
@@ -119,7 +119,7 @@ def user_detail(request, pk):
 
     elif request.method == 'DELETE':
         if request.user.has_perm("usersmanagement.delete_userprofile"):
-            #Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
+            # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -280,7 +280,7 @@ def send_mail_to_setup_password(data):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG == True):
+    if (settings.DEBUG is True):
         url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
     else:
         url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
@@ -304,7 +304,7 @@ def send_mail_to_setup_password_after_blocking(id):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG == True):
+    if (settings.DEBUG is True):
         url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
     else:
         url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
@@ -361,17 +361,17 @@ def check_token(request):
 
 def init_database():
 
-    #Creation of 3 TeamTypes
+    # Creation of 3 TeamTypes
     Admins = TeamType.objects.create(name="Administrators")
     MMs = TeamType.objects.create(name="Maintenance Manager")
     MTs = TeamType.objects.create(name="Maintenance Team")
 
-    #Creation of the 3 inital Teams
+    # Creation of the 3 inital Teams
     T_Admin = Team.objects.create(name="Administrators 1", team_type=Admins)
     T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=MMs)
     T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 
-    #Adding all permissions to admins
+    # Adding all permissions to admins
     permis = Permission.objects.all()
     for perm in permis:
         Admins.perms.add(perm)
@@ -381,7 +381,7 @@ def init_database():
     Admins = TeamType.objects.get(name="Administrators")
     T_Admin = Admins.team_set.all()[0]
 
-    #Adding first user to admins
+    # Adding first user to admins
     user = UserProfile.objects.all()[0]
     user.groups.add(T_Admin)
     user.save()

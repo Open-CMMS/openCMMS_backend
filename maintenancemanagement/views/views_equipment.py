@@ -1,11 +1,11 @@
 """This module defines the views corresponding to the equipments."""
 
+from maintenancemanagement.models import Equipment
+from maintenancemanagement.serializers import EquipmentSerializer
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from ..models import Equipment
-from ..serializers import EquipmentSerializer
 
 
 @api_view(['GET', 'POST'])

@@ -1,12 +1,12 @@
 """This module defines the views corresponding to the equipment types."""
 
+from maintenancemanagement.models import EquipmentType
+from maintenancemanagement.serializers import EquipmentTypeSerializer
+
 from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from ..models import EquipmentType
-from ..serializers import EquipmentTypeSerializer
 
 User = settings.AUTH_USER_MODEL
 

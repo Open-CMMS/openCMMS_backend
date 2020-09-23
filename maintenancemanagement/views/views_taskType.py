@@ -1,11 +1,11 @@
 """This module defines the views corresponding to the task types."""
 
+from maintenancemanagement.models import TaskType
+from maintenancemanagement.serializers import TaskTypeSerializer
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from ..models import TaskType
-from ..serializers import TaskTypeSerializer
 
 
 @api_view(['GET', 'POST'])
