@@ -2,14 +2,12 @@
 
 from maintenancemanagement.models import Field, FieldValue
 from maintenancemanagement.serializers import FieldValueSerializer
-
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
-@api_view(['GET'])
-def field_value_for_field(request, pk):
+class FieldValueForField(APIView):
     """
         \n# List all the fieldValues for a specific field
 
@@ -22,7 +20,8 @@ def field_value_for_field(request, pk):
 
         GET request : List all the fieldValues for a specific field
     """
-    if request.method == 'GET':
+
+    def get(self, request, pk):
         if request.user.has_perm("maintenancemanagement.view_fieldvalue"):
             field = Field.objects.get(id=pk)
             field_values = FieldValue.objects.filter(field=field)

@@ -2,14 +2,12 @@
 
 from maintenancemanagement.models import FieldObject
 from maintenancemanagement.serializers import FieldObjectSerializer
-
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
-@api_view(['GET', 'POST'])
-def field_object_list(request):
+class FieldObjectList(APIView):
     """
         \n# List all fieldObjects or create a new one.
 
@@ -34,14 +32,14 @@ def field_object_list(request):
             - description(String): The description of value
     """
 
-    if request.method == 'GET':
+    def get(self, request):
         if request.user.has_perm("maintenancemanagement.view_fieldobject"):
             field_objects = FieldObject.objects.all()
             serializer = FieldObjectSerializer(field_objects, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'POST':
+    def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_fieldobject"):
             serializer = FieldObjectSerializer(data=request.data)
             if serializer.is_valid():
@@ -51,8 +49,7 @@ def field_object_list(request):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def field_object_detail(request, pk):
+class FieldObjectDetail(APIView):
     """
         Retrieve, update or delete a fieldObject.
 
@@ -81,18 +78,21 @@ def field_object_detail(request, pk):
 
     """
 
-    try:
-        field_object = FieldObject.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
+    def get(self, request, pk):
+        try:
+            field_object = FieldObject.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_fieldobject"):
             serializer = FieldObjectSerializer(field_object)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'PUT':
+    def put(self, request, pk):
+        try:
+            field_object = FieldObject.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.change_fieldobject"):
             serializer = FieldObjectSerializer(field_object, data=request.data, partial=True)
             if serializer.is_valid():
@@ -101,7 +101,11 @@ def field_object_detail(request, pk):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'DELETE':
+    def delete(self, request, pk):
+        try:
+            field_object = FieldObject.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_fieldobject"):
             field_object.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

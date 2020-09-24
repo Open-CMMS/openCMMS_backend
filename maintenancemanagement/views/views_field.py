@@ -2,14 +2,12 @@
 
 from maintenancemanagement.models import Field
 from maintenancemanagement.serializers import FieldSerializer
-
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
-@api_view(['GET'])
-def field_list(request):
+class FieldList(APIView):
     """
         \n# List all Fields.
 
@@ -22,7 +20,7 @@ def field_list(request):
         GET request : List all Fields
     """
 
-    if request.method == 'GET':
+    def get(self, request):
         if request.user.has_perm("maintenancemanagement.view_field"):
             field = Field.objects.all()
             serializer = FieldSerializer(field, many=True)

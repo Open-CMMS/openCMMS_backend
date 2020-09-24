@@ -1,17 +1,16 @@
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from maintenancemanagement.serializers import TaskSerializer
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.views.views_team import belongs_to_team
 
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-
 VIEW_TASK = "maintenancemanagement.view_task"
+CHANGE_TASK = "maintenancemanagement.change_task"
 
 
-@api_view(['GET', 'POST'])
-def task_list(request):
+class TaskList(APIView):
     """
         \n# List all tasks or create a new one
 
@@ -41,22 +40,24 @@ def task_list(request):
             - files (List<int>): an id list of the files explaining this task
     """
 
-    if request.user.has_perm(VIEW_TASK) and request.method == 'GET':
-        tasks = Task.objects.all()
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data)
+    def get(self, request):
+        if request.user.has_perm(VIEW_TASK):
+            tasks = Task.objects.all()
+            serializer = TaskSerializer(tasks, many=True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if request.user.has_perm("maintenancemanagement.add_task") and request.method == 'POST':
-        serializer = TaskSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
+    def post(self, request):
+        if request.user.has_perm("maintenancemanagement.add_task"):
+            serializer = TaskSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def task_detail(request, pk):
+class TaskDetail(APIView):
     """
         \n# Retrieve, update or delete a task
 
@@ -90,19 +91,22 @@ def task_detail(request, pk):
 
     """
 
-    try:
-        task = Task.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
+    def get(self, request, pk):
+        try:
+            task = Task.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(VIEW_TASK) or participate_to_task(request.user, task):
             serializer = TaskSerializer(task)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'PUT':
-        if request.user.has_perm("maintenancemanagement.change_task"):
+    def put(self, request, pk):
+        try:
+            task = Task.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if request.user.has_perm(CHANGE_TASK):
             serializer = TaskSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -110,15 +114,18 @@ def task_detail(request, pk):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'DELETE':
+    def delete(self, request, pk):
+        try:
+            task = Task.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_task"):
             task.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['POST', 'PUT'])
-def add_team_to_task(request):
+class AddTeamToTask(APIView):
     """
         \n# Assign a team to a task
 
@@ -142,24 +149,24 @@ def add_team_to_task(request):
 
     """
 
-    if request.user.has_perm("maintenancemanagement.change_task"):
-        if request.method == 'POST':
+    def post(self, request):
+        if request.user.has_perm(CHANGE_TASK):
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
             task.teams.add(team)
             return Response(status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        elif request.method == 'PUT':
+    def put(self, request):
+        if request.user.has_perm(CHANGE_TASK):
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
             task.teams.remove(team)
             return Response(status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-
-@api_view(["GET"])
-def team_task_list(request, pk):
+class TeamTaskList(APIView):
     """
         \n# List all the tasks a team is assigned to.
 
@@ -172,21 +179,21 @@ def team_task_list(request, pk):
 
         GET request : list all tasks of a team.
     """
-    try:
-        team = Team.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm(VIEW_TASK):
-        tasks = team.task_set.all()
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data)
-    else:
+    def get(self, request, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.has_perm(VIEW_TASK):
+            tasks = team.task_set.all()
+            serializer = TaskSerializer(tasks, many=True)
+            return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(["GET"])
-def user_task_list(request, pk):
+class UserTaskList(APIView):
     """
         \n# List all the tasks the user is assigned to.
 
@@ -199,16 +206,17 @@ def user_task_list(request, pk):
 
         GET request : list all tasks of the user.
     """
-    try:
-        user = UserProfile.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm(VIEW_TASK) or request.user == user:
-        tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data)
-    else:
+    def get(self, request, pk):
+        try:
+            user = UserProfile.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.has_perm(VIEW_TASK) or request.user == user:
+            tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
+            serializer = TaskSerializer(tasks, many=True)
+            return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 

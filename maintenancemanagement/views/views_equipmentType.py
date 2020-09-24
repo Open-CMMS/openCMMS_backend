@@ -1,18 +1,16 @@
 """This module defines the views corresponding to the equipment types."""
 
+from django.conf import settings
 from maintenancemanagement.models import EquipmentType
 from maintenancemanagement.serializers import EquipmentTypeSerializer
-
-from django.conf import settings
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 User = settings.AUTH_USER_MODEL
 
 
-@api_view(['GET', 'POST'])
-def equipmenttype_list(request):
+class EquipmentTypeList(APIView):
     """
         \n# List all the equipment types or create a new one
 
@@ -32,7 +30,8 @@ def equipmenttype_list(request):
         - The request must contain equipment_set : a list (which can \
             be empty) of the equipment id (List<int>)
     """
-    if request.method == 'GET':
+
+    def get(self, request):
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
             equipment_types = EquipmentType.objects.all()
             serializer = EquipmentTypeSerializer(equipment_types, many=True)
@@ -40,7 +39,7 @@ def equipmenttype_list(request):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if request.method == 'POST':
+    def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_equipmenttype"):
             serializer = EquipmentTypeSerializer(data=request.data)
             if serializer.is_valid():
@@ -50,8 +49,7 @@ def equipmenttype_list(request):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def equipmenttype_detail(request, pk):
+class EquipmentTypeDetail(APIView):
     """
         \n# Retrieve, update or delete an equipment type
 
@@ -77,18 +75,21 @@ def equipmenttype_detail(request, pk):
 
     """
 
-    try:
-        equipment_type = EquipmentType.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
+    def get(self, request, pk):
+        try:
+            equipment_type = EquipmentType.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
             serializer = EquipmentTypeSerializer(equipment_type)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if request.method == 'PUT':
+    def put(self, request, pk):
+        try:
+            equipment_type = EquipmentType.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.change_equipmenttype"):
             serializer = EquipmentTypeSerializer(equipment_type, data=request.data, partial=True)
             if serializer.is_valid():
@@ -96,7 +97,12 @@ def equipmenttype_detail(request, pk):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-    if request.method == 'DELETE':
+
+    def delete(self, request, pk):
+        try:
+            equipment_type = EquipmentType.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_equipmenttype"):
             equipment_type.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
