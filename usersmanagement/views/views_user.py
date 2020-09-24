@@ -66,47 +66,50 @@ class UserList(APIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def user_detail(request, pk):
-    """
-        \n# Retrieve, update or delete an user
+class UserDetail(APIView):
+    """# Retrieve, update or delete an user.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-        id (int) : the id of the user
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+    id (int) : the id of the user
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : return the user's data.
-        PUT request : change the user with the data on the request or if the data isn't well formed, send HTTP 400.
-        DELETE request: delete the tasktype and send HTTP 204.
+    GET request : return the user's data.
+    PUT request : change the user with the data on the request or if the data isn't well formed, send HTTP 400.
+    DELETE request: delete the tasktype and send HTTP 204.
 
-        If the user doesn't have the permissions, it will send HTTP 401.
-        If the id doesn't exist, it will send HTTP 404.
+    If the user doesn't have the permissions, it will send HTTP 401.
+    If the id doesn't exist, it will send HTTP 404.
 
-        The PUT request can contain one or more of the following fields :
-            - first_name (String): User first_name
-            - last_name (String):user last_name
-            - email (String): user mail
-            - password (String) : user password
+    The PUT request can contain one or more of the following fields :
+        - first_name (String): User first_name
+        - last_name (String):user last_name
+        - email (String): user mail
+        - password (String) : user password
 
-        Warning ! You can't change the username !
+    Warning ! You can't change the username !
     """
 
-    try:
-        user = UserProfile.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
+    def get(self, request, pk):
+        """docstrings."""
+        try:
+            user = UserProfile.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if (request.user == user) or (request.user.has_perm("usersmanagement.view_userprofile")):
             serializer = UserProfileSerializer(user)
             return Response(serializer.data)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'PUT':
+    def put(self, request, pk):
+        """docstrings."""
+        try:
+            user = UserProfile.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
             serializer = UserProfileSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
@@ -116,7 +119,12 @@ def user_detail(request, pk):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'DELETE':
+    def delete(self, request, pk):
+        """docstrings."""
+        try:
+            user = UserProfile.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.delete_userprofile"):
             # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
             user.delete()

@@ -7,7 +7,7 @@ urlpatterns = []
 
 urlpatterns_users = [
     path('users/', views_user.UserList.as_view(), name='user-list'),
-    path('users/<int:pk>/', views_user.user_detail, name='user-detail'),
+    path('users/<int:pk>/', views_user.UserDetail.as_view(), name='user-detail'),
     path('users/is_first_user', views_user.is_first_user_request, name='is_first_user_request'),
     path('users/username_suffix', views_user.username_suffix, name='username_suffix'),
     path('login', views_user.sign_in, name="sign_in"),
