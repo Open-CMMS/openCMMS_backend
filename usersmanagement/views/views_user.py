@@ -322,29 +322,30 @@ def send_mail_to_setup_password_after_blocking(id):
     email.send()
 
 
-@api_view(['POST'])
-def set_new_password(request):
-    """
-        \n# Set a new password for a user
+class SetNewPassword(APIView):
+    """# Set a new password for a user.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
 
-        Return :
-        Response (response) : the response (200 if the password is changed, 401 if the user doesn't have the permission)
+    Return :
+    Response (response) : the response (200 if the password is changed, 401 if the user doesn't have the permission)
     """
-    token = request.data['token']
-    username = request.data['username']
-    password = request.data['password']
-    user = UserProfile.objects.get(username=username)
-    if (user.check_password(token)):
-        user.set_password(password)
-        user.nb_tries = 0
-        user.reactivate_user()
-        user.save()
-        return Response(status=status.HTTP_200_OK)
-    else:
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def post(self, request):
+        """docstrings."""
+        token = request.data['token']
+        username = request.data['username']
+        password = request.data['password']
+        user = UserProfile.objects.get(username=username)
+        if (user.check_password(token)):
+            user.set_password(password)
+            user.nb_tries = 0
+            user.reactivate_user()
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['POST'])
