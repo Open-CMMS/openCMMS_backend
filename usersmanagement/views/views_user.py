@@ -183,48 +183,49 @@ class UsernameSuffix(APIView):
             return Response(str(users.count()))
 
 
-@api_view(['POST'])
 @parser_classes([FormParser])
-def sign_in(request):
+class SignIn(APIView):
+    """# Sign in user if username and password are correct.
+
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    response (Response) : the response
+
+    POST request :
+        param :
+            - username (String) : The username we want to sign in
+            - password (String) : The password entered by user
+        response params :
+            - successs : True or False
+            - token : The JWT Token
+            - user_id : The user id
+            - user : All the informations about the user
     """
-        \n# Sign in user if username and password are correct
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-
-        Return :
-        response (Response) : the response
-
-        POST request :
-            param :
-                - username (String) : The username we want to sign in
-                - password (String) : The password entered by user
-            response params :
-                - successs : True or False
-                - token : The JWT Token
-                - user_id : The user id
-                - user : All the informations about the user
-    """
-    serializer = UserLoginSerializer(data=request.data)
-    if serializer.is_valid():
-        response = {
-            'success': 'True',
-            'status code': status.HTTP_200_OK,
-            'message': 'User logged in successfully',
-            'token': serializer.data['token'],
-            'user_id': serializer.data['user_id'],
-            'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    else:
-        if str(serializer.errors.get('is_blocked')[0]) == 'True':
-            send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
-        response = {
-            'success': 'False',
-            'error': str(serializer.errors.get('error')[0]),
-            'is_blocked': str(serializer.errors.get('is_blocked')[0]),
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        """docstring."""
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            response = {
+                'success': 'True',
+                'status code': status.HTTP_200_OK,
+                'message': 'User logged in successfully',
+                'token': serializer.data['token'],
+                'user_id': serializer.data['user_id'],
+                'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            if str(serializer.errors.get('is_blocked')[0]) == 'True':
+                send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
+            response = {
+                'success': 'False',
+                'error': str(serializer.errors.get('error')[0]),
+                'is_blocked': str(serializer.errors.get('is_blocked')[0]),
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
