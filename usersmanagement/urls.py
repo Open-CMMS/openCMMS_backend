@@ -29,8 +29,8 @@ urlpatterns_teams = [
 ]
 
 url_patterns_teamtypes = [
-    path('teamtypes/', views_teamtypes.teamtypes_list, name='teamtypes-list'),
-    path('teamtypes/<int:pk>/', views_teamtypes.teamtypes_detail, name='teamtypes-detail')
+    path('teamtypes/', views_teamtypes.TeamTypesList.as_view(), name='teamtypes-list'),
+    path('teamtypes/<int:pk>/', views_teamtypes.TeamTypesDetail.as_view(), name='teamtypes-detail')
 ]
 
 urlpatterns += urlpatterns_users
