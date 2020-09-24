@@ -133,20 +133,20 @@ class UserDetail(APIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET'])
-def is_first_user_request(request):
+class IsFirstUserRequest(APIView):
+    """# Check if there is no user in the database.
+
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    response (Response) : the response
+
+    GET request : return True or False
     """
-        \n# Check if there is no user in the database
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-
-        Return :
-        response (Response) : the response
-
-        GET request : return True or False
-    """
-    if request.method == 'GET':
+    def get(self, request):
+        """docstirngs."""
         users = UserProfile.objects.all()
         return Response(users.count() == 0)
 
@@ -159,22 +159,22 @@ def is_first_user():
     return users.count() == 0
 
 
-@api_view(['GET'])
-def username_suffix(request):
+class UsernameSuffix(APIView):
+    """# Tells how many users already have a specific username.
+
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    response (Response) : the response
+
+    GET request : return how many users already have a specific username
+        param :
+            - username (String) : The username we want to check
     """
-        \n# Tells how many users already have a specific username
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-
-        Return :
-        response (Response) : the response
-
-        GET request : return how many users already have a specific username
-            param :
-                - username (String) : The username we want to check
-    """
-    if request.method == 'GET':
+    def get(self, request):
+        """docstrings."""
         username_begin = request.GET["username"]
         users = UserProfile.objects.filter(username__startswith=username_begin)
         if users.count() == 0:
