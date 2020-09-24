@@ -348,21 +348,22 @@ class SetNewPassword(APIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['POST'])
-def check_token(request):
-    """
-        \n# Check the token of the user
+class CheckToken(APIView):
+    """# Check the token of the user.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
 
-        Return :
-        Response (response) : True if the token is correct else False
+    Return :
+    Response (response) : True if the token is correct else False
     """
-    token = request.data['token']
-    username = request.data['username']
-    user = UserProfile.objects.get(username=username)
-    return Response(user.check_password(token))
+
+    def post(self, request):
+        """docstrings."""
+        token = request.data['token']
+        username = request.data['username']
+        user = UserProfile.objects.get(username=username)
+        return Response(user.check_password(token))
 
 
 def init_database():
