@@ -244,38 +244,36 @@ class SignOut(APIView):
         return Response(True)
 
 
-@api_view(['GET'])
-def get_user_permissions(request, pk):
-    """
-        \n# Get all permissions of an user
+class GetUserPermissions(APIView):
+    """# Get all permissions of an user.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-        id (int) : the id of the user
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+    id (int) : the id of the user
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : return the user's permission.
+    GET request : return the user's permission.
 
-        If the user doesn't have the permissions, it will send HTTP 401.
-        If the id doesn't exist, it will send HTTP 404.
-
+    If the user doesn't have the permissions, it will send HTTP 401.
+    If the id doesn't exist, it will send HTTP 404.
     """
 
-    try:
-        user = UserProfile.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    def get(self, request, pk):
+        try:
+            user = UserProfile.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.has_perm("usersmanagement.add_userprofile") or request.user == user:
-        permissions = user.get_all_permissions()
-        codename = []
-        for perm in permissions:
-            codename.append(perm.split('.')[1])
-        return Response(codename)
-    else:
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+        if request.user.has_perm("usersmanagement.add_userprofile") or request.user == user:
+            permissions = user.get_all_permissions()
+            codename = []
+            for perm in permissions:
+                codename.append(perm.split('.')[1])
+            return Response(codename)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 def send_mail_to_setup_password(data):
