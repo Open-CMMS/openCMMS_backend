@@ -228,19 +228,20 @@ class SignIn(APIView):
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def sign_out(request):
-    """
-        \n# Sign out the user
+class SignOut(APIView):
+    """# Sign out the user.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
 
-        Return :
-        response (Response) : Return True
+    Return :
+    response (Response) : Return True
     """
-    logout(request)
-    return Response(True)
+
+    def get(self, request):
+        """dosctring."""
+        logout(request)
+        return Response(True)
 
 
 @api_view(['GET'])
