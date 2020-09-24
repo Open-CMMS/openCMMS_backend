@@ -277,11 +277,10 @@ class GetUserPermissions(APIView):
 
 
 def send_mail_to_setup_password(data):
-    """
-        \n# Send an email to setup a password for a new user
+    """# Send an email to setup a password for a new user.
 
-        Parameters :
-        data (HttpRequest) : the request coming from the front-end
+    Parameters :
+    data (HttpRequest) : the request coming from the front-end
     """
     user = UserProfile.objects.get(pk=data['id'])
     token = token_hex(16)
@@ -301,11 +300,10 @@ def send_mail_to_setup_password(data):
 
 
 def send_mail_to_setup_password_after_blocking(id):
-    """
-        \n# Send an email to setup a password for a block user
+    """# Send an email to setup a password for a block user.
 
-        Parameters :
-        id (pk) : the id of the user who is blocked
+    Parameters :
+    id (pk) : the id of the user who is blocked
     """
     user = UserProfile.objects.get(pk=id)
     token = token_hex(16)
