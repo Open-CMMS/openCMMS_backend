@@ -1,25 +1,32 @@
+"""Serializers enable the link between front-end and back-end."""
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import Group, Permission, update_last_login
+from django.contrib.auth.models import Permission, update_last_login
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from rest_framework_jwt.settings import api_settings
 
 from .models import Team, TeamType, UserProfile
 
-"""
-Serializers enable the link between front-end and back-end
-"""
-
 
 class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
+    """Serializer for our model UserProfile.
+
+    Heritates from serializers.HyperlinkedModelSerializer and overrides :
+        - create
+        - update
+    """
 
     class Meta:
+        """Add metadata on the class."""
+
         model = UserProfile
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password', 'nb_tries', 'is_active']
-        #other fields available :
-        # 'groups', 'user_permissions', 'is_staff', 'is_active', 'is_superuser', 'last_login', 'date_joined', 'is_authenticated', 'is_anonymous'
+        # other fields available :
+        # 'groups', 'user_permissions', 'is_staff', 'is_active', 'is_superuser'
+        # 'last_login', 'date_joined', 'is_authenticated', 'is_anonymous'
 
     def create(self, validated_data):
+        """Create and save a UserProfile into the database."""
         password = validated_data.pop('password', None)
         instance = self.Meta.model(**validated_data)
         if password is not None:
@@ -28,6 +35,7 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        """Update a UserProfile into the database."""
         for attr, value in validated_data.items():
             if attr == 'password':
                 instance.set_password(value)
@@ -42,17 +50,23 @@ JWT_ENCODE_HANDLER = api_settings.JWT_ENCODE_HANDLER
 
 
 class UserLoginSerializer(serializers.Serializer):
+    """Serializer that implements the JWT authentication.
+
+    Heritates from serializers.HyperlinkedModelSerializer and overrides :
+        - validate
+    """
+
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
     user_id = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
+        """Validate the given data."""
         username = data.get("username", None)
         password = data.get("password", None)
         user = authenticate(username=username, password=password)
-        #user = UserProfile.objects.get(username=username)
-        if user != None:
+        if user is not None:
             if user.is_active:
                 user.nb_tries = 0
                 user.save()
@@ -68,7 +82,7 @@ class UserLoginSerializer(serializers.Serializer):
                 }
         else:
             user = UserProfile.objects.get(username=username)
-            if user != None:
+            if user is not None:
                 if user.is_active:
                     user.nb_tries += 1
                     user.save()
@@ -105,27 +119,43 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
+    """Serializer for our Team model.
+
+    Heritates from serializers.ModelSerializer.
+    """
 
     class Meta:
+        """Add metadata on the class."""
+
         model = Team
         fields = ['id', 'name', 'team_type', 'user_set']
-        #other fields available :
+        # other fields available :
         # 'permissions'
 
 
 class ContentTypeSerializer(serializers.Serializer):
+    """A little serializer used in the next one."""
+
     app_label = serializers.CharField(max_length=200)
     model = serializers.CharField(max_length=200)
     name = serializers.CharField(max_length=200)
 
 
 class PermissionSerializer(serializers.Serializer):
+    """A serializer to handle our permission system.
+
+    Heritates from serializers.HyperlinkedModelSerializer and overrides :
+        - create
+        - update
+    """
+
     id = serializers.IntegerField()
     name = serializers.CharField(max_length=200)
     content_type = ContentTypeSerializer()
     codename = serializers.CharField(max_length=200)
 
     def create(self, validated_data):
+        """Create and save a permission into the database."""
         name = validated_data.get('name')
         codename = validated_data.get('codename')
         content_type_data = validated_data.get('content_type')
@@ -135,6 +165,7 @@ class PermissionSerializer(serializers.Serializer):
         return Permission.objects.create(name=name, content_type=content_type, codename=codename)
 
     def update(self, instance, validated_data):
+        """Update a permission into the database."""
         instance.name = validated_data.get('name', instance.name)
         instance.codename = validated_data.get('codename', instance.codename)
         instance.content_type.app_label = validated_data.get('content_type', instance.content_type)['app_label']
@@ -144,12 +175,20 @@ class PermissionSerializer(serializers.Serializer):
 
 
 class TeamTypeSerializer(serializers.ModelSerializer):
+    """A serializer to handle our TeamType model.
+
+    Heritates from serializers.HyperlinkedModelSerializer and overrides :
+        - update
+    """
 
     class Meta:
+        """Add metadata on the class."""
+
         model = TeamType
         fields = ['id', 'name', 'perms', 'team_set']
 
     def update(self, instance, validated_data):
+        """Update a TeamType into the database."""
         teams = instance.team_set.all()
 
         for attr, value in validated_data.items():

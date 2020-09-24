@@ -1,11 +1,10 @@
+from usersmanagement.models import Team
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import FileField
-from usersmanagement.models import Team
 
 # Create your models here.
-
 
 
 class File(models.Model):
@@ -37,13 +36,18 @@ class FieldValue(models.Model):
 
 
 class FieldObject(models.Model):
+    """
+        Define a field object.
 
-    # Ces 3 attributs permettent de faire en sorte que described_object puisse référencer TaskType ou EquipmentType
+        content_type and object_id allow described_object to \
+            reference TaskType or EquipmentType
+    """
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)
     object_id = models.PositiveIntegerField()
     described_object = GenericForeignKey(
         'content_type', 'object_id'
-    )  # pour ajouter on fera fo = FieldObject(described_object=taskType, ...) où task type est une instance de tasktype
+    )  # pour ajouter on fera fo = FieldObject(described_object=taskType, ...)
+    # où task type est une instance de tasktype
 
     field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="object_set", related_query_name="object")
 
@@ -105,8 +109,8 @@ class TaskType(models.Model):
 class Task(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=2000, default="")
-    end_date = models.DateField(null=True, blank=True)  #Correspond à la date butoire
-    time = models.DurationField(null=True, blank=True)  #Correspond à la durée forfaitaire
+    end_date = models.DateField(null=True, blank=True)  # Correspond à la date butoire
+    time = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
     equipment = models.ForeignKey(
         Equipment,
