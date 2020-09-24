@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 
 class PermsList(APIView):
-    """Contains HTTP method used on /usermanagement/perms/."""
+    """Contains HTTP method GET used on /usermanagement/perms/."""
 
     def get(self, request):
         """# List all permissions.
@@ -30,7 +30,7 @@ class PermsList(APIView):
 
 
 class PermDetail(APIView):
-    """Contains HTTP method used on /usermanagement/perms/{pk}."""
+    """Contains HTTP method GET used on /usermanagement/perms/{pk}."""
 
     def get(self, request, pk):
         """# Retrieve a permission.

@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 
 class TeamList(APIView):
-    """Contains HTTP methods used on /usermanagement/teams/."""
+    """Contains HTTP methods GET, POST used on /usermanagement/teams/."""
 
     def get(self, request, format='None'):
         """# Implement the GET method.
@@ -56,7 +56,7 @@ class TeamList(APIView):
 
 
 class TeamDetail(APIView):
-    """Contains HTTP methods used on /usermanagement/teams/{pk}."""
+    """Contains HTTP methods GET, PUT, DELETE used on /usermanagement/teams/{pk}."""
 
     def get(self, request, pk, format='None'):
         """Implement the GET method.
@@ -135,7 +135,7 @@ class TeamDetail(APIView):
 
 
 class AddUserToTeam(APIView):
-    """Contains HTTP methods used on /usermanagement/add_user_to_team."""
+    """Contains HTTP methods POST, PUT used on /usermanagement/add_user_to_team."""
 
     def post(self, request):
         """Implement the POST method.
