@@ -20,30 +20,28 @@ from rest_framework.views import APIView
 User = settings.AUTH_USER_MODEL
 
 
-@api_view(['GET', 'POST'])
-def user_list(request):
-    """
-        # List all users or create a new one
+class UserList(APIView):
+    """# List all users or create a new one.
 
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
+    Return :
+    response (Response) : the response.
 
-        Return :
-        response (Response) : the response.
-
-        GET request : list all users and return the data
-        POST request :
-        - create a new user, send HTTP 201.  If the request is not valid, send HTTP 400.
-        - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain username (the username of the user (String)) and password (password of the user (String))
-        - The request can also contain :
-            - first_name (String): User first name
-            - last_name (String): User last name
-            - email (String):user mail
+    GET request : list all users and return the data
+    POST request :
+    - create a new user, send HTTP 201.  If the request is not valid, send HTTP 400.
+    - If the user doesn't have the permissions, it will send HTTP 401.
+    - The request must contain username (the username of the user (String)) and password (password of the user (String))
+    - The request can also contain :
+        - first_name (String): User first name
+        - last_name (String): User last name
+        - email (String):user mail
     """
 
-    if request.method == 'GET':
+    def get(self, request):
+        """docstrings."""
         if request.user.has_perm("usersmanagement.add_userprofile"):
             users = UserProfile.objects.all()
             serializer = UserProfileSerializer(users, many=True)
@@ -51,7 +49,8 @@ def user_list(request):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == 'POST':
+    def post(self, request):
+        """docstrings."""
         if request.user.has_perm("usersmanagement.add_userprofile") or is_first_user():
             serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():

@@ -6,7 +6,7 @@ from .views import views_perms, views_team, views_teamtypes, views_user
 urlpatterns = []
 
 urlpatterns_users = [
-    path('users/', views_user.user_list, name='user-list'),
+    path('users/', views_user.UserList.as_view(), name='user-list'),
     path('users/<int:pk>/', views_user.user_detail, name='user-detail'),
     path('users/is_first_user', views_user.is_first_user_request, name='is_first_user_request'),
     path('users/username_suffix', views_user.username_suffix, name='username_suffix'),
