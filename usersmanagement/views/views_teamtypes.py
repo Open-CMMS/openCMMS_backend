@@ -1,10 +1,11 @@
+from usersmanagement.models import TeamType
+from usersmanagement.serializers import TeamTypeSerializer
+
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from usersmanagement.models import TeamType
-from usersmanagement.serializers import TeamTypeSerializer
 
 User = settings.AUTH_USER_MODEL
 

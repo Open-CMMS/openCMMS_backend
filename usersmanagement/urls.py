@@ -13,7 +13,7 @@ urlpatterns_users = [
     path('login', views_user.SignIn.as_view(), name="sign_in"),
     path('logout', views_user.SignOut.as_view(), name="sign_out"),
     path('users/<int:pk>/get_user_permissions', views_user.GetUserPermissions.as_view(), name="get_user_permissions"),
-    path('check_token', views_user.check_token, name="check_token"),
+    path('check_token', views_user.CheckToken.as_view(), name="check_token"),
     path('set_password', views_user.SetNewPassword.as_view(), name="set_password"),
 ]
 
