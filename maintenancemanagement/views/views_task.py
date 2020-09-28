@@ -1,17 +1,14 @@
 from drf_yasg.utils import swagger_auto_schema
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
-<<<<<<< HEAD
-from maintenancemanagement.serializers import FieldSerializer, TaskSerializer
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.views.views_team import belongs_to_team
-
-=======
 from maintenancemanagement.serializers import (
     FieldObjectSerializer,
+    FieldSerializer,
     TaskCreateSerializer,
     TaskSerializer,
 )
->>>>>>> a0730be6306b07d40adb4703d7e12a349f908872
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.views.views_team import belongs_to_team
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -345,7 +342,6 @@ def participate_to_task(user, task):
     return False
 
 
-<<<<<<< HEAD
 class TaskRequirements(APIView):
     """docstrings."""
 
@@ -372,13 +368,11 @@ class TaskRequirements(APIView):
         return Response(data)
 
 
-=======
 @swagger_auto_schema(
     operation_description='Initialize the database with basic groups and fields.',
     query_serializer=None,
     responses={},
 )
->>>>>>> a0730be6306b07d40adb4703d7e12a349f908872
 def init_database():
     field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
 
