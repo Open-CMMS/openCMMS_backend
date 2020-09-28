@@ -260,7 +260,10 @@ JWT_AUTH = {
 ################################################################
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+if os.getenv('ENVIRONMENT') == 'DEV':
+    MEDIA_ROOT = os.path.join(BASE_DIR, '../media/')
+else:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 ################################################################
 ############################# EMAIL ############################
