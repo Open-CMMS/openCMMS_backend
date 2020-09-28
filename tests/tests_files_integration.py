@@ -106,7 +106,8 @@ class FileTests(TestCase):
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/files/' + str(pk) + '/')
-        path = settings.BASE_DIR + response.data["file"]
+        path = settings.BASE_DIR + '/..' + response.data["file"]
+
         file = open(path)
         self.assertEqual(file.read(), "Coco veut un gateau")
 

@@ -265,6 +265,9 @@ if os.getenv('ENVIRONMENT') == 'DEV':
 else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
+if 'pytest' in sys.argv:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
 ################################################################
 ############################# EMAIL ############################
 ################################################################
