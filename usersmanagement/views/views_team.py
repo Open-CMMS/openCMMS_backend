@@ -82,7 +82,7 @@ class TeamDetail(APIView):
     def put(self, request, pk, format='None'):
         """Implement the PUT method.
 
- 
+
         Parameters :
         request (HttpRequest) : the request coming from the front-end
         pk (int) : the id of the team
@@ -134,11 +134,29 @@ class TeamDetail(APIView):
 
 
 class AddUserToTeam(APIView):
+    """# Add and remove users from team.
+
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    response (Response) : the response.
+
+    POST request : add a user to a team and send HTTP 201, must contain\
+            id_user (the id of the user to add, int) and id_team (the id of\
+                the team where the user will be add, int)
+    PUT request : remove a user from a team and send HTTP 201, must\
+        contain id_user (the id of the user to remove, int) and\
+            id_team (the id of the team where the user will be remove, int)
+
+    If the user doesn't have the permissions, it will send HTTP 401.
+    """
     """Contains HTTP methods POST, PUT used on /usermanagement/add_user_to_team."""
 
     def post(self, request):
         """Implement the POST method.
 
+        ```
         Parameters :
         request (HttpRequest) : the request coming from the front-end
 

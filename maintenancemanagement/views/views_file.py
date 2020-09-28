@@ -34,7 +34,7 @@ class FileList(APIView):
 
     @swagger_auto_schema(
         operation_description='Add a File into the database.',
-        query_serializer=FileSerializer(many=False),
+        format_data=FileSerializer(many=False),
         responses={
             201: FileSerializer(many=False),
             400: "Bad request",
