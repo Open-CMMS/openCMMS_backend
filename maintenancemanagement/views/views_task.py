@@ -1,12 +1,12 @@
 from drf_yasg.utils import swagger_auto_schema
-
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
-from maintenancemanagement.serializers import TaskSerializer
+from maintenancemanagement.serializers import FieldSerializer, TaskSerializer
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.views.views_team import belongs_to_team
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.views.views_team import belongs_to_team
 
 VIEW_TASK = "maintenancemanagement.view_task"
 CHANGE_TASK = "maintenancemanagement.change_task"
@@ -318,6 +318,32 @@ def participate_to_task(user, task):
         if belong:
             return True
     return False
+
+
+class TaskRequirements(APIView):
+    """docstrings."""
+
+    @swagger_auto_schema(
+        operation_description=
+        'Send the End Conditions and Trigger Conditions. If specified, send the task templates as well.'
+    )
+    def get(self, request):
+        """docstrings."""
+        field_group_end_conditions = FieldGroup.objects.get(name='End Conditions')
+        field_group_trigger_conditions = FieldGroup.objects.get(name='Trigger Conditions')
+        field_end_conditions = Field.objects.filter(field_group=field_group_end_conditions)
+        field_trigger_conditions = Field.objects.filter(field_group=field_group_trigger_conditions)
+
+        serializer_end_conditions = FieldSerializer(field_end_conditions, many=True)
+        serializer_trigger_conditions = FieldSerializer(field_trigger_conditions, many=True)
+        data = dict(serializer_end_conditions.data)
+        data.update(serializer_trigger_conditions.data)
+        if True:  # request.GET['from_template'] is True:
+            tasks = Task.objects.get(is_template=True)
+            serializer = TaskSerializer(tasks, many=True)
+            data.update(serializer.data)
+
+        return Response(data)
 
 
 def init_database():
