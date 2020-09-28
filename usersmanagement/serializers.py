@@ -133,6 +133,22 @@ class TeamSerializer(serializers.ModelSerializer):
         # 'permissions'
 
 
+class TeamDetailsSerializer(serializers.ModelSerializer):
+    """Serializer for our Team Details Serializer.
+
+    Heritates from serializers.ModelSerializer
+    """
+
+    team_type_name = serializers.CharField(source='team_type.name')
+    user_details = UserProfileSerializer(source='user_set', many=True)
+
+    class Meta:
+        """ Add metadata on the class."""
+
+        model = Team
+        fields = ['id', 'name', 'team_type', 'user_set', 'team_type_name', 'user_details']
+
+
 class ContentTypeSerializer(serializers.Serializer):
     """A little serializer used in the next one."""
 
@@ -204,3 +220,18 @@ class TeamTypeSerializer(serializers.ModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class TeamTypeDetailsSerializer(serializers.ModelSerializer):
+    """A serializer to handle our TeamType model for GET details view.
+
+    Heritates from serializers.ModelSerializer
+    """
+
+    team_set = TeamSerializer(many=True)
+    perms = PermissionSerializer(many=True)
+
+    class Meta:
+        """Add metadata on the class."""
+        model = TeamType
+        fields = ['id', 'name', 'perms', 'team_set']
