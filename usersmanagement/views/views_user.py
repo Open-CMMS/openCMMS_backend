@@ -1,21 +1,20 @@
 """This module exposes our User model."""
 from secrets import token_hex
 
-from usersmanagement.models import Team, TeamType, UserProfile
-from usersmanagement.serializers import (
-    UserLoginSerializer,
-    UserProfileSerializer,
-)
-
 from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.models import Permission
 from django.core.mail import EmailMessage
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import FormParser
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.serializers import (
+    UserLoginSerializer,
+    UserProfileSerializer,
+)
 
 User = settings.AUTH_USER_MODEL
 
@@ -183,7 +182,6 @@ class UsernameSuffix(APIView):
             return Response(str(users.count()))
 
 
-@parser_classes([FormParser])
 class SignIn(APIView):
     """# Sign in user if username and password are correct.
 
