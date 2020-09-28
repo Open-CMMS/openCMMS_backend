@@ -1,3 +1,5 @@
+from drf_yasg.utils import swagger_auto_schema
+
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from maintenancemanagement.serializers import TaskSerializer
 from rest_framework import status
@@ -40,6 +42,14 @@ class TaskList(APIView):
             - files (List<int>): an id list of the files explaining this task
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the list of Task in the database.',
+        query_serializer=None,
+        responses={
+            200: TaskSerializer(many=True),
+            401: "Unhauthorized",
+        },
+    )
     def get(self, request):
         if request.user.has_perm(VIEW_TASK):
             tasks = Task.objects.all()
@@ -47,6 +57,15 @@ class TaskList(APIView):
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Add a Task into the database.',
+        query_serializer=TaskSerializer(many=False),
+        responses={
+            201: TaskSerializer(many=False),
+            400: "Bad request",
+            401: "Unhauthorized",
+        },
+    )
     def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_task"):
             serializer = TaskSerializer(data=request.data)
@@ -91,6 +110,15 @@ class TaskDetail(APIView):
 
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the Task corresponding to the given key.',
+        query_serializer=None,
+        responses={
+            200: TaskSerializer(many=False),
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def get(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
@@ -101,6 +129,16 @@ class TaskDetail(APIView):
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Update the Task corresponding to the given key.',
+        query_serializer=TaskSerializer(many=False),
+        responses={
+            200: TaskSerializer(many=False),
+            400: "Bad request",
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def put(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
@@ -114,6 +152,15 @@ class TaskDetail(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Delete the Task corresponding to the given key.',
+        query_serializer=None,
+        responses={
+            204: "No content",
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def delete(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
@@ -149,6 +196,14 @@ class AddTeamToTask(APIView):
 
     """
 
+    @swagger_auto_schema(
+        operation_description='Assign a team to a task.',
+        query_serializer=None,
+        responses={
+            201: "Created",
+            401: "Unhauthorized",
+        },
+    )
     def post(self, request):
         if request.user.has_perm(CHANGE_TASK):
             task = Task.objects.get(pk=request.data["id_task"])
@@ -157,6 +212,14 @@ class AddTeamToTask(APIView):
             return Response(status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Remove a team from a task.',
+        query_serializer=None,
+        responses={
+            201: "Created",
+            401: "Unhauthorized",
+        },
+    )
     def put(self, request):
         if request.user.has_perm(CHANGE_TASK):
             task = Task.objects.get(pk=request.data["id_task"])
@@ -180,6 +243,15 @@ class TeamTaskList(APIView):
         GET request : list all tasks of a team.
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the list of Task corresponding to the given Team key.',
+        query_serializer=None,
+        responses={
+            200: TaskSerializer(many=True),
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def get(self, request, pk):
         try:
             team = Team.objects.get(pk=pk)
@@ -207,6 +279,15 @@ class UserTaskList(APIView):
         GET request : list all tasks of the user.
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the list of Task corresponding to the given User key.',
+        query_serializer=None,
+        responses={
+            200: TaskSerializer(many=True),
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def get(self, request, pk):
         try:
             user = UserProfile.objects.get(pk=pk)
@@ -220,6 +301,13 @@ class UserTaskList(APIView):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
+@swagger_auto_schema(
+    operation_description='Check if a user is assigned to the task.',
+    query_serializer=None,
+    responses={
+        200: "Ok",
+    },
+)
 def participate_to_task(user, task):
     """
         \n# Check if a user is assigned to the task
@@ -232,6 +320,11 @@ def participate_to_task(user, task):
     return False
 
 
+@swagger_auto_schema(
+    operation_description='Initialize the database with basic groups and fields.',
+    query_serializer=None,
+    responses={},
+)
 def init_database():
     field_gr = FieldGroup.objects.create(name="Maintenance", is_equipment=False)
 

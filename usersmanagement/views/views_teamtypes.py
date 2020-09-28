@@ -1,12 +1,14 @@
-from usersmanagement.models import TeamType
-from usersmanagement.serializers import TeamTypeSerializer
-
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from usersmanagement.models import TeamType
+from usersmanagement.serializers import (
+    TeamTypeDetailsSerializer,
+    TeamTypeSerializer,
+)
 
 User = settings.AUTH_USER_MODEL
 
@@ -78,7 +80,7 @@ class TeamTypesDetail(APIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.view_teamtype"):
-            serializer = TeamTypeSerializer(group_type)
+            serializer = TeamTypeDetailsSerializer(group_type)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 

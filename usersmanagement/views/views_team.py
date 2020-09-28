@@ -1,10 +1,9 @@
 """This modules expose the Team model."""
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.serializers import TeamSerializer
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.serializers import TeamDetailsSerializer, TeamSerializer
 
 
 class TeamList(APIView):
@@ -75,7 +74,7 @@ class TeamDetail(APIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.view_team"):
-            serializer = TeamSerializer(team)
+            serializer = TeamDetailsSerializer(team)
             return Response(serializer.data)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
