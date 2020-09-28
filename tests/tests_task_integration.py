@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
-from maintenancemanagement.models import File, Task, TaskType
+from maintenancemanagement.models import File, Task
 from maintenancemanagement.serializers import TaskSerializer
 from openCMMS import settings
 from rest_framework.test import APIClient

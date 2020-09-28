@@ -82,12 +82,12 @@ class TaskList(APIView):
             task_serializer = TaskCreateSerializer(data=request.data)
             condition_serializers = []
             if task_serializer.is_valid():
-                for condition in conditions.item():
-                    condition_serializer = FieldObjectSerializer(condition)
-                    # if condition_serializer.is_valid():
-                    #     condition_serializers.append(condition_serializer)
-                    # else:
-                    #     return Response(condition_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # for condition in conditions.item():
+                #     condition_serializer = FieldObjectSerializer(condition)
+                # if condition_serializer.is_valid():
+                #     condition_serializers.append(condition_serializer)
+                # else:
+                #     return Response(condition_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
                 # for condition_serializer in condition_serializers:
                 #     condition_serializer.update({'described_object': task})
@@ -341,21 +341,37 @@ def participate_to_task(user, task):
     return False
 
 
+@swagger_auto_schema(
+    operation_description='Initialize the database with basic groups and fields.',
+    query_serializer=None,
+    responses={},
+)
 def init_database():
-    # Ajout des conditions de déclenchement
-    field_gr_cond_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
+    field_gr = FieldGroup.objects.create(name="Maintenance", is_equipment=False)
 
-    Field.objects.create(name="Date", field_group=field_gr_cond_dec)
-    Field.objects.create(name="Integer", field_group=field_gr_cond_dec)
-    Field.objects.create(name="Float", field_group=field_gr_cond_dec)
-    Field.objects.create(name="Duration", field_group=field_gr_cond_dec)
+    field_cri_dec = Field.objects.create(name="Trigger Conditions", field_group=field_gr)
+    field_cri_fin = Field.objects.create(name="End Conditions", field_group=field_gr)
 
-    # Ajouter à terme la récurrence
+    field_date_dec = FieldValue.objects.create(value="Date", field=field_cri_dec)
+    field_entier_dec = FieldValue.objects.create(value="Entier", field=field_cri_dec)
+    field_decimal_dec = FieldValue.objects.create(value="Décimal", field=field_cri_dec)
+    field_duree_dec = FieldValue.objects.create(value="Duree", field=field_cri_dec)
 
-    # Ajout des conditions de fin
-    field_gr_cond_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
+    field_case_fin = FieldValue.objects.create(value="Case a cocher", field=field_cri_fin)
+    field_entier_fin = FieldValue.objects.create(value="Valeur numerique à rentrer", field=field_cri_fin)
+    field_string_fin = FieldValue.objects.create(value="Description", field=field_cri_fin)
+    field_photo_fin = FieldValue.objects.create(value="Photo", field=field_cri_fin)
 
-    Field.objects.create(name="Checkbox", field_group=field_gr_cond_fin)
-    Field.objects.create(name="Integer", field_group=field_gr_cond_fin)
-    Field.objects.create(name="Describe", field_group=field_gr_cond_fin)
-    Field.objects.create(name="Photo", field_group=field_gr_cond_fin)
+    field_gr.save()
+    field_cri_dec.save()
+    field_cri_fin.save()
+
+    field_date_dec.save()
+    field_entier_dec.save()
+    field_decimal_dec.save()
+    field_duree_dec.save()
+
+    field_case_fin.save()
+    field_entier_fin.save()
+    field_string_fin.save()
+    field_photo_fin.save()
