@@ -82,16 +82,16 @@ class TaskList(APIView):
             task_serializer = TaskCreateSerializer(data=request.data)
             condition_serializers = []
             if task_serializer.is_valid():
-                # for condition in conditions.item():
-                #     condition_serializer = FieldObjectSerializer(condition)
-                # if condition_serializer.is_valid():
-                #     condition_serializers.append(condition_serializer)
-                # else:
-                #     return Response(condition_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                for condition in conditions.items():
+                    condition_serializer = FieldObjectSerializer(condition)
+                    if condition_serializer.is_valid():
+                        condition_serializers.append(condition_serializer)
+                    else:
+                        return Response(condition_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
-                # for condition_serializer in condition_serializers:
-                #     condition_serializer.update({'described_object': task})
-                #     condition_serializer.save()
+                for condition_serializer in condition_serializers:
+                    condition_serializer.update({'described_object': task})
+                    condition_serializer.save()
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
