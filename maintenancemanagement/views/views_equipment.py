@@ -1,5 +1,7 @@
 """This module defines the views corresponding to the equipments."""
 
+from drf_yasg.utils import swagger_auto_schema
+
 from maintenancemanagement.models import Equipment
 from maintenancemanagement.serializers import EquipmentSerializer
 from rest_framework import status
@@ -29,6 +31,14 @@ class EquipmentList(APIView):
         referring to Manual Files (List<int>)
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the list of Equipment in the database.',
+        query_serializer=None,
+        responses={
+            200: EquipmentSerializer(many=True),
+            401: "Unhauthorized",
+        },
+    )
     def get(self, request):
         if request.user.has_perm("maintenancemanagement.view_equipment"):
             equipments = Equipment.objects.all()
@@ -36,6 +46,15 @@ class EquipmentList(APIView):
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Add an Equipment into the database.',
+        query_serializer=EquipmentSerializer(many=False),
+        responses={
+            201: EquipmentSerializer(many=False),
+            400: "Bad request",
+            401: "Unhauthorized",
+        },
+    )
     def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_equipment"):
             serializer = EquipmentSerializer(data=request.data)
@@ -72,6 +91,15 @@ class EquipmentDetail(APIView):
 
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the Equipment corresponding to the given key.',
+        query_serializer=None,
+        responses={
+            200: EquipmentSerializer(many=False),
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def get(self, request, pk):
         try:
             equipment = Equipment.objects.get(pk=pk)
@@ -82,6 +110,16 @@ class EquipmentDetail(APIView):
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Update the Equipment corresponding to the given key.',
+        query_serializer=EquipmentSerializer(many=False),
+        responses={
+            200: EquipmentSerializer(many=False),
+            400: "Bad request",
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def put(self, request, pk):
         try:
             equipment = Equipment.objects.get(pk=pk)
@@ -95,6 +133,15 @@ class EquipmentDetail(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Delete the Equipment corresponding to the given key.',
+        query_serializer=None,
+        responses={
+            204: "No content",
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
     def delete(self, request, pk):
         try:
             equipment = Equipment.objects.get(pk=pk)

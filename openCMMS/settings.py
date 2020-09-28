@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_swagger',
+    'drf_yasg',
     'usersmanagement.apps.UsersmanagementConfig',
     'maintenancemanagement.apps.MaintenancemanagementConfig',
 ]

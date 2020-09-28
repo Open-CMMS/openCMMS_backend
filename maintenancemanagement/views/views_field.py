@@ -1,5 +1,7 @@
 """This module defines the views corresponding to the fields."""
 
+from drf_yasg.utils import swagger_auto_schema
+
 from maintenancemanagement.models import Field
 from maintenancemanagement.serializers import FieldSerializer
 from rest_framework import status
@@ -20,6 +22,14 @@ class FieldList(APIView):
         GET request : List all Fields
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the list of Field in the database.',
+        query_serializer=None,
+        responses={
+            200: FieldSerializer(many=True),
+            401: "Unhauthorized",
+        },
+    )
     def get(self, request):
         if request.user.has_perm("maintenancemanagement.view_field"):
             field = Field.objects.all()
