@@ -2,7 +2,10 @@ from django.contrib.auth.models import Permission
 from django.test import TestCase
 from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
-from usersmanagement.serializers import TeamTypeSerializer
+from usersmanagement.serializers import (
+    TeamTypeDetailsSerializer,
+    TeamTypeSerializer,
+)
 
 
 class TeamTypeTests(TestCase):
@@ -114,7 +117,7 @@ class TeamTypeTests(TestCase):
         c.force_authenticate(user=user)
 
         team_type = TeamType.objects.get(name="Administrators")
-        serializer = TeamTypeSerializer(team_type)
+        serializer = TeamTypeDetailsSerializer(team_type)
         response = c.get("/api/usersmanagement/teamtypes/" + str(team_type.id) + "/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())

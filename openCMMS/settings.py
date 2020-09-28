@@ -29,9 +29,14 @@ SECRET_KEY = 'k&-js5nc7p%#$pk_bj+3fqd0($w5!6^#dy+a+b&p6($3r$a-%k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+################################################################
+######################### GLOBAL CONF ##########################
+################################################################
+
 ALLOWED_HOSTS = [
     'application.lxc.pic.brasserie-du-slalom.fr',
     '127.0.0.1',
+    'localhost',
     'dev.lxc.pic.brasserie-du-slalom.fr',
     'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/login/?next=/api/admin/',
     'https://dev.lxc.pic.brasserie-du-slalom.fr/api/admin/',
@@ -86,6 +91,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'openCMMS.wsgi.application'
 
+AUTH_USER_MODEL = 'usersmanagement.UserProfile'
+
+################################################################
+########################## DATABASES ###########################
+################################################################
+
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -121,6 +132,10 @@ if os.getenv('ENVIRONMENT') == 'DEV':
         'PORT': '',
     }
 
+################################################################
+############################ OTHERS ############################
+################################################################
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -152,6 +167,22 @@ USE_L10N = True
 
 USE_TZ = True
 
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS':
+        'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES':
+        (
+            'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+            'rest_framework.authentication.SessionAuthentication'
+        ),
+}
+
+SWAGGER_SETTINGS = {'LOGIN_URL': "/api/admin/login"}
+
+################################################################
+############################ STATIC ############################
+################################################################
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
@@ -159,12 +190,9 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'staticfiles')
 
-AUTH_USER_MODEL = 'usersmanagement.UserProfile'
-
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_jwt.authentication.JSONWebTokenAuthentication',),
-}
+################################################################
+############################# CORS #############################
+################################################################
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
@@ -179,6 +207,10 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 CORS_REPLACE_HTTPS_REFERER = True
+
+################################################################
+############################# LDAP #############################
+################################################################
 
 AUTH_LDAP_SERVER_URI = "ldap://192.168.101.12:389"
 
@@ -195,6 +227,10 @@ AUTHENTICATION_BACKENDS = (
 AUTH_LDAP_USER_SEARCH = LDAPSearch(
     "dc=lxc,dc=pic,dc=brasserie-du-slalom,dc=fr", ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)"
 )
+
+################################################################
+############################## JWT #############################
+################################################################
 
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER': 'rest_framework_jwt.utils.jwt_encode_handler',
@@ -219,8 +255,16 @@ JWT_AUTH = {
     'JWT_AUTH_COOKIE': None,
 }
 
+################################################################
+############################# MEDIA ############################
+################################################################
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+################################################################
+############################# EMAIL ############################
+################################################################
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
