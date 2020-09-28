@@ -12,6 +12,7 @@ psycopg2-binary = "*"
 python-ldap = "*"
 django-auth-ldap = "*"
 djangorestframework-jwt = "*"
+drf_yasg = "*"
 
 
 [dev-packages]
