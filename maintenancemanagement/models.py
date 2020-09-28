@@ -1,8 +1,7 @@
-from usersmanagement.models import Team
-
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from usersmanagement.models import Team
 
 # Create your models here.
 
@@ -108,14 +107,24 @@ class TaskType(models.Model):
 
 class Task(models.Model):
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=2000, default="")
     end_date = models.DateField(null=True, blank=True)  # Correspond à la date butoire
-    time = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
+    description = models.TextField(max_length=2000, default="")
+    duration = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
     equipment = models.ForeignKey(
         Equipment,
         verbose_name="Assigned equipment",
         help_text="The equipment assigned to the task",
+        related_name="task_set",
+        related_query_name="task",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    equipment_type = models.ForeignKey(
+        EquipmentType,
+        verbose_name="Assigned equipment type",
+        help_text="The type of equipment assigned to the task",
         related_name="task_set",
         related_query_name="task",
         on_delete=models.CASCADE,
@@ -130,17 +139,6 @@ class Task(models.Model):
         related_name="task_set",
         related_query_name="task",
     )
-    task_type = models.ForeignKey(
-        TaskType,
-        verbose_name="Task Type",
-        on_delete=models.CASCADE,
-        help_text='The type of this task',
-        related_name="task_set",
-        related_query_name="task",
-        blank=True,
-        null=True
-    )
-
     files = models.ManyToManyField(
         File,
         verbose_name="Task File",
@@ -148,5 +146,4 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
     )
-
     over = models.BooleanField(default=False)
