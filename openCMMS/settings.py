@@ -113,6 +113,7 @@ DATABASES = {
 }
 
 if 'test' in sys.argv or 'pytest' in sys.argv or os.getenv('ENVIRONMENT') == 'LOCAL':
+    print("Je suis ici frérot")
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'django',
