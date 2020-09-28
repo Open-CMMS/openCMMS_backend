@@ -113,6 +113,7 @@ DATABASES = {
 }
 
 if 'test' in sys.argv or 'pytest' in sys.argv or os.getenv('ENVIRONMENT') == 'LOCAL':
+    print("Je suis ici frérot")
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'django',
@@ -263,6 +264,9 @@ MEDIA_URL = 'media/'
 if os.getenv('ENVIRONMENT') == 'DEV':
     MEDIA_ROOT = os.path.join(BASE_DIR, '../media/')
 else:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+if 'pytest' in sys.argv:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 ################################################################

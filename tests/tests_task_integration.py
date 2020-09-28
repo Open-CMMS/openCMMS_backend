@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
-from maintenancemanagement.models import File, Task, TaskType
+from maintenancemanagement.models import File, Task
 from maintenancemanagement.serializers import TaskSerializer
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -426,7 +426,7 @@ class TaskTests(TestCase):
         response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
 
-    def test_can_acces_task_list_with_perm_with_time(self):
+    def test_can_acces_task_list_with_perm_with_duration(self):
         """
             Test if a user with perm receive the data with end_date
         """
@@ -438,9 +438,9 @@ class TaskTests(TestCase):
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
         self.assertEqual(response.data, serializer.data)
 
-    def test_can_acces_task_list_without_perm_with_time(self):
+    def test_can_acces_task_list_without_perm_with_duration(self):
         """
-            Test if a user without perm doesn't receive the data with time
+            Test if a user without perm doesn't receive the data with duration
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -448,9 +448,9 @@ class TaskTests(TestCase):
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_add_task_with_perm_with_time(self):
+    def test_add_task_with_perm_with_duration(self):
         """
-            Test if a user with perm can add a task with time
+            Test if a user with perm can add a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -459,16 +459,16 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': '1 day, 8:00:00'
+                'duration': '1 day, 8:00:00'
             },
             format='json'
         )
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['time'], '1 08:00:00')
+        self.assertEqual(response.data['duration'], '1 08:00:00')
 
-    def test_add_task_without_perm_with_time(self):
+    def test_add_task_without_perm_with_duration(self):
         """
-            Test if a user without perm can't add a task with time
+            Test if a user without perm can't add a task with duration
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -477,15 +477,15 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_view_task_request_with_perm_with_time(self):
+    def test_view_task_request_with_perm_with_duration(self):
         """
-            Test if a user with perm can see a task detail with time
+            Test if a user with perm can see a task detail with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -494,17 +494,17 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
-        self.assertEqual(response.data['time'], '1 08:00:00')
+        self.assertEqual(response.data['duration'], '1 08:00:00')
 
-    def test_view_task_request_without_perm_with_time(self):
+    def test_view_task_request_without_perm_with_duration(self):
         """
-            Test if a user without perm can't see a task detail with time
+            Test if a user without perm can't see a task detail with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -513,7 +513,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
@@ -526,7 +526,7 @@ class TaskTests(TestCase):
 
     def test_change_task_with_perm_with_time(self):
         """
-            Test if a user with perm can change a task with time
+            Test if a user with perm can change a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -535,20 +535,21 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
         pk = response1.data['id']
         response = client.put(
-            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'time': timedelta(days=2, hours=4)}, format='json'
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'duration': timedelta(days=2, hours=4)},
+            format='json'
         )
-        self.assertEqual(response.data['time'], '2 04:00:00')
+        self.assertEqual(response.data['duration'], '2 04:00:00')
         self.assertEqual(response.status_code, 200)
 
     def test_change_task_without_perm_with_time(self):
         """
-            Test if a user without perm can change a task with time
+            Test if a user without perm can change a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -557,7 +558,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
@@ -566,13 +567,14 @@ class TaskTests(TestCase):
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
         response = client.put(
-            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'time': timedelta(days=2, hours=4)}, format='json'
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'duration': timedelta(days=2, hours=4)},
+            format='json'
         )
         self.assertEqual(response.status_code, 401)
 
     def test_delete_task_with_perm_with_time(self):
         """
-            Test if a user with perm can delete a task with time
+            Test if a user with perm can delete a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -581,7 +583,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
@@ -591,7 +593,7 @@ class TaskTests(TestCase):
 
     def test_delete_task_without_perm_with_time(self):
         """
-            Test if a user without perm can delete a task with time
+            Test if a user without perm can delete a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -600,7 +602,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )

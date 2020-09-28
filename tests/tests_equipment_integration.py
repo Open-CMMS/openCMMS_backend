@@ -1,7 +1,10 @@
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import Equipment, EquipmentType, File
-from maintenancemanagement.serializers import EquipmentSerializer
+from maintenancemanagement.serializers import (
+    EquipmentDetailsSerializer,
+    EquipmentSerializer,
+)
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
@@ -132,7 +135,7 @@ class EquipmentTests(TestCase):
         c.force_authenticate(user=user)
 
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        serializer = EquipmentSerializer(equipment)
+        serializer = EquipmentDetailsSerializer(equipment)
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
@@ -146,7 +149,6 @@ class EquipmentTests(TestCase):
         c.force_authenticate(user=user)
 
         equipment = Equipment.objects.get(name="Peugeot Partner")
-        serializer = EquipmentSerializer(equipment)
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 401)
 
@@ -269,7 +271,7 @@ class EquipmentTests(TestCase):
             format='json'
         )
         equipment = Equipment.objects.get(name="Renault Kangoo")
-        serializer = EquipmentSerializer(equipment)
+        serializer = EquipmentDetailsSerializer(equipment)
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
@@ -373,7 +375,7 @@ class EquipmentTests(TestCase):
             format='json'
         )
         equipment = Equipment.objects.get(name="Renault Kangoo")
-        serializer = EquipmentSerializer(equipment)
+        serializer = EquipmentDetailsSerializer(equipment)
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())

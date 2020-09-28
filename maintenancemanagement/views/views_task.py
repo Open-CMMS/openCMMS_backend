@@ -1,9 +1,17 @@
 from drf_yasg.utils import swagger_auto_schema
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
+<<<<<<< HEAD
 from maintenancemanagement.serializers import FieldSerializer, TaskSerializer
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.views.views_team import belongs_to_team
 
+=======
+from maintenancemanagement.serializers import (
+    FieldObjectSerializer,
+    TaskCreateSerializer,
+    TaskSerializer,
+)
+>>>>>>> a0730be6306b07d40adb4703d7e12a349f908872
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -59,20 +67,37 @@ class TaskList(APIView):
 
     @swagger_auto_schema(
         operation_description='Add a Task into the database.',
-        query_serializer=TaskSerializer(many=False),
+        query_serializer=TaskCreateSerializer(many=False),
         responses={
-            201: TaskSerializer(many=False),
+            201: TaskCreateSerializer(many=False),
             400: "Bad request",
             401: "Unhauthorized",
         },
     )
     def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_task"):
-            serializer = TaskSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            trigger_conditions = request.data.pop('trigger_conditions', None)
+            end_conditions = request.data.pop('end_conditions', None)
+            conditions = {}
+            if trigger_conditions:
+                conditions.update(trigger_conditions)
+            if end_conditions:
+                conditions.update(end_conditions)
+            task_serializer = TaskCreateSerializer(data=request.data)
+            condition_serializers = []
+            if task_serializer.is_valid():
+                for condition in conditions.items():
+                    condition_serializer = FieldObjectSerializer(condition)
+                    if condition_serializer.is_valid():
+                        condition_serializers.append(condition_serializer)
+                    else:
+                        return Response(condition_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                task = task_serializer.save()
+                for condition_serializer in condition_serializers:
+                    condition_serializer.update({'described_object': task})
+                    condition_serializer.save()
+                return Response(task_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -320,6 +345,7 @@ def participate_to_task(user, task):
     return False
 
 
+<<<<<<< HEAD
 class TaskRequirements(APIView):
     """docstrings."""
 
@@ -346,21 +372,24 @@ class TaskRequirements(APIView):
         return Response(data)
 
 
+=======
+@swagger_auto_schema(
+    operation_description='Initialize the database with basic groups and fields.',
+    query_serializer=None,
+    responses={},
+)
+>>>>>>> a0730be6306b07d40adb4703d7e12a349f908872
 def init_database():
-    # Ajout des conditions de déclenchement
-    field_gr_cond_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
+    field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
 
-    Field.objects.create(name="Date", field_group=field_gr_cond_dec)
-    Field.objects.create(name="Integer", field_group=field_gr_cond_dec)
-    Field.objects.create(name="Float", field_group=field_gr_cond_dec)
-    Field.objects.create(name="Duration", field_group=field_gr_cond_dec)
+    Field.objects.create(name="Date", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Integer", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Float", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
 
-    # Ajouter à terme la récurrence
+    field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
 
-    # Ajout des conditions de fin
-    field_gr_cond_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
-
-    Field.objects.create(name="Checkbox", field_group=field_gr_cond_fin)
-    Field.objects.create(name="Integer", field_group=field_gr_cond_fin)
-    Field.objects.create(name="Describe", field_group=field_gr_cond_fin)
-    Field.objects.create(name="Photo", field_group=field_gr_cond_fin)
+    Field.objects.create(name="Checkbox", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Description", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
