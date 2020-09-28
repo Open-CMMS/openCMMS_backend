@@ -8,7 +8,6 @@ from .views import (
     views_fieldValue,
     views_file,
     views_task,
-    views_taskType,
 )
 
 urlpatterns = []
@@ -29,11 +28,6 @@ urlpatterns_task = [
     path('addteamtotask', views_task.AddTeamToTask.as_view(), name='add-team-to-task'),
     path('teamtasklist/<int:pk>', views_task.TeamTaskList.as_view(), name='team-task-list'),
     path('usertasklist/<int:pk>', views_task.UserTaskList.as_view(), name='team-task-list')
-]
-
-urlpatterns_tasktype = [
-    path('tasktypes/', views_taskType.TaskTypeList.as_view(), name="tasktype-list"),
-    path('tasktypes/<int:pk>/', views_taskType.TaskTypeDetail.as_view(), name='tasktype-detail')
 ]
 
 urlpatterns_fieldValue = [
@@ -57,7 +51,6 @@ urlpatterns_fieldObject = [
 urlpatterns += urlpatterns_equipment
 urlpatterns += urlpatterns_equipmenttype
 urlpatterns += urlpatterns_task
-urlpatterns += urlpatterns_tasktype
 urlpatterns += urlpatterns_fieldValue
 urlpatterns += urlpatterns_field
 urlpatterns += urlpatterns_file
