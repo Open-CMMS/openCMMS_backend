@@ -112,17 +112,6 @@ DATABASES = {
         }
 }
 
-if 'test' in sys.argv or 'pytest' in sys.argv or os.getenv('ENVIRONMENT') == 'LOCAL':
-    print("Je suis ici frérot")
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'django',
-        'USER': 'django',
-        'PASSWORD': 'django',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
-
 if os.getenv('ENVIRONMENT') == 'DEV':
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -130,6 +119,16 @@ if os.getenv('ENVIRONMENT') == 'DEV':
         'USER': 'django',
         'PASSWORD': 'django',
         'HOST': '192.168.101.11',
+        'PORT': '',
+    }
+
+if 'test' in sys.argv or 'pytest' in sys.argv or os.getenv('ENVIRONMENT') == 'LOCAL':
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'django',
+        'USER': 'django',
+        'PASSWORD': 'django',
+        'HOST': 'localhost',
         'PORT': '',
     }
 
