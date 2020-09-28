@@ -1,20 +1,20 @@
 """This module exposes our User model."""
 from secrets import token_hex
 
-from django.conf import settings
-from django.contrib.auth import logout
-from django.contrib.auth.models import Permission
-from django.core.mail import EmailMessage
-from rest_framework import status
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 from usersmanagement.models import Team, TeamType, UserProfile
 from usersmanagement.serializers import (
     UserLoginSerializer,
     UserProfileSerializer,
 )
+
+from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib.auth.models import Permission
+from django.core.mail import EmailMessage
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 User = settings.AUTH_USER_MODEL
 
@@ -39,6 +39,14 @@ class UserList(APIView):
         - email (String):user mail
     """
 
+    @swagger_auto_schema(
+        query_serializer=UserProfileSerializer,
+        operation_description="Send the list of user in database.",
+        responses={
+            200: "Send back the list.",
+            401: "The client was not authorized to see the ressource."
+        }
+    )
     def get(self, request):
         """docstrings."""
         if request.user.has_perm("usersmanagement.add_userprofile"):
@@ -48,6 +56,15 @@ class UserList(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        query_serializer=UserProfileSerializer,
+        operation_description="Create a new user in database.",
+        responses={
+            201: "Send back the data and the user was created.",
+            400: "The request contained bad data.",
+            401: "The client was not authorized to see the ressource."
+        }
+    )
     def post(self, request):
         """docstrings."""
         if request.user.has_perm("usersmanagement.add_userprofile") or is_first_user():
@@ -91,6 +108,15 @@ class UserDetail(APIView):
     Warning ! You can't change the username !
     """
 
+    @swagger_auto_schema(
+        query_serializer=UserProfileSerializer,
+        operation_description="Send back the sata of a user from database.",
+        responses={
+            200: "Send the data asked",
+            401: "The client was not authorized to see the ressource.",
+            404: "The user was not found in the database.",
+        }
+    )
     def get(self, request, pk):
         """docstrings."""
         try:
@@ -103,6 +129,16 @@ class UserDetail(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        query_serializer=UserProfileSerializer,
+        operation_description="Update a user from database.",
+        responses={
+            200: "Send the data asked",
+            400: "The client sent bad data",
+            401: "The client was not authorized to update the ressource.",
+            404: "The user was not found in the database.",
+        }
+    )
     def put(self, request, pk):
         """docstrings."""
         try:
@@ -118,6 +154,15 @@ class UserDetail(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        query_serializer=UserProfileSerializer,
+        operation_description="Delete a user from database.",
+        responses={
+            204: "The user was deleted from database.",
+            401: "The user was not found in the database.",
+            404: "The user was not found"
+        }
+    )
     def delete(self, request, pk):
         """docstrings."""
         try:
@@ -144,6 +189,7 @@ class IsFirstUserRequest(APIView):
     GET request : return True or False
     """
 
+    @swagger_auto_schema(operation_description="Send True if the database contains no user, send False otherwise.")
     def get(self, request):
         """docstirngs."""
         users = UserProfile.objects.all()
@@ -172,6 +218,10 @@ class UsernameSuffix(APIView):
             - username (String) : The username we want to check
     """
 
+    @swagger_auto_schema(
+        operation_description="Send the number of users",
+        #manual_parameters="username",
+    )
     def get(self, request):
         """docstrings."""
         username_begin = request.GET["username"]

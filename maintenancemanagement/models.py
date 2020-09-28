@@ -93,18 +93,6 @@ class Equipment(models.Model):
     )
 
 
-class TaskType(models.Model):
-    name = models.CharField(max_length=100)
-    fields_groups = models.ManyToManyField(
-        FieldGroup,
-        verbose_name="Fields Group",
-        help_text="Fields Groups of the Task Type",
-        related_name="task_type_set",
-        related_query_name="tasktype",
-        blank=True
-    )
-
-
 class Task(models.Model):
     name = models.CharField(max_length=100)
     end_date = models.DateField(null=True, blank=True)  # Correspond à la date butoire

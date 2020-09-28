@@ -3,7 +3,10 @@
 from drf_yasg.utils import swagger_auto_schema
 
 from maintenancemanagement.models import Equipment
-from maintenancemanagement.serializers import EquipmentSerializer
+from maintenancemanagement.serializers import (
+    EquipmentDetailsSerializer,
+    EquipmentSerializer,
+)
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -95,7 +98,7 @@ class EquipmentDetail(APIView):
         operation_description='Send the Equipment corresponding to the given key.',
         query_serializer=None,
         responses={
-            200: EquipmentSerializer(many=False),
+            200: EquipmentDetailsSerializer(many=False),
             401: "Unhauthorized",
             404: "Not found",
         },
@@ -106,7 +109,7 @@ class EquipmentDetail(APIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_equipment"):
-            serializer = EquipmentSerializer(equipment)
+            serializer = EquipmentDetailsSerializer(equipment)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -128,7 +131,8 @@ class EquipmentDetail(APIView):
         if request.user.has_perm("maintenancemanagement.change_equipment"):
             serializer = EquipmentSerializer(equipment, data=request.data, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                equipment = serializer.save()
+                serializer = EquipmentDetailsSerializer(equipment)
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

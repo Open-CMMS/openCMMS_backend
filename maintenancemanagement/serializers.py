@@ -9,11 +9,14 @@ from .models import (
     FieldValue,
     File,
     Task,
-    TaskType,
 )
 """
 Serializers enable the link between front-end and back-end
 """
+
+#############################################################################
+############################## BASE SERIALIZER ##############################
+#############################################################################
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -23,20 +26,6 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over'
         ]
-
-
-class TaskCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Task
-        exclude = []
-
-
-class TaskTypeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = TaskType
-        fields = ['id', 'name', 'fields_groups']
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -104,8 +93,6 @@ class DescribedObjectRelatedField(serializers.RelatedField):
             return "Task: " + str(value.id)
         elif isinstance(value, Equipment):
             return "Equipment: " + str(value.id)
-        elif isinstance(value, TaskType):
-            return "TaskType: " + str(value.id)
         raise Exception('Unexpected type of tagged object')
 
     def to_internal_value(self, data):
@@ -141,3 +128,51 @@ class FieldObjectSerializer(serializers.ModelSerializer):
         instance.value = validated_data.get('value', instance.value)
         instance.description = validated_data.get('description', instance.description)
         return instance
+
+
+#############################################################################
+############################## TASK SERIALIZER ##############################
+#############################################################################
+
+
+class TaskDetailsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Task
+        fields = []
+
+
+class TaskCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Task
+        exclude = []
+
+
+#############################################################################
+########################## EQUIPMENT SERIALIZER #############################
+#############################################################################
+
+
+class EquipmentDetailsSerializer(serializers.ModelSerializer):
+
+    equipment_type = EquipmentTypeSerializer()
+    files = FileSerializer(many=True)
+
+    class Meta:
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files']
+
+
+#############################################################################
+########################## EQUIPMENTTYPE SERIALIZER #########################
+#############################################################################
+
+
+class EquipmentTypeDetailsSerializer(serializers.ModelSerializer):
+
+    equipment_set = EquipmentSerializer(many=True)
+
+    class Meta:
+        model = EquipmentType
+        fields = ['id', 'name', 'fields_groups', 'equipment_set']

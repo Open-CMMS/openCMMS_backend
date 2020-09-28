@@ -4,7 +4,10 @@ from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
 from maintenancemanagement.models import EquipmentType
-from maintenancemanagement.serializers import EquipmentTypeSerializer
+from maintenancemanagement.serializers import (
+    EquipmentTypeDetailsSerializer,
+    EquipmentTypeSerializer,
+)
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -98,7 +101,7 @@ class EquipmentTypeDetail(APIView):
         operation_description='Send the EquipmentType corresponding to the given key.',
         query_serializer=None,
         responses={
-            200: EquipmentTypeSerializer(many=False),
+            200: EquipmentTypeDetailsSerializer(many=False),
             401: "Unhauthorized",
             404: "Not found",
         },
@@ -109,7 +112,7 @@ class EquipmentTypeDetail(APIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
-            serializer = EquipmentTypeSerializer(equipment_type)
+            serializer = EquipmentTypeDetailsSerializer(equipment_type)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
