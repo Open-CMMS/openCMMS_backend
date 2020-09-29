@@ -373,7 +373,7 @@ class TaskRequirements(APIView):
             + serializer_value_end_conditions.data\
             + serializer_value_trigger_conditions.data
 
-        if False:  # request.GET['from_template'] is True:
+        if True:  # request.GET['from_template'] is True:
             tasks = Task.objects.filter(is_template=True)
             serializer = TaskSerializer(tasks, many=True)
             data += serializer.data
@@ -406,3 +406,6 @@ def init_database():
     Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
     Field.objects.create(name="Description", field_group=field_gr_cri_fin)
     Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
+
+    Task.objects.create(name="toto")
+    Task.objects.create(name="titi", is_template=True)
