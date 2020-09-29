@@ -63,7 +63,7 @@ class EquipmentType(models.Model):
     """
         Define an equipment type
     """
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     fields_groups = models.ManyToManyField(
         FieldGroup,
         verbose_name='Equipment Type Field',

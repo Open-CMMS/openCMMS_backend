@@ -986,14 +986,12 @@ class TaskTests(TestCase):
                     [
                         {
                             "field": conditions.get(name="Date").id,
-                            "field_value": None,
                             "value": "2020-09-30",
                             "description": "test_add_task_with_perm_with_trigger_conditions_1"
                         },
                         {
-                            "field": conditions.get(name="Duration").id,
-                            "field_value": None,
-                            "value": "2d",
+                            "field": conditions.get(name="Recurrence").id,
+                            "value": "Day",
                             "description": "test_add_task_with_perm_with_trigger_conditions_2"
                         },
                     ]
@@ -1021,17 +1019,15 @@ class TaskTests(TestCase):
                     'verifier pneus',
                 'description':
                     'desc_task_test_add_task_with_perm_with_end_conditions',
-                'trigger_conditions':
+                'end_conditions':
                     [
                         {
                             "field": conditions.get(name="Checkbox").id,
-                            "field_value": None,
                             "value": "false",
                             "description": "test_add_task_with_perm_with_end_conditions_1"
                         },
                         {
                             "field": conditions.get(name="Integer").id,
-                            "field_value": None,
                             "value": 0,
                             "description": "test_add_task_with_perm_with_end_conditions_2"
                         },
@@ -1064,13 +1060,15 @@ class TaskTests(TestCase):
                 'trigger_conditions':
                     [
                         {
-                            "field": trigger_conditions.get(name="Date").id,
-                            "field_value": None,
-                            "value": "2020-09-30",
+                            "field": trigger_conditions.get(name="Recurrence").id,
+                            "value": "Month",
                             "description": "test_add_task_with_perm_with_trigger_and_end_conditions_1"
-                        }, {
+                        }
+                    ],
+                'end_conditions':
+                    [
+                        {
                             "field": end_conditions.get(name="Checkbox").id,
-                            "field_value": None,
                             "value": "false",
                             "description": "test_add_task_with_perm_with_trigger_and_end_conditions_2"
                         }
@@ -1088,3 +1086,30 @@ class TaskTests(TestCase):
         )
         self.assertEqual(field_object_1.described_object, task)
         self.assertEqual(field_object_2.described_object, task)
+
+    def test_add_task_with_perm_with_conditions_with_bad_values(self):
+        """
+            Test if a user with perm can add a task with conditons with bad values
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_conditions_with_bad_values',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Recurrence").id,
+                            "value": "BAD_VALUE",
+                            "description": "test_add_task_with_perm_with_conditions_with_bad_values"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
