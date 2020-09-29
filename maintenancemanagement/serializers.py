@@ -5,6 +5,7 @@ from .models import (
     Equipment,
     EquipmentType,
     Field,
+    FieldGroup,
     FieldObject,
     FieldValue,
     File,
@@ -97,6 +98,55 @@ class DescribedObjectRelatedField(serializers.RelatedField):
 
     def to_internal_value(self, data):
         return data
+
+
+class FieldRequirementsSerializer(serializers.ModelSerializer):
+
+    value = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = Field
+        fields = ['id', 'name', 'value']
+
+    def get_value(self, obj):
+
+        if obj.value_set.count() == 0:
+            return []
+        else:
+            return obj.value_set.all().values_list('value', flat=True)
+
+
+class TaskRequierementsSerializer(serializers.Serializer):
+
+    trigger_conditions = serializers.SerializerMethodField()
+    end_conditions = serializers.SerializerMethodField()
+
+    class Meta:
+
+        fields = ['trigger_conditions', 'end_conditions']
+
+    def get_trigger_conditions(self, obj):
+
+        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
+        return FieldRequirementsSerializer(trigger_fields, many=True).data
+
+    def get_end_conditions(self, obj):
+        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
+        return FieldRequirementsSerializer(end_fields, many=True).data
+
+
+class TaskTemplateRequirementsSerializer(TaskRequierementsSerializer, serializers.ModelSerializer):
+
+    templates = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Task
+        fields = ['trigger_conditions', 'end_conditions', 'templates']
+
+    def get_templates(self, obj):
+        templates = Task.objects.filter(is_template=True)
+        return templates.values()
 
 
 class FieldObjectValidationSerializer(serializers.ModelSerializer):
