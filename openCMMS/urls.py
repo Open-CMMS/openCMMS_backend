@@ -16,6 +16,7 @@ Including another URLconf
 
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
+from rest_framework_swagger.views import get_swagger_view
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -23,7 +24,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 schema_view = get_schema_view(openapi.Info(
-    title='API name',
+    title='OPEN CMMS',
     default_version='v1',
 ))
 
@@ -31,10 +32,7 @@ urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/usersmanagement/', include('usersmanagement.urls')),
     path('api/maintenancemanagement/', include('maintenancemanagement.urls')),
-    path('api/docs/', schema_view),
-    path('swagger/.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui')
 ]
 
 if settings.DEBUG:
