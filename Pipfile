@@ -5,7 +5,7 @@ verify_ssl = true
 
 [packages]
 django = "==3.1.1"
-djangorestframework = "*"
+djangorestframework = "==3.11"
 gunicorn = "*"
 django-rest-swagger = "*"
 psycopg2-binary = "*"

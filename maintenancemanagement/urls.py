@@ -27,7 +27,8 @@ urlpatterns_task = [
     path('tasks/<int:pk>/', views_task.TaskDetail.as_view(), name='task-detail'),
     path('addteamtotask', views_task.AddTeamToTask.as_view(), name='add-team-to-task'),
     path('teamtasklist/<int:pk>', views_task.TeamTaskList.as_view(), name='team-task-list'),
-    path('usertasklist/<int:pk>', views_task.UserTaskList.as_view(), name='team-task-list')
+    path('usertasklist/<int:pk>', views_task.UserTaskList.as_view(), name='team-task-list'),
+    path('tasks/requirements', views_task.TaskRequirements.as_view(), name='task_requirements')
 ]
 
 urlpatterns_fieldValue = [
