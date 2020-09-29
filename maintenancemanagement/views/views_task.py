@@ -80,8 +80,10 @@ class TaskList(APIView):
             conditions = []
             if trigger_conditions:
                 conditions = trigger_conditions
-            # if end_conditions:
-            #     conditions.append(end_conditions)
+                if end_conditions:
+                    conditions.append(end_conditions)
+            elif end_conditions:
+                conditions = end_conditions
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
                 for condition in conditions:

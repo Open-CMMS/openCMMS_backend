@@ -968,9 +968,9 @@ class TaskTests(TestCase):
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
 
-    def test_add_task_with_perm_with_conditions(self):
+    def test_add_task_with_perm_with_trigger_conditions(self):
         """
-            Test if a user with perm can add a task with end_date
+            Test if a user with perm can add a task with trigger_conditions
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -981,20 +981,110 @@ class TaskTests(TestCase):
                 'name':
                     'verifier pneus',
                 'description':
-                    'desc_task_test_add_task_with_perm_with_conditions',
+                    'desc_task_test_add_task_with_perm_with_trigger_conditions',
                 'trigger_conditions':
                     [
                         {
                             "field": conditions.get(name="Date").id,
                             "field_value": None,
                             "value": "2020-09-30",
-                            "description": "test_add_task_with_perm_with_conditions"
+                            "description": "test_add_task_with_perm_with_trigger_conditions_1"
+                        },
+                        {
+                            "field": conditions.get(name="Duration").id,
+                            "field_value": None,
+                            "value": "2d",
+                            "description": "test_add_task_with_perm_with_trigger_conditions_2"
+                        },
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_conditions")
+        field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_1")
+        field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_2")
+        self.assertEqual(field_object_1.described_object, task)
+        self.assertEqual(field_object_2.described_object, task)
+
+    def test_add_task_with_perm_with_end_conditions(self):
+        """
+            Test if a user with perm can add a task with end_conditions
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_end_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Checkbox").id,
+                            "field_value": None,
+                            "value": "false",
+                            "description": "test_add_task_with_perm_with_end_conditions_1"
+                        },
+                        {
+                            "field": conditions.get(name="Integer").id,
+                            "field_value": None,
+                            "value": 0,
+                            "description": "test_add_task_with_perm_with_end_conditions_2"
+                        },
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_end_conditions")
+        field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_1")
+        field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_2")
+        self.assertEqual(field_object_1.described_object, task)
+        self.assertEqual(field_object_2.described_object, task)
+
+    def test_add_task_with_perm_with_trigger_and_end_conditions(self):
+        """
+            Test if a user with perm can add a task with trigger_condition and end_condition
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_trigger_and_end__conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": trigger_conditions.get(name="Date").id,
+                            "field_value": None,
+                            "value": "2020-09-30",
+                            "description": "test_add_task_with_perm_with_trigger_and_end_conditions_1"
+                        }, {
+                            "field": end_conditions.get(name="Checkbox").id,
+                            "field_value": None,
+                            "value": "false",
+                            "description": "test_add_task_with_perm_with_trigger_and_end_conditions_2"
                         }
                     ]
             },
             format='json'
         )
         self.assertEqual(response.status_code, 201)
-        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_conditions")
-        field_object = FieldObject.objects.get(description="test_add_task_with_perm_with_conditions")
-        self.assertEqual(field_object.described_object, task)
+        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_and_end__conditions")
+        field_object_1 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_and_end_conditions_1"
+        )
+        field_object_2 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_and_end_conditions_2"
+        )
+        self.assertEqual(field_object_1.described_object, task)
+        self.assertEqual(field_object_2.described_object, task)
