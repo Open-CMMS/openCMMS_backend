@@ -1,7 +1,7 @@
 from attr import validate
 from drf_yasg.utils import swagger_auto_schema
 
-from maintenancemanagement.models import Field, FieldGroup, Task
+from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
@@ -381,6 +381,12 @@ def init_database():
     Field.objects.create(name="Integer", field_group=field_gr_cri_dec)
     Field.objects.create(name="Float", field_group=field_gr_cri_dec)
     Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
+    field_recurrence_dec = Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
+
+    FieldValue.objects.create(name="Day", field=field_recurrence_dec)
+    FieldValue.objects.create(name="Week", field=field_recurrence_dec)
+    FieldValue.objects.create(name="Month", field=field_recurrence_dec)
+    FieldValue.objects.create(name="Year", field=field_recurrence_dec)
 
     field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
 
