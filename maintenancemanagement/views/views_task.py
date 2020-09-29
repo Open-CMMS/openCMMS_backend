@@ -1,19 +1,20 @@
 from attr import validate
 from drf_yasg.utils import swagger_auto_schema
-
-from maintenancemanagement.models import Field, FieldGroup, Task
+from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
     FieldSerializer,
+    FieldValueSerializer,
     TaskCreateSerializer,
     TaskSerializer,
 )
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.views.views_team import belongs_to_team
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.views.views_team import belongs_to_team
 
 VIEW_TASK = "maintenancemanagement.view_task"
 CHANGE_TASK = "maintenancemanagement.change_task"
@@ -352,20 +353,29 @@ class TaskRequirements(APIView):
     )
     def get(self, request):
         """docstrings."""
+        # Get all the value needed
         field_group_end_conditions = FieldGroup.objects.get(name='End Conditions')
         field_group_trigger_conditions = FieldGroup.objects.get(name='Trigger Conditions')
         field_end_conditions = Field.objects.filter(field_group=field_group_end_conditions)
         field_trigger_conditions = Field.objects.filter(field_group=field_group_trigger_conditions)
+        field_value_end_conditions = FieldValue.objects.filter(field__in=field_end_conditions)
+        field_value_trigger_conditions = FieldValue.objects.filter(field__in=field_trigger_conditions)
+        # Serialize the value we got
         serializer_end_conditions = FieldSerializer(field_end_conditions, many=True)
         serializer_trigger_conditions = FieldSerializer(field_trigger_conditions, many=True)
+        serializer_value_end_conditions = FieldValueSerializer(field_value_end_conditions, many=True)
+        serializer_value_trigger_conditions = FieldValueSerializer(field_value_trigger_conditions, many=True)
+        # Add the serialized value to data
+        data = serializer_end_conditions.data\
+            + serializer_trigger_conditions.data\
+            + serializer_value_end_conditions.data\
+            + serializer_value_trigger_conditions.data
 
-        data = serializer_end_conditions.data
-        data += serializer_trigger_conditions.data
-        if True:  # request.GET['from_template'] is True:
+        if False:  # request.GET['from_template'] is True:
             tasks = Task.objects.filter(is_template=True)
             serializer = TaskSerializer(tasks, many=True)
             data += serializer.data
-
+        print(data)
         return Response(data)
 
 
