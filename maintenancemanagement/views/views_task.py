@@ -385,10 +385,10 @@ def init_database():
     Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
     field_recurrence_dec = Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
 
-    FieldValue.objects.create(name="Day", field=field_recurrence_dec)
-    FieldValue.objects.create(name="Week", field=field_recurrence_dec)
-    FieldValue.objects.create(name="Month", field=field_recurrence_dec)
-    FieldValue.objects.create(name="Year", field=field_recurrence_dec)
+    FieldValue.objects.create(value="Day", field=field_recurrence_dec)
+    FieldValue.objects.create(value="Week", field=field_recurrence_dec)
+    FieldValue.objects.create(value="Month", field=field_recurrence_dec)
+    FieldValue.objects.create(value="Year", field=field_recurrence_dec)
 
     field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
 
