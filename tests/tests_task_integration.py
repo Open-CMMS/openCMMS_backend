@@ -1,15 +1,25 @@
 from datetime import timedelta
 
+import pytest
+from attr import __description__
+
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
-from maintenancemanagement.models import File, Task
+from maintenancemanagement.models import Field, FieldGroup, FieldObject, Task
 from maintenancemanagement.serializers import TaskSerializer
+from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 
 User = settings.AUTH_USER_MODEL
+
+
+@pytest.fixture(scope="class", autouse=True)
+def init_db(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        init_database()
 
 
 class TaskTests(TestCase):
@@ -957,3 +967,34 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
+
+    def test_add_task_with_perm_with_conditions(self):
+        """
+            Test if a user with perm can add a task with end_date
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Date").id,
+                            "field_value": None,
+                            "value": "2020-09-30",
+                            "description": "test_add_task_with_perm_with_conditions"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_conditions")
+        field_object = FieldObject.objects.get(description="test_add_task_with_perm_with_conditions")
+        self.assertEqual(field_object.described_object, task)

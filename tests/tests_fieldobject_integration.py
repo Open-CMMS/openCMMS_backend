@@ -2,7 +2,13 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from maintenancemanagement.models import (
-    Equipment, EquipmentType, Field, FieldGroup, FieldObject, FieldValue, Task,
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldGroup,
+    FieldObject,
+    FieldValue,
+    Task,
 )
 from maintenancemanagement.serializers import FieldObjectSerializer
 from openCMMS import settings

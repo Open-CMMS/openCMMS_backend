@@ -1,8 +1,10 @@
+from attr import validate
 from drf_yasg.utils import swagger_auto_schema
 
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from maintenancemanagement.serializers import (
-    FieldObjectSerializer,
+    FieldObjectCreateSerializer,
+    FieldObjectValidationSerializer,
     TaskCreateSerializer,
     TaskSerializer,
 )
@@ -74,24 +76,23 @@ class TaskList(APIView):
         if request.user.has_perm("maintenancemanagement.add_task"):
             trigger_conditions = request.data.pop('trigger_conditions', None)
             end_conditions = request.data.pop('end_conditions', None)
-            conditions = {}
+            conditions = []
             if trigger_conditions:
-                conditions.update(trigger_conditions)
-            if end_conditions:
-                conditions.update(end_conditions)
+                conditions = trigger_conditions
+            # if end_conditions:
+            #     conditions.append(end_conditions)
             task_serializer = TaskCreateSerializer(data=request.data)
-            condition_serializers = []
             if task_serializer.is_valid():
-                for condition in conditions.items():
-                    condition_serializer = FieldObjectSerializer(condition)
-                    if condition_serializer.is_valid():
-                        condition_serializers.append(condition_serializer)
-                    else:
-                        return Response(condition_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                for condition in conditions:
+                    validation_serializer = FieldObjectValidationSerializer(data=condition)
+                    if not validation_serializer.is_valid():
+                        return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
-                for condition_serializer in condition_serializers:
-                    condition_serializer.update({'described_object': task})
-                    condition_serializer.save()
+                for condition in conditions:
+                    condition.update({'described_object': task})
+                    condition_serializer = FieldObjectCreateSerializer(data=condition)
+                    if condition_serializer.is_valid():
+                        condition_serializer.save()
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

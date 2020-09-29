@@ -99,6 +99,13 @@ class DescribedObjectRelatedField(serializers.RelatedField):
         return data
 
 
+class FieldObjectValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FieldObject
+        fields = ['id', 'field', 'field_value', 'value', 'description']
+
+
 class FieldObjectSerializer(serializers.ModelSerializer):
     described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
 
@@ -128,6 +135,14 @@ class FieldObjectSerializer(serializers.ModelSerializer):
         instance.value = validated_data.get('value', instance.value)
         instance.description = validated_data.get('description', instance.description)
         return instance
+
+
+class FieldObjectCreateSerializer(serializers.ModelSerializer):
+    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+
+    class Meta:
+        model = FieldObject
+        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
 
 
 #############################################################################
