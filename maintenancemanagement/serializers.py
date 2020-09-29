@@ -1,3 +1,5 @@
+from attr import field
+
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
@@ -99,18 +101,57 @@ class DescribedObjectRelatedField(serializers.RelatedField):
         return data
 
 
-class FieldObjectValidationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = FieldObject
-        fields = ['id', 'field', 'field_value', 'value', 'description']
-
-
 class FieldObjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FieldObject
         fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
+
+
+#############################################################################
+############################# FIELD SERIALIZER ##############################
+#############################################################################
+
+
+class FieldValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Field
+        fields = ['id', 'name']
+
+
+class FieldCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Field
+        fields = ['id', 'name', 'field_group']
+
+
+#############################################################################
+########################## FIELD OBJECT SERIALIZER ##########################
+#############################################################################
+
+
+class FieldObjectValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FieldObject
+        fields = ['id', 'field', 'value', 'description']
+
+    def validate(self, data):
+        field_values = FieldValue.objects.filter(field=data.get("field"))
+        if field_values:
+            try:
+                value = field_values.get(value=data.get("value")), None
+                data.update({"value": None})
+                data.update({"field_value": value})
+                return data
+            except:
+                raise serializers.ValidationError({
+                    'error': ("Value doesn't match a FieldValue of the given Field"),
+                })
+        data.update({"field_value": None})
+        return data
 
 
 class FieldObjectCreateSerializer(serializers.ModelSerializer):
@@ -163,6 +204,20 @@ class EquipmentDetailsSerializer(serializers.ModelSerializer):
 class EquipmentTypeDetailsSerializer(serializers.ModelSerializer):
 
     equipment_set = EquipmentSerializer(many=True)
+
+    class Meta:
+        model = EquipmentType
+        fields = ['id', 'name', 'fields_groups', 'equipment_set']
+
+
+class EquipmentTypeValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EquipmentType
+        fields = ['id', 'name', 'equipment_set']
+
+
+class EquipmentTypeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EquipmentType

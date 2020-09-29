@@ -1,6 +1,11 @@
 from django.contrib.auth.models import Permission
 from django.test import TestCase
-from maintenancemanagement.models import EquipmentType
+from maintenancemanagement.models import (
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldGroup,
+)
 from maintenancemanagement.serializers import EquipmentTypeSerializer
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -178,3 +183,36 @@ class EquipmentTypeTests(TestCase):
         self.assertEqual(response_1.status_code, 200)
         self.assertEqual(response_2.status_code, 204)
         self.assertFalse(EquipmentType.objects.filter(id=tool.id).exists())
+
+    def test_add_equipmenttype_with_perm_with_fields(self):
+        """
+            Test if a user with perm can add an equipment type with fields
+        """
+        self.set_up_perm()
+        client = APIClient()
+        user = UserProfile.objects.get(username='tom')
+        client.force_authenticate(user=user)
+        response = client.post(
+            '/api/maintenancemanagement/equipmenttypes/', {
+                'name':
+                    'car',
+                'equipment_set': [],
+                'fields':
+                    [
+                        {
+                            "name": "test_add_equipmenttype_with_perm_with_fields_1"
+                        }, {
+                            "name": "test_add_equipmenttype_with_perm_with_fields_2"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        equipment_type = EquipmentType.objects.get(name="car")
+        field_group = FieldGroup.objects.get(name="car")
+        field_1 = Field.objects.get(name="test_add_equipmenttype_with_perm_with_fields_1")
+        field_2 = Field.objects.get(name="test_add_equipmenttype_with_perm_with_fields_2")
+        self.assertEqual(field_1.field_group, field_group)
+        self.assertEqual(field_2.field_group, field_group)
+        self.assertTrue(equipment_type in field_group.equipmentType_set.all())
