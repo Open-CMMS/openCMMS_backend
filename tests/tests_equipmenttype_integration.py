@@ -5,6 +5,7 @@ from maintenancemanagement.models import (
     EquipmentType,
     Field,
     FieldGroup,
+    FieldValue,
 )
 from maintenancemanagement.serializers import EquipmentTypeSerializer
 from openCMMS import settings
@@ -202,7 +203,8 @@ class EquipmentTypeTests(TestCase):
                         {
                             "name": "test_add_equipmenttype_with_perm_with_fields_1"
                         }, {
-                            "name": "test_add_equipmenttype_with_perm_with_fields_2"
+                            "name": "test_add_equipmenttype_with_perm_with_fields_2",
+                            "value": ["Renault", "Volvo", "BMW"]
                         }
                     ]
             },
@@ -213,6 +215,12 @@ class EquipmentTypeTests(TestCase):
         field_group = FieldGroup.objects.get(name="car")
         field_1 = Field.objects.get(name="test_add_equipmenttype_with_perm_with_fields_1")
         field_2 = Field.objects.get(name="test_add_equipmenttype_with_perm_with_fields_2")
+        field_value_1 = FieldValue.objects.get(value="Renault")
+        field_value_2 = FieldValue.objects.get(value="Volvo")
+        field_value_3 = FieldValue.objects.get(value="BMW")
         self.assertEqual(field_1.field_group, field_group)
         self.assertEqual(field_2.field_group, field_group)
         self.assertTrue(equipment_type in field_group.equipmentType_set.all())
+        self.assertEqual(field_value_1.field, field_2)
+        self.assertEqual(field_value_2.field, field_2)
+        self.assertEqual(field_value_3.field, field_2)

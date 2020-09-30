@@ -11,6 +11,8 @@ from maintenancemanagement.serializers import (
     EquipmentTypeValidationSerializer,
     FieldCreateSerializer,
     FieldValidationSerializer,
+    FieldValueCreateSerializer,
+    FieldValueValidationSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -73,16 +75,35 @@ class EquipmentTypeList(APIView):
                 data = request.data
                 if fields:
                     for field in fields:
+                        field_values = field.get('value', None)
                         field_validation_serializer = FieldValidationSerializer(data=field)
                         if not field_validation_serializer.is_valid():
                             return Response(field_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                        if field_values:
+                            for field_value in field_values:
+                                field_value_data = {"value": field_value}
+                                field_value_validation_serializer = FieldValueValidationSerializer(
+                                    data=field_value_data
+                                )
+                                if not field_value_validation_serializer.is_valid():
+                                    return Response(
+                                        field_value_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                                    )
                     field_group = FieldGroup(name=request.data['name'], is_equipment=True)
                     field_group.save()
                     for field in fields:
+                        field_values = field.get('value', None)
                         field.update({'field_group': field_group.id})
                         field_serializer = FieldCreateSerializer(data=field)
                         if field_serializer.is_valid():
-                            field_serializer.save()
+                            field_instance = field_serializer.save()
+                            if field_values:
+                                for field_value in field_values:
+                                    field_value_data = {"value": field_value}
+                                    field_value_data.update({'field': field_instance.id})
+                                    field_value_serializer = FieldValueCreateSerializer(data=field_value_data)
+                                    if field_value_serializer.is_valid():
+                                        field_value_serializer.save()
                     data.update({'fields_groups': [field_group.id]})
                 equipment_serializer = EquipmentTypeCreateSerializer(data=data)
                 if equipment_serializer.is_valid():

@@ -163,6 +163,25 @@ class FieldObjectCreateSerializer(serializers.ModelSerializer):
 
 
 #############################################################################
+########################## FIELD VALUE SERIALIZER ###########################
+#############################################################################
+
+
+class FieldValueValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FieldValue
+        fields = ['id', 'value']
+
+
+class FieldValueCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FieldValue
+        fields = ['id', 'value', 'field']
+
+
+#############################################################################
 ############################## TASK SERIALIZER ##############################
 #############################################################################
 
