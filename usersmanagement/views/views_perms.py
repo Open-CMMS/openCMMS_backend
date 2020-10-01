@@ -1,15 +1,22 @@
 """This module exposes the permissions."""
-from usersmanagement.serializers import PermissionSerializer
-
 from django.contrib.auth.models import Permission
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from usersmanagement.serializers import PermissionSerializer
 
 
 class PermsList(APIView):
     """Contains HTTP method GET used on /usermanagement/perms/."""
 
+    @swagger_auto_schema(
+        operation_description='List all permisions.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to see the permissions.'
+        }
+    )
     def get(self, request):
         """# List all permissions.
 
@@ -32,6 +39,14 @@ class PermsList(APIView):
 class PermDetail(APIView):
     """Contains HTTP method GET used on /usermanagement/perms/{pk}."""
 
+    @swagger_auto_schema(
+        operation_description='Send back a particular permission.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to see the permission.',
+            404: 'The permission was not found.'
+        }
+    )
     def get(self, request, pk):
         """# Retrieve a permission.
 
