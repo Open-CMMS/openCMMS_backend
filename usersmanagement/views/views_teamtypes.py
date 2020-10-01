@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.db.models import query
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -30,6 +32,13 @@ class TeamTypesList(APIView):
     If the user doesn't have the permissions, it will send HTTP 401.
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the list of all TeamType.',
+        responses={
+            200: 'The request went well',
+            401: 'The client was not authorized to view the ressource.'
+        },
+    )
     def get(self, request):
         """docstring."""
         if request.user.has_perm("usersmanagement.view_teamtype"):
@@ -39,9 +48,18 @@ class TeamTypesList(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        query_serializer=TeamTypeSerializer,
+        operation_description='Create a new TeamType object and save it in the database.',
+        responses={
+            201: 'The request went well',
+            400: 'The request did not contain valid data.',
+            401: 'The client was not authorized to view the ressource.'
+        }
+    )
     def post(self, request):
         """docstring."""
-        if request.user.has_perm("usersmanagement.add_teamtype"):
+        if request.user.has_perm('usersmanagement.add_teamtype'):
             serializer = TeamTypeSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -73,6 +91,14 @@ class TeamTypesDetail(APIView):
         - perms ([]) : the permissions' id list
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the requested TeamType.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to see the ressource.',
+            404: 'The ressource was not found.'
+        }
+    )
     def get(self, request, pk):
         """docstring."""
         try:
@@ -84,6 +110,16 @@ class TeamTypesDetail(APIView):
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Update the ressource.',
+        query_serializer=TeamTypeSerializer,
+        responses={
+            200: 'The request went well.',
+            400: 'The request did not contain valid data.',
+            401: 'The client was not authorized to update the ressource',
+            404: 'The ressource was not found.'
+        }
+    )
     def put(self, request, pk):
         """docstrings."""
         try:
@@ -98,6 +134,14 @@ class TeamTypesDetail(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Delete the ressource.',
+        responses={
+            204: 'The request went well.',
+            401: 'The client was not authorized to delete the ressource.',
+            404: 'The ressource was not found.'
+        }
+    )
     def delete(self, request, pk):
         """docstrings."""
         try:
