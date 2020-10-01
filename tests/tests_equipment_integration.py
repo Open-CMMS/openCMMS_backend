@@ -1,6 +1,13 @@
 from django.contrib.auth.models import Permission
 from django.test import TestCase
-from maintenancemanagement.models import Equipment, EquipmentType, File
+from maintenancemanagement.models import (
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldGroup,
+    FieldValue,
+    File,
+)
 from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
     EquipmentSerializer,
@@ -16,10 +23,19 @@ class EquipmentTests(TestCase):
 
     def setUp(self):
         """
-            Set up an equipment with a name, an equipment type
+            Set up an equipment with a name and an equipment type with or without fields
         """
         v = EquipmentType.objects.create(name="Voiture")
         Equipment.objects.create(name="Peugeot Partner", equipment_type=v)
+
+        field_group = FieldGroup.objects.create(name="Embouteilleuse", is_equipment=True)
+        embouteilleuse = EquipmentType.objects.create(name="Embouteilleuse")
+        embouteilleuse.fields_groups.set([field_group])
+        Field.objects.create(name="Capacité", field_group=field_group)
+        Field.objects.create(name="Pression Normale", field_group=field_group)
+        marque = Field.objects.create(name="Marque", field_group=field_group)
+        FieldValue.objects.create(value="Bosch", field=marque)
+        FieldValue.objects.create(value="GAI", field=marque)
 
     def temporary_file(self):
         """
@@ -407,3 +423,172 @@ class EquipmentTests(TestCase):
         serializer = EquipmentSerializer(equipment)
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 401)
+
+    def test_equipment_list_post_authorized_with_all_fields(self):
+        """
+            Test if a user with perm can add an equipment with fields from equipment type
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm_file(user)
+        self.add_add_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name":
+                    "Embouteilleuse AXB1",
+                "equipment_type":
+                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                "fields":
+                    [
+                        {
+                            "field": Field.objects.get(name="Capacité").id,
+                            "value": "60000",
+                            "description": "Nb de bouteilles par h"
+                        }, {
+                            "field": Field.objects.get(name="Pression Normale").id,
+                            "value": "5 bars"
+                        }, {
+                            "field": Field.objects.get(name="Marque").id,
+                            "value": "GAI"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+    def test_equipment_list_post_authorized_with_missing_fields(self):
+        """
+            Test if a user with perm can add an equipment with some missing fields
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm_file(user)
+        self.add_add_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name":
+                    "Embouteilleuse AXB1",
+                "equipment_type":
+                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                "fields":
+                    [
+                        {
+                            "field": Field.objects.get(name="Capacité").id,
+                            "value": "60000",
+                            "description": "Nb de bouteilles par h"
+                        }, {
+                            "field": Field.objects.get(name="Marque").id,
+                            "value": "GAI"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_equipment_list_post_authorized_with_field_without_value(self):
+        """
+            Test if a user with perm can add an equipment with some bad fields 
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm_file(user)
+        self.add_add_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name":
+                    "Embouteilleuse AXB1",
+                "equipment_type":
+                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                "fields":
+                    [
+                        {
+                            "field": Field.objects.get(name="Capacité").id,
+                            "value": "60000",
+                            "description": "Nb de bouteilles par h"
+                        }, {
+                            "field": Field.objects.get(name="Pression Normale").id
+                        }, {
+                            "field": Field.objects.get(name="Marque").id,
+                            "value": "GAI"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_equipment_list_post_authorized_with_bad_field_value(self):
+        """
+            Test if a user with perm can add an equipment with some bad fields 
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm_file(user)
+        self.add_add_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name":
+                    "Embouteilleuse AXB1",
+                "equipment_type":
+                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                "fields":
+                    [
+                        {
+                            "field": Field.objects.get(name="Capacité").id,
+                            "value": "60000",
+                            "description": "Nb de bouteilles par h"
+                        }, {
+                            "field": Field.objects.get(name="Pression Normale").id,
+                            "value": "5 bars"
+                        }, {
+                            "field": Field.objects.get(name="Marque").id,
+                            "value": "WRONG_FIELD_VALUE"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_equipment_list_post_authorized_with_extra_fields(self):
+        """
+            Test if a user with perm can add an equipment with fields from equipment type
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm_file(user)
+        self.add_add_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        response = c.post(
+            "/api/maintenancemanagement/equipments/", {
+                "name":
+                    "Embouteilleuse AXB1",
+                "equipment_type":
+                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                "fields":
+                    [
+                        {
+                            "field": Field.objects.get(name="Capacité").id,
+                            "value": "60000",
+                            "description": "Nb de bouteilles par h"
+                        }, {
+                            "field": Field.objects.get(name="Pression Normale").id,
+                            "value": "5 bars"
+                        }, {
+                            "field": Field.objects.get(name="Marque").id,
+                            "value": "GAI"
+                        }, {
+                            "field": 117117,
+                            "value": "UNEXPECTED_FIELD"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)

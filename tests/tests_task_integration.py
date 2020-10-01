@@ -1,12 +1,16 @@
 from datetime import timedelta
 
 import pytest
-from attr import __description__
 
 from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-from django.test import Client, TestCase
-from maintenancemanagement.models import Field, FieldGroup, FieldObject, Task
+from django.test import TestCase
+from maintenancemanagement.models import (
+    Field,
+    FieldGroup,
+    FieldObject,
+    FieldValue,
+    Task,
+)
 from maintenancemanagement.serializers import TaskSerializer
 from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
@@ -1086,6 +1090,7 @@ class TaskTests(TestCase):
         )
         self.assertEqual(field_object_1.described_object, task)
         self.assertEqual(field_object_2.described_object, task)
+        self.assertEqual(field_object_1.field_value, FieldValue.objects.get(value='Month'))
 
     def test_add_task_with_perm_with_conditions_with_bad_values(self):
         """
