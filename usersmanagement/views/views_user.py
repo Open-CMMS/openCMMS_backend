@@ -1,20 +1,19 @@
 """This module exposes our User model."""
 from secrets import token_hex
 
+from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib.auth.models import Permission
+from django.core.mail import EmailMessage
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from usersmanagement.models import Team, TeamType, UserProfile
 from usersmanagement.serializers import (
     UserLoginSerializer,
     UserProfileSerializer,
 )
-
-from django.conf import settings
-from django.contrib.auth import logout
-from django.contrib.auth.models import Permission
-from django.core.mail import EmailMessage
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 User = settings.AUTH_USER_MODEL
 
@@ -220,7 +219,6 @@ class UsernameSuffix(APIView):
 
     @swagger_auto_schema(
         operation_description="Send the number of users",
-        #manual_parameters="username",
     )
     def get(self, request):
         """docstrings."""
@@ -252,6 +250,13 @@ class SignIn(APIView):
             - user : All the informations about the user
     """
 
+    @swagger_auto_schema(
+        operation_description="Login a client.",
+        responses={
+            200: 'The request went well.',
+            400: 'The login were incorrect.'
+        }
+    )
     def post(self, request):
         """docstring."""
         serializer = UserLoginSerializer(data=request.data)
@@ -286,6 +291,7 @@ class SignOut(APIView):
     response (Response) : Return True
     """
 
+    @swagger_auto_schema(operation_description='Log out the client.', responses={200: 'The request went well.'})
     def get(self, request):
         """dosctring."""
         logout(request)
@@ -308,6 +314,14 @@ class GetUserPermissions(APIView):
     If the id doesn't exist, it will send HTTP 404.
     """
 
+    @swagger_auto_schema(
+        operation_description='Send the authorization of the user.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to see the permissions of the user.',
+            404: 'The user was not found.'
+        }
+    )
     def get(self, request, pk):
         try:
             user = UserProfile.objects.get(pk=pk)
@@ -380,6 +394,13 @@ class SetNewPassword(APIView):
     Response (response) : the response (200 if the password is changed, 401 if the user doesn't have the permission)
     """
 
+    @swagger_auto_schema(
+        operation_description='Change the password of the user.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to change the password of the user.'
+        }
+    )
     def post(self, request):
         """docstrings."""
         token = request.data['token']
@@ -406,6 +427,9 @@ class CheckToken(APIView):
     Response (response) : True if the token is correct else False
     """
 
+    @swagger_auto_schema(
+        operation_description='Authenticate the token of a user.', responses={200: 'The request went well.'}
+    )
     def post(self, request):
         """docstrings."""
         token = request.data['token']
