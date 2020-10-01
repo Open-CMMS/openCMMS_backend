@@ -1,6 +1,3 @@
-from attr import field
-
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
 from .models import (
@@ -103,16 +100,33 @@ class DescribedObjectRelatedField(serializers.RelatedField):
 
 
 class FieldRequirementsSerializer(serializers.ModelSerializer):
+    """This serializer serialize Fields in an explicite way.
+
+    This serializer does not serialize the id of FieldValues associated to the
+    Field serialized but serialize the values instead.
+
+    Exemple of JSON we get by using it :
+    {
+        "id":5,
+        "name":"Marque",
+        "value":["Volvo", "Peugeot", "Ferrari"]
+    }
+    """
 
     value = serializers.SerializerMethodField()
 
     class Meta:
+        """This class contains the serializer metadata.
+
+        model is the Model the Serializer is associated to.
+        fields represents the fields it serializes.
+        """
 
         model = Field
         fields = ['id', 'name', 'value']
 
     def get_value(self, obj):
-
+        """Get the values of the FieldValues associated with the Field as obj."""
         if obj.value_set.count() == 0:
             return []
         else:
@@ -263,6 +277,68 @@ class EquipmentDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Equipment
         fields = ['id', 'name', 'equipment_type', 'files']
+
+
+class EquipmentRequirementsSerializer(serializers.ModelSerializer):
+    """This serializer serialize EquipementType in a explicite way.
+    
+    This serializer does not serialize the id of the Field of its
+    EquipementType, but use the data of FieldRequirementsSerializer instead.
+
+    Exemple of a JSON we get by using it :
+    {
+        "id":1,
+        "name":"Voiture",
+        "fields":[
+            {
+                "id":5,
+                "name":"Marque",
+                "value":["Volvo", "Peugeot", "Ferrari"]
+            },
+            {
+                "id":6,
+                "name":"Kilometrage",
+                "value":[]
+            }
+        ]
+    },
+    {
+        "id":3,
+        "name":"Embouteilleuse",
+        "fields":[
+            {
+                "id":5,
+                "name":"Marque",
+                "value":["GAI", "Bosch"]
+            },
+            {
+                "id":6,
+                "name":"Capacité",
+                "value":[]
+            }
+        ]
+    }
+    """
+
+    field = serializers.SerializerMethodField()
+
+    # This would make more sens to use `fields`, but it does not work
+    # so we use `field`.
+
+    class Meta:
+        """This class contains the serializer metadata.
+
+        model is the Model the Serializer is associated to.
+        fields represents the fields it serializes.
+        """
+
+        model = EquipmentType
+        fields = ['id', 'name', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the EquipementType as obj. """
+        fields = obj.fields_groups.all()
+        return FieldRequirementsSerializer(fields, many=True).data
 
 
 #############################################################################
