@@ -1,6 +1,3 @@
-from attr import field
-
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
 from .models import (
@@ -186,7 +183,7 @@ class FieldObjectValidationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FieldObject
-        fields = ['id', 'field', 'value', 'description']
+        fields = ['field', 'value', 'description']
 
     def validate(self, data):
         field_values = FieldValue.objects.filter(field=data.get("field"))
@@ -200,6 +197,10 @@ class FieldObjectValidationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     'error': ("Value doesn't match a FieldValue of the given Field"),
                 })
+        elif data.get("value") is None:
+            raise serializers.ValidationError({
+                'error': ("Value required"),
+            })
         data.update({"field_value": None})
         return data
 
@@ -209,7 +210,17 @@ class FieldObjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
+        fields = ['described_object', 'field', 'field_value', 'value', 'description']
+
+    def validate(self, data):
+        field_values = FieldValue.objects.filter(field=data.get("field"))
+        if field_values:
+            value = field_values.get(value=data.get("value"))
+            data.update({"value": ""})
+            data.update({"field_value": value})
+            return data
+        data.update({"field_value": None})
+        return data
 
 
 #############################################################################
@@ -256,6 +267,16 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
 
 class EquipmentDetailsSerializer(serializers.ModelSerializer):
+
+    equipment_type = EquipmentTypeSerializer()
+    files = FileSerializer(many=True)
+
+    class Meta:
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files']
+
+
+class EquipmentCreateSerializer(serializers.ModelSerializer):
 
     equipment_type = EquipmentTypeSerializer()
     files = FileSerializer(many=True)

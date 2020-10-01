@@ -1,11 +1,15 @@
 """This module defines the views corresponding to the equipments."""
 
+from os import remove
+
 from drf_yasg.utils import swagger_auto_schema
 
-from maintenancemanagement.models import Equipment
+from maintenancemanagement.models import Equipment, EquipmentType, Field
 from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
     EquipmentSerializer,
+    FieldObjectCreateSerializer,
+    FieldObjectValidationSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -60,11 +64,36 @@ class EquipmentList(APIView):
     )
     def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_equipment"):
-            serializer = EquipmentSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            fields = request.data.pop('fields', None)
+            equipment_serializer = EquipmentSerializer(data=request.data)
+            if equipment_serializer.is_valid():
+                ### Check Fields tous présent et avec valeur
+                expected_fields_groups = EquipmentType.objects.get(id=request.data.get('equipment_type')
+                                                                  ).fields_groups.all()
+                expected_fields = []
+                if expected_fields_groups:
+                    for expected_fields_group in expected_fields_groups.all():
+                        for expected_field in Field.objects.filter(field_group=expected_fields_group):
+                            expected_fields.append(expected_field.id)
+                if fields:
+                    for field in fields:
+                        if not field.get('field') in expected_fields:
+
+                            return Response(str(field) + " not expected", status=status.HTTP_400_BAD_REQUEST)
+                        expected_fields.remove(field.get('field'))
+                        validation_serializer = FieldObjectValidationSerializer(data=field)
+                        if not validation_serializer.is_valid():
+                            return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                if expected_fields:
+                    return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
+                equipment_serializer.save()
+                if fields:
+                    for field in fields:
+                        field_object_serializer = FieldObjectCreateSerializer(data=field)
+                        if field_object_serializer.is_valid():
+                            field_object_serializer.save()
+                return Response(equipment_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
