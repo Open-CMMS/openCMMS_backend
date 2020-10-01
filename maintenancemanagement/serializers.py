@@ -119,27 +119,10 @@ class FieldRequirementsSerializer(serializers.ModelSerializer):
             return obj.value_set.all().values_list('value', flat=True)
 
 
-class TaskRequierementsSerializer(serializers.Serializer):
+class TaskTemplateRequirementsSerializer(serializers.ModelSerializer):
 
     trigger_conditions = serializers.SerializerMethodField()
     end_conditions = serializers.SerializerMethodField()
-
-    class Meta:
-
-        fields = ['trigger_conditions', 'end_conditions']
-
-    def get_trigger_conditions(self, obj):
-
-        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
-        return FieldRequirementsSerializer(trigger_fields, many=True).data
-
-    def get_end_conditions(self, obj):
-        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
-        return FieldRequirementsSerializer(end_fields, many=True).data
-
-
-class TaskTemplateRequirementsSerializer(TaskRequierementsSerializer, serializers.ModelSerializer):
-
     templates = serializers.SerializerMethodField()
 
     class Meta:
@@ -149,6 +132,14 @@ class TaskTemplateRequirementsSerializer(TaskRequierementsSerializer, serializer
     def get_templates(self, obj):
         templates = Task.objects.filter(is_template=True)
         return templates.values()
+
+    def get_trigger_conditions(self, obj):
+        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
+        return FieldRequirementsSerializer(trigger_fields, many=True).data
+
+    def get_end_conditions(self, obj):
+        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
+        return FieldRequirementsSerializer(end_fields, many=True).data
 
 
 class FieldObjectSerializer(serializers.ModelSerializer):

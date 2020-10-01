@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from attr import validate
 from drf_yasg.utils import swagger_auto_schema
+
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
@@ -14,15 +15,15 @@ from maintenancemanagement.serializers import (
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
 )
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.views.views_team import belongs_to_team
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.views.views_team import belongs_to_team
 
 VIEW_TASK = "maintenancemanagement.view_task"
 CHANGE_TASK = "maintenancemanagement.change_task"
+CREATE_TASK = "maintenancemanagement.create_task"
 
 
 class TaskList(APIView):
@@ -361,12 +362,11 @@ class TaskRequirements(APIView):
     )
     def get(self, request):
         """docstrings."""
-        if request.GET['from_template'] == 'False':
-            serializer = TaskRequierementsSerializer(1)  # Si aucun paramètre n'est donné ça ne passe pas.
-            return Response(serializer.data)
-        elif request.GET['from_template'] == 'True':
+        if request.user.has_perm(CREATE_TASK):
             serializer = TaskTemplateRequirementsSerializer(1)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 @swagger_auto_schema(
