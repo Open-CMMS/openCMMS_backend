@@ -1,4 +1,5 @@
 """This modules expose the Team model."""
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +10,13 @@ from usersmanagement.serializers import TeamDetailsSerializer, TeamSerializer
 class TeamList(APIView):
     """Contains HTTP methods GET, POST used on /usermanagement/teams/."""
 
+    @swagger_auto_schema(
+        operation_description='Send the list of Team.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to see the ressource.'
+        }
+    )
     def get(self, request, format='None'):
         """# Implement the GET method.
 
@@ -26,6 +34,15 @@ class TeamList(APIView):
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Create a new Team.',
+        query_serializer=TeamSerializer,
+        responses={
+            201: 'The Team was created.',
+            400: 'The request did not contain valid data.',
+            401: 'The user was not authorized to create a Team.'
+        }
+    )
     def post(self, request, format='None'):
         """Implement the POST method.
 
@@ -57,6 +74,14 @@ class TeamList(APIView):
 class TeamDetail(APIView):
     """Contains HTTP methods GET, PUT, DELETE used on /usermanagement/teams/{pk}."""
 
+    @swagger_auto_schema(
+        operation_description='Send the requested Team.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to see the ressource.',
+            404: 'The ressource was not found.'
+        }
+    )
     def get(self, request, pk, format='None'):
         """Implement the GET method.
 
@@ -79,6 +104,16 @@ class TeamDetail(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Update the ressource.',
+        query_serializer=TeamSerializer,
+        responses={
+            200: 'The request went well.',
+            400: 'The request did not contain valid data.',
+            401: 'The client was not authorized to update the ressource',
+            404: 'The ressource was not found.'
+        }
+    )
     def put(self, request, pk, format='None'):
         """Implement the PUT method.
 
@@ -110,6 +145,14 @@ class TeamDetail(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Delete the Team.',
+        responses={
+            204: 'The request went well.',
+            401: 'The client was not authorized to delete the Team.',
+            404: 'The Team was not found.'
+        }
+    )
     def delete(self, request, pk, format='None'):
         """Implement the DELETE method.
 
@@ -153,6 +196,13 @@ class AddUserToTeam(APIView):
     """
     """Contains HTTP methods POST, PUT used on /usermanagement/add_user_to_team."""
 
+    @swagger_auto_schema(
+        operation_description='Add the user to the team.',
+        responses={
+            201: 'The request went well.',
+            401: 'The client was not authorized to add a User to a Team.',
+        }
+    )
     def post(self, request):
         """Implement the POST method.
 
@@ -175,6 +225,13 @@ class AddUserToTeam(APIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    @swagger_auto_schema(
+        operation_description='Remove the user from the team.',
+        responses={
+            201: 'The request went well.',
+            401: 'The client was not authorized to add a User to a Team.',
+        }
+    )
     def put(self, request):
         """Add and remove users from team.
 
