@@ -7,6 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from maintenancemanagement.models import Equipment, EquipmentType, Field
 from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
+    EquipmentRequirementsSerializer,
     EquipmentSerializer,
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
@@ -184,3 +185,17 @@ class EquipmentDetail(APIView):
             equipment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class EquipmentRequirements(APIView):
+    '''The view to get all equipements with their values.'''
+
+    @swagger_auto_schema(
+        operation_description='Send the list of equipement types with their fields and the values associated.',
+        responses={200: 'The request went well.'}
+    )
+    def get(self, request):
+        '''This is the get method of the view.'''
+        equipment_types = EquipmentType.objects.all()
+        serializer = EquipmentRequirementsSerializer(equipment_types, many=True)
+        return Response(serializer.data)
