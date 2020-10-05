@@ -1,6 +1,12 @@
 from drf_yasg.utils import swagger_auto_schema
 
-from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
+from maintenancemanagement.models import (
+    EquipmentType,
+    Field,
+    FieldGroup,
+    FieldValue,
+    Task,
+)
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
@@ -16,7 +22,7 @@ from usersmanagement.views.views_team import belongs_to_team
 
 VIEW_TASK = "maintenancemanagement.view_task"
 CHANGE_TASK = "maintenancemanagement.change_task"
-CREATE_TASK = "maintenancemanagement.create_task"
+ADD_TASK = "maintenancemanagement.add_task"
 
 
 class TaskList(APIView):
@@ -355,7 +361,7 @@ class TaskRequirements(APIView):
     )
     def get(self, request):
         """docstrings."""
-        if request.user.has_perm(CREATE_TASK):
+        if request.user.has_perm(ADD_TASK):
             serializer = TaskTemplateRequirementsSerializer(1)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
@@ -389,4 +395,5 @@ def init_database():
     Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
 
     Task.objects.create(name="toto")
-    Task.objects.create(name="titi", is_template=True)
+    equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
+    Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)

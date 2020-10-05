@@ -5,6 +5,8 @@ import pytest
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
+    Equipment,
+    EquipmentType,
     Field,
     FieldGroup,
     FieldObject,
@@ -14,6 +16,7 @@ from maintenancemanagement.models import (
 from maintenancemanagement.serializers import TaskSerializer
 from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
+from rest_framework import response
 from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 
@@ -1118,3 +1121,43 @@ class TaskTests(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_get_template_requirements_with_perm(self):
+        """
+            Test if a user can get template requirements with permission
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/requirements')
+        trigger_conditions = response.data['trigger_conditions']
+        end_conditions = response.data['end_conditions']
+        template = Task.objects.get(name='TemplateTest')
+        template_json = {
+            'id': template.id,
+            'name': 'TemplateTest',
+            'duration': '2d',
+            'equipment_type': {
+                'id': template.equipment_type.id,
+                'name': template.equipment_type.name
+            }
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(trigger_conditions),
+            len(Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions")))
+        )
+        self.assertEqual(
+            len(end_conditions), len(Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")))
+        )
+        self.assertTrue(template_json in response.data['task_templates'])
+
+    def test_get_template_requirements_without_perm(self):
+        """
+            Test if a user can get template requirements without permission
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/requirements')
+        self.assertEqual(response.status_code, 401)
