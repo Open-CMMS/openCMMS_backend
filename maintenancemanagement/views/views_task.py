@@ -1,4 +1,3 @@
-from attr import fields
 from drf_yasg.utils import swagger_auto_schema
 
 from maintenancemanagement.models import (
@@ -82,16 +81,7 @@ class TaskList(APIView):
     )
     def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_task"):
-            trigger_conditions = request.data.pop('trigger_conditions', None)
-            end_conditions = request.data.pop('end_conditions', None)
-            conditions = []
-            if trigger_conditions:
-                conditions = trigger_conditions
-                if end_conditions:
-                    for condition in end_conditions:
-                        conditions.append(condition)
-            elif end_conditions:
-                conditions = end_conditions
+            conditions = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
                 for condition in conditions:
@@ -107,6 +97,19 @@ class TaskList(APIView):
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def _extract_conditions_from_data(self, request):
+        trigger_conditions = request.data.pop('trigger_conditions', None)
+        end_conditions = request.data.pop('end_conditions', None)
+        conditions = []
+        if trigger_conditions:
+            conditions = trigger_conditions
+            if end_conditions:
+                for condition in end_conditions:
+                    conditions.append(condition)
+        elif end_conditions:
+            conditions = end_conditions
+        return conditions
 
 
 class TaskDetail(APIView):

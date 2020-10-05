@@ -3,8 +3,6 @@ from datetime import timedelta
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    Equipment,
-    EquipmentType,
     Field,
     FieldGroup,
     FieldObject,
@@ -12,9 +10,7 @@ from maintenancemanagement.models import (
     Task,
 )
 from maintenancemanagement.serializers import TaskSerializer
-from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
-from rest_framework import response
 from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 
