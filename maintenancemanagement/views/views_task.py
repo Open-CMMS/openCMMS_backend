@@ -1,3 +1,4 @@
+from attr import fields
 from drf_yasg.utils import swagger_auto_schema
 
 from maintenancemanagement.models import (
@@ -394,6 +395,10 @@ def init_database():
     Field.objects.create(name="Description", field_group=field_gr_cri_fin)
     Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
 
-    Task.objects.create(name="toto")
+    field_gr_test = FieldGroup.objects.create(name='FieldGroupTest')
+    Field.objects.create(name="FieldWithoutValueTest", field_group=field_gr_test)
+    field_with_value = Field.objects.create(name="FieldWithValueTest", field_group=field_gr_test)
+    FieldValue.objects.create(value="FieldValueTest", field=field_with_value)
     equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
+    equip_type.fields_groups.add(field_gr_test)
     Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)

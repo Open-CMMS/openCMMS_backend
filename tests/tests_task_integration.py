@@ -1136,11 +1136,16 @@ class TaskTests(TestCase):
         template_json = {
             'id': template.id,
             'name': 'TemplateTest',
-            'duration': '2d',
+            'end_date': None,
+            'description': '',
+            'duration': '172800.0',
+            'is_template': True,
+            'equipment_id': None,
             'equipment_type': {
                 'id': template.equipment_type.id,
                 'name': template.equipment_type.name
-            }
+            },
+            'over': False
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -1150,7 +1155,8 @@ class TaskTests(TestCase):
         self.assertEqual(
             len(end_conditions), len(Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")))
         )
-        self.assertTrue(template_json in response.data['task_templates'])
+        print(response.json().get('task_templates'))
+        self.assertTrue(template_json in response.json().get('task_templates'))
 
     def test_get_template_requirements_without_perm(self):
         """

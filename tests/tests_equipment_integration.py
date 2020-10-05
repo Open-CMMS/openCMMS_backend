@@ -1,5 +1,7 @@
+import pytest
+
 from django.contrib.auth.models import Permission
-from django.test import TestCase
+from django.test import TestCase, client
 from maintenancemanagement.models import (
     Equipment,
     EquipmentType,
@@ -12,11 +14,18 @@ from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
     EquipmentSerializer,
 )
+from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
 
 User = settings.AUTH_USER_MODEL
+
+
+@pytest.fixture(scope="class", autouse=True)
+def init_db(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        init_database()
 
 
 class EquipmentTests(TestCase):
@@ -592,3 +601,46 @@ class EquipmentTests(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_get_equipment_types_requirements_with_perm(self):
+        """
+            Test if a user can get equipment types requirements with permission
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/equipments/requirements')
+        equipment_type = EquipmentType.objects.get(name='EquipmentTypeTest')
+        field_without_value = Field.objects.get(name='FieldWithoutValueTest')
+        field_with_value = Field.objects.get(name='FieldWithValueTest')
+        equipment_type_requirements_json = {
+            'id':
+                equipment_type.id,
+            'name':
+                'EquipmentTypeTest',
+            'field':
+                [
+                    {
+                        'id': field_without_value.id,
+                        'name': 'FieldWithoutValueTest',
+                        'value': []
+                    }, {
+                        'id': field_with_value.id,
+                        'name': 'FieldWithValueTest',
+                        'value': ['FieldValueTest']
+                    }
+                ]
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(equipment_type_requirements_json in response.json())
+
+    def test_get_equipment_types_requirements_without_perm(self):
+        """
+            Test if a user can get equipment types requirements without permission
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/equipments/requirements')
+        self.assertEqual(response.status_code, 401)
