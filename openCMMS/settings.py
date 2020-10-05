@@ -122,7 +122,7 @@ if os.getenv('ENVIRONMENT') == 'DEV':
         'PORT': '',
     }
 
-if 'test' in sys.argv or 'pytest' in sys.argv or os.getenv('ENVIRONMENT') == 'LOCAL':
+if 'test' in sys.argv or 'pytest' in sys.argv[0] or os.getenv('ENVIRONMENT') == 'LOCAL':
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'django',
