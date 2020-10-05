@@ -1123,17 +1123,24 @@ class TaskTests(TestCase):
         template = Task.objects.get(name='TemplateTest')
         template_json = {
             'id': template.id,
-            'name': 'TemplateTest',
-            'end_date': None,
-            'description': '',
-            'duration': '172800.0',
-            'is_template': True,
-            'equipment_id': None,
-            'equipment_type': {
-                'id': template.equipment_type.id,
-                'name': template.equipment_type.name
-            },
-            'over': False
+            'name': template.name,
+            'end_date': template.end_date,
+            'description': template.description,
+            'duration': '2 00:00:00',
+            'is_template': template.is_template,
+            'equipment': template.equipment,
+            'files': list(template.files.all()),
+            'teams': list(template.teams.all().values_list('id', flat=True)),
+            'equipment_type':
+                {
+                    'id': template.equipment_type.id,
+                    'name': template.equipment_type.name,
+                    'fields_groups': list(template.equipment_type.fields_groups.all().values_list('id', flat=True)),
+                    'equipment_set': list(template.equipment_type.equipment_set.all().values_list('id', flat=True)),
+                },
+            'over': template.over,
+            'trigger_conditions': [],
+            'end_conditions': []
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
