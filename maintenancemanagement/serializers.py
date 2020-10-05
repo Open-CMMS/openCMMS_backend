@@ -386,7 +386,11 @@ class EquipmentRequirementsSerializer(serializers.ModelSerializer):
 
     def get_field(self, obj):
         """Get the explicit field associated with the EquipementType as obj. """
-        fields = obj.fields_groups.all()
+
+        fields_groups = obj.fields_groups.all()
+        fields = []
+        for fields_group in fields_groups:
+            fields.extend(fields_group.field_set.all())
         return FieldRequirementsSerializer(fields, many=True).data
 
 

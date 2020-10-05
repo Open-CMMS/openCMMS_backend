@@ -81,16 +81,7 @@ class TaskList(APIView):
     )
     def post(self, request):
         if request.user.has_perm("maintenancemanagement.add_task"):
-            trigger_conditions = request.data.pop('trigger_conditions', None)
-            end_conditions = request.data.pop('end_conditions', None)
-            conditions = []
-            if trigger_conditions:
-                conditions = trigger_conditions
-                if end_conditions:
-                    for condition in end_conditions:
-                        conditions.append(condition)
-            elif end_conditions:
-                conditions = end_conditions
+            conditions = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
                 for condition in conditions:
@@ -106,6 +97,19 @@ class TaskList(APIView):
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def _extract_conditions_from_data(self, request):
+        trigger_conditions = request.data.pop('trigger_conditions', None)
+        end_conditions = request.data.pop('end_conditions', None)
+        conditions = []
+        if trigger_conditions:
+            conditions = trigger_conditions
+            if end_conditions:
+                for condition in end_conditions:
+                    conditions.append(condition)
+        elif end_conditions:
+            conditions = end_conditions
+        return conditions
 
 
 class TaskDetail(APIView):
@@ -394,6 +398,10 @@ def init_database():
     Field.objects.create(name="Description", field_group=field_gr_cri_fin)
     Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
 
-    Task.objects.create(name="toto")
+    field_gr_test = FieldGroup.objects.create(name='FieldGroupTest')
+    Field.objects.create(name="FieldWithoutValueTest", field_group=field_gr_test)
+    field_with_value = Field.objects.create(name="FieldWithValueTest", field_group=field_gr_test)
+    FieldValue.objects.create(value="FieldValueTest", field=field_with_value)
     equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
+    equip_type.fields_groups.add(field_gr_test)
     Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)

@@ -196,6 +196,8 @@ class EquipmentRequirements(APIView):
     )
     def get(self, request):
         '''This is the get method of the view.'''
-        equipment_types = EquipmentType.objects.all()
-        serializer = EquipmentRequirementsSerializer(equipment_types, many=True)
-        return Response(serializer.data)
+        if request.user.has_perm("maintenancemanagement.add_equipment"):
+            equipment_types = EquipmentType.objects.all()
+            serializer = EquipmentRequirementsSerializer(equipment_types, many=True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
