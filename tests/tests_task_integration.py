@@ -1,7 +1,5 @@
 from datetime import timedelta
 
-import pytest
-
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
@@ -21,12 +19,6 @@ from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 
 User = settings.AUTH_USER_MODEL
-
-
-@pytest.fixture(scope="class", autouse=True)
-def init_db(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        init_database()
 
 
 class TaskTests(TestCase):
@@ -1155,7 +1147,6 @@ class TaskTests(TestCase):
         self.assertEqual(
             len(end_conditions), len(Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")))
         )
-        print(response.json().get('task_templates'))
         self.assertTrue(template_json in response.json().get('task_templates'))
 
     def test_get_template_requirements_without_perm(self):
