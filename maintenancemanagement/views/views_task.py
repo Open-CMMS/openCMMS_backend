@@ -1,17 +1,10 @@
-from collections import OrderedDict
-
-from attr import validate
 from drf_yasg.utils import swagger_auto_schema
 
 from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
-    FieldRequirementsSerializer,
-    FieldSerializer,
-    FieldValueSerializer,
     TaskCreateSerializer,
-    TaskRequierementsSerializer,
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
 )
