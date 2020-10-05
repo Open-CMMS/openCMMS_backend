@@ -137,13 +137,13 @@ class TaskTemplateRequirementsSerializer(serializers.ModelSerializer):
 
     trigger_conditions = serializers.SerializerMethodField()
     end_conditions = serializers.SerializerMethodField()
-    templates = serializers.SerializerMethodField()
+    task_templates = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
-        fields = ['trigger_conditions', 'end_conditions', 'templates']
+        fields = ['trigger_conditions', 'end_conditions', 'task_templates']
 
-    def get_templates(self, obj):
+    def get_task_templates(self, obj):
         templates = Task.objects.filter(is_template=True)
         return templates.values()
 
