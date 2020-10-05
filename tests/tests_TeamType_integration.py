@@ -46,7 +46,7 @@ class TeamTypeTests(TestCase):
         perm_delete = Permission.objects.get(codename="delete_teamtype")
         user.user_permissions.set([perm_delete])
 
-    def test_teamtypes_list_get_authorized(self):
+    def test_US1_I1_teamtypeslist_get_with_perm(self):
         """
             Test if a user with perm receive the teamtypes' list
         """
@@ -60,7 +60,7 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_teamtypes_list_get_unauthorized(self):
+    def test_US1_I1_teamtypeslist_get_without_perm(self):
         """
             Test if a user without perm can't receive the teamtypes' list
         """
@@ -70,7 +70,7 @@ class TeamTypeTests(TestCase):
         response = c.get("/api/usersmanagement/teamtypes/")
         self.assertEqual(response.status_code, 401)
 
-    def test_teamtypes_list_post_authorized(self):
+    def test_US1_I2_teamtypeslist_post_with_perm(self):
         """
             Test if a user with perm can add a teamtype
         """
@@ -90,7 +90,7 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(TeamType.objects.get(name="test_teamtype"))
 
-    def test_teamtypes_list_post_unauthorized(self):
+    def test_US1_I2_teamtypeslist_post_without_perm(self):
         """
             Test if a user without perm can't add a teamtype
         """
