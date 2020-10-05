@@ -3,10 +3,16 @@ import pytest
 from django.contrib.auth.models import Permission
 from django.test import TestCase, client
 from maintenancemanagement.models import (
-    Equipment, EquipmentType, Field, FieldGroup, FieldValue, File,
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldGroup,
+    FieldValue,
+    File,
 )
 from maintenancemanagement.serializers import (
-    EquipmentDetailsSerializer, EquipmentSerializer,
+    EquipmentDetailsSerializer,
+    EquipmentSerializer,
 )
 from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings

@@ -3,6 +3,7 @@
 from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import EquipmentType, FieldGroup
 from maintenancemanagement.serializers import (
     EquipmentTypeCreateSerializer,
@@ -74,37 +75,12 @@ class EquipmentTypeList(APIView):
             if equipment_validation_serializer.is_valid():
                 data = request.data
                 if fields:
-                    for field in fields:
-                        field_values = field.get('value', None)
-                        field_validation_serializer = FieldValidationSerializer(data=field)
-                        if not field_validation_serializer.is_valid():
-                            return Response(field_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                        if field_values:
-                            for field_value in field_values:
-                                field_value_data = {"value": field_value}
-                                field_value_validation_serializer = FieldValueValidationSerializer(
-                                    data=field_value_data
-                                )
-                                if not field_value_validation_serializer.is_valid():
-                                    return Response(
-                                        field_value_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                                    )
-                    field_group = FieldGroup(name=request.data['name'], is_equipment=True)
-                    field_group.save()
-                    for field in fields:
-                        field_values = field.get('value', None)
-                        field.update({'field_group': field_group.id})
-                        field_serializer = FieldCreateSerializer(data=field)
-                        if field_serializer.is_valid():
-                            field_instance = field_serializer.save()
-                            if field_values:
-                                for field_value in field_values:
-                                    field_value_data = {"value": field_value}
-                                    field_value_data.update({'field': field_instance.id})
-                                    field_value_serializer = FieldValueCreateSerializer(data=field_value_data)
-                                    if field_value_serializer.is_valid():
-                                        field_value_serializer.save()
-                    data.update({'fields_groups': [field_group.id]})
+                    error = self._validate_fields(fields)
+                    if error:
+                        return error
+                    else:
+                        field_group = self._create_fields(request, fields)
+                        data.update({'fields_groups': [field_group.id]})
                 equipment_serializer = EquipmentTypeCreateSerializer(data=data)
                 if equipment_serializer.is_valid():
                     equipment_serializer.save()
@@ -112,6 +88,37 @@ class EquipmentTypeList(APIView):
                 return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             return Response(equipment_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def _validate_fields(self, fields):
+        for field in fields:
+            field_values = field.get('value', None)
+            field_validation_serializer = FieldValidationSerializer(data=field)
+            if not field_validation_serializer.is_valid():
+                return Response(field_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if field_values:
+                for field_value in field_values:
+                    field_value_data = {"value": field_value}
+                    field_value_validation_serializer = FieldValueValidationSerializer(data=field_value_data)
+                    if not field_value_validation_serializer.is_valid():
+                        return Response(field_value_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def _create_fields(self, request, fields):
+        field_group = FieldGroup(name=request.data['name'], is_equipment=True)
+        field_group.save()
+        for field in fields:
+            field_values = field.get('value', None)
+            field.update({'field_group': field_group.id})
+            field_serializer = FieldCreateSerializer(data=field)
+            if field_serializer.is_valid():
+                field_instance = field_serializer.save()
+                if field_values:
+                    for field_value in field_values:
+                        field_value_data = {"value": field_value}
+                        field_value_data.update({'field': field_instance.id})
+                        field_value_serializer = FieldValueCreateSerializer(data=field_value_data)
+                        if field_value_serializer.is_valid():
+                            field_value_serializer.save()
+        return field_group
 
 
 class EquipmentTypeDetail(APIView):
@@ -152,7 +159,7 @@ class EquipmentTypeDetail(APIView):
     def get(self, request, pk):
         try:
             equipment_type = EquipmentType.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
             serializer = EquipmentTypeDetailsSerializer(equipment_type)
@@ -172,7 +179,7 @@ class EquipmentTypeDetail(APIView):
     def put(self, request, pk):
         try:
             equipment_type = EquipmentType.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.change_equipmenttype"):
             serializer = EquipmentTypeSerializer(equipment_type, data=request.data, partial=True)
@@ -194,7 +201,7 @@ class EquipmentTypeDetail(APIView):
     def delete(self, request, pk):
         try:
             equipment_type = EquipmentType.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_equipmenttype"):
             equipment_type.delete()

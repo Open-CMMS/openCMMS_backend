@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from .models import (
@@ -126,7 +127,8 @@ class FieldRequirementsSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'value']
 
     def get_value(self, obj):
-        """Get the values of the FieldValues associated with the Field as obj."""
+        """Get the values of the FieldValues associated \
+            with the Field as obj."""
         if obj.value_set.count() == 0:
             return []
         else:
@@ -201,7 +203,7 @@ class FieldObjectValidationSerializer(serializers.ModelSerializer):
                 data.update({"value": None})
                 data.update({"field_value": value})
                 return data
-            except:
+            except ObjectDoesNotExist:
                 raise serializers.ValidationError({
                     'error': ("Value doesn't match a FieldValue of the given Field"),
                 })
@@ -296,7 +298,7 @@ class EquipmentCreateSerializer(serializers.ModelSerializer):
 
 class EquipmentRequirementsSerializer(serializers.ModelSerializer):
     """This serializer serialize EquipementType in a explicite way.
-    
+
     This serializer does not serialize the id of the Field of its
     EquipementType, but use the data of FieldRequirementsSerializer instead.
 
@@ -351,7 +353,8 @@ class EquipmentRequirementsSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'field']
 
     def get_field(self, obj):
-        """Get the explicit field associated with the EquipementType as obj. """
+        """Get the explicit field associated with the \
+            EquipementType as obj. """
 
         fields_groups = obj.fields_groups.all()
         fields = []

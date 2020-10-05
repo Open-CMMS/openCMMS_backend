@@ -2,6 +2,7 @@
 
 from drf_yasg.utils import swagger_auto_schema
 
+from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import FieldObject
 from maintenancemanagement.serializers import FieldObjectSerializer
 from rest_framework import status
@@ -109,7 +110,7 @@ class FieldObjectDetail(APIView):
     def get(self, request, pk):
         try:
             field_object = FieldObject.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_fieldobject"):
             serializer = FieldObjectSerializer(field_object)
@@ -129,7 +130,7 @@ class FieldObjectDetail(APIView):
     def put(self, request, pk):
         try:
             field_object = FieldObject.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.change_fieldobject"):
             serializer = FieldObjectSerializer(field_object, data=request.data, partial=True)
@@ -151,7 +152,7 @@ class FieldObjectDetail(APIView):
     def delete(self, request, pk):
         try:
             field_object = FieldObject.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_fieldobject"):
             field_object.delete()

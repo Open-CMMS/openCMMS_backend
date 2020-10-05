@@ -1,5 +1,6 @@
 from drf_yasg.utils import swagger_auto_schema
 
+from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import (
     EquipmentType,
     Field,
@@ -89,11 +90,7 @@ class TaskList(APIView):
                     if not validation_serializer.is_valid():
                         return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
-                for condition in conditions:
-                    condition.update({'described_object': task})
-                    condition_serializer = FieldObjectCreateSerializer(data=condition)
-                    if condition_serializer.is_valid():
-                        condition_serializer.save()
+                self._save_conditions(conditions, task)
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -110,6 +107,13 @@ class TaskList(APIView):
         elif end_conditions:
             conditions = end_conditions
         return conditions
+
+    def _save_conditions(self, conditions, task):
+        for condition in conditions:
+            condition.update({'described_object': task})
+            condition_serializer = FieldObjectCreateSerializer(data=condition)
+            if condition_serializer.is_valid():
+                condition_serializer.save()
 
 
 class TaskDetail(APIView):
@@ -158,7 +162,7 @@ class TaskDetail(APIView):
     def get(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(VIEW_TASK) or participate_to_task(request.user, task):
             serializer = TaskSerializer(task)
@@ -178,7 +182,7 @@ class TaskDetail(APIView):
     def put(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(CHANGE_TASK):
             serializer = TaskSerializer(task, data=request.data, partial=True)
@@ -200,7 +204,7 @@ class TaskDetail(APIView):
     def delete(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_task"):
             task.delete()
@@ -291,7 +295,7 @@ class TeamTaskList(APIView):
     def get(self, request, pk):
         try:
             team = Team.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if request.user.has_perm(VIEW_TASK):
@@ -327,7 +331,7 @@ class UserTaskList(APIView):
     def get(self, request, pk):
         try:
             user = UserProfile.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if request.user.has_perm(VIEW_TASK) or request.user == user:
@@ -360,8 +364,8 @@ class TaskRequirements(APIView):
     """docstrings."""
 
     @swagger_auto_schema(
-        operation_description=
-        'Send the End Conditions and Trigger Conditions. If specified, send the task templates as well.',
+        operation_description='Send the End Conditions and Trigger Conditions. \
+            If specified, send the task templates as well.',
     )
     def get(self, request):
         """docstrings."""

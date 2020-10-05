@@ -1,9 +1,8 @@
 """This module defines the views corresponding to the equipments."""
 
-from os import remove
-
 from drf_yasg.utils import swagger_auto_schema
 
+from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import Equipment, EquipmentType, Field
 from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
@@ -18,9 +17,7 @@ from rest_framework.views import APIView
 
 
 class EquipmentList(APIView):
-    """
-    \n# List all equipments or create a new one
-
+    r"""\n# List all equipments or create a new one.
 
     Parameter :
     request (HttpRequest) : the request coming from the front-end
@@ -68,38 +65,48 @@ class EquipmentList(APIView):
             fields = request.data.pop('fields', None)
             equipment_serializer = EquipmentSerializer(data=request.data)
             if equipment_serializer.is_valid():
-                ### Check Fields tous présent et avec valeur
-                expected_fields_groups = EquipmentType.objects.get(id=request.data.get('equipment_type')
-                                                                  ).fields_groups.all()
-                expected_fields = []
-                if expected_fields_groups:
-                    for expected_fields_group in expected_fields_groups.all():
-                        for expected_field in Field.objects.filter(field_group=expected_fields_group):
-                            expected_fields.append(expected_field.id)
-                if fields:
-                    for field in fields:
-                        if not field.get('field') in expected_fields:
-
-                            return Response(str(field) + " not expected", status=status.HTTP_400_BAD_REQUEST)
-                        expected_fields.remove(field.get('field'))
-                        validation_serializer = FieldObjectValidationSerializer(data=field)
-                        if not validation_serializer.is_valid():
-                            return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                if expected_fields:
-                    return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
-                equipment_serializer.save()
-                if fields:
-                    for field in fields:
-                        field_object_serializer = FieldObjectCreateSerializer(data=field)
-                        if field_object_serializer.is_valid():
-                            field_object_serializer.save()
-                return Response(equipment_serializer.data, status=status.HTTP_201_CREATED)
+                error = self._validate_fields(request, fields)
+                if error:
+                    return error
+                else:
+                    equipment_serializer.save()
+                    self._save_fields(fields)
+                    return Response(equipment_serializer.data, status=status.HTTP_201_CREATED)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    def _get_expected_fields(self, request):
+        expected_fields_groups = EquipmentType.objects.get(id=request.data.get('equipment_type')).fields_groups.all()
+        expected_fields = []
+        if expected_fields_groups:
+            for expected_fields_group in expected_fields_groups.all():
+                for expected_field in Field.objects.filter(field_group=expected_fields_group):
+                    expected_fields.append(expected_field.id)
+        return expected_fields
+
+    def _validate_fields(self, request, fields):
+        expected_fields = self._get_expected_fields(request)
+        if fields:
+            for field in fields:
+                if not field.get('field') in expected_fields:
+                    return Response(str(field) + " not expected", status=status.HTTP_400_BAD_REQUEST)
+                expected_fields.remove(field.get('field'))
+                validation_serializer = FieldObjectValidationSerializer(data=field)
+                if not validation_serializer.is_valid():
+                    return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if expected_fields:
+            return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
+
+    def _save_fields(self, fields):
+        if fields:
+            for field in fields:
+                field_object_serializer = FieldObjectCreateSerializer(data=field)
+                if field_object_serializer.is_valid():
+                    field_object_serializer.save()
+
 
 class EquipmentDetail(APIView):
-    """
+    r"""
         \n# Retrieve, update or delete an equipment
 
         Parameters :
@@ -136,7 +143,7 @@ class EquipmentDetail(APIView):
     def get(self, request, pk):
         try:
             equipment = Equipment.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_equipment"):
             serializer = EquipmentDetailsSerializer(equipment)
@@ -156,7 +163,7 @@ class EquipmentDetail(APIView):
     def put(self, request, pk):
         try:
             equipment = Equipment.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.change_equipment"):
             serializer = EquipmentSerializer(equipment, data=request.data, partial=True)
@@ -179,7 +186,7 @@ class EquipmentDetail(APIView):
     def delete(self, request, pk):
         try:
             equipment = Equipment.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_equipment"):
             equipment.delete()

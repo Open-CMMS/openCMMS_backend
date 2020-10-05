@@ -2,6 +2,7 @@
 
 from drf_yasg.utils import swagger_auto_schema
 
+from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import File
 from maintenancemanagement.serializers import FileSerializer
 from rest_framework import status
@@ -68,7 +69,7 @@ class FileDetail(APIView):
     def get(self, request, pk):
         try:
             file = File.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.view_file"):
             serializer = FileSerializer(file)
@@ -87,7 +88,7 @@ class FileDetail(APIView):
     def delete(self, request, pk):
         try:
             file = File.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_file"):
             file.delete()
