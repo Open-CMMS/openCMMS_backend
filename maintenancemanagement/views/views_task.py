@@ -100,12 +100,9 @@ class TaskList(APIView):
         end_conditions = request.data.pop('end_conditions', None)
         conditions = []
         if trigger_conditions:
-            conditions = trigger_conditions
-            if end_conditions:
-                for condition in end_conditions:
-                    conditions.append(condition)
-        elif end_conditions:
-            conditions = end_conditions
+            conditions.extend(trigger_conditions)
+        if end_conditions:
+            conditions.extend(end_conditions)
         return conditions
 
     def _save_conditions(self, conditions, task):
