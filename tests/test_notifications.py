@@ -14,6 +14,8 @@ class NotificationsTests(TestCase):
         """
             Set up team types, teams, users, permissions for the tests
         """
+        #Creation of 3 TeamTypes
+        T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 
         #User creation
 
