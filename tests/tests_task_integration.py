@@ -74,7 +74,7 @@ class TaskTests(TestCase):
             Test if a user with perm receive the data
         """
         user = self.set_up_perm()
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(is_template=False)
         serializer = TaskSerializer(tasks, many=True)
         client = APIClient()
         client.force_authenticate(user=user)
@@ -251,7 +251,7 @@ class TaskTests(TestCase):
             Test if a user with perm receive the data with end_date
         """
         user = self.set_up_perm()
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(is_template=False)
         serializer = TaskSerializer(tasks, many=True)
         client = APIClient()
         client.force_authenticate(user=user)
@@ -436,7 +436,7 @@ class TaskTests(TestCase):
             Test if a user with perm receive the data with end_date
         """
         user = self.set_up_perm()
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(is_template=False)
         serializer = TaskSerializer(tasks, many=True)
         client = APIClient()
         client.force_authenticate(user=user)

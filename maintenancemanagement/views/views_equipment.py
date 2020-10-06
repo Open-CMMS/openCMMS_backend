@@ -88,9 +88,8 @@ class EquipmentList(APIView):
         expected_fields = self._get_expected_fields(request)
         if fields:
             for field in fields:
-                if not field.get('field') in expected_fields:
-                    return Response(str(field) + " not expected", status=status.HTTP_400_BAD_REQUEST)
-                expected_fields.remove(field.get('field'))
+                if field.get('field') in expected_fields:
+                    expected_fields.remove(field.get('field'))
                 validation_serializer = FieldObjectValidationSerializer(data=field)
                 if not validation_serializer.is_valid():
                     return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

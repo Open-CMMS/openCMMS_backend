@@ -1,10 +1,14 @@
 """This modules expose the Team model."""
 from drf_yasg.utils import swagger_auto_schema
+
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.serializers import TeamDetailsSerializer, TeamSerializer
+
+CHANGE_TEAM = "usersmanagement.change_team"
 
 
 class TeamList(APIView):
@@ -72,7 +76,8 @@ class TeamList(APIView):
 
 
 class TeamDetail(APIView):
-    """Contains HTTP methods GET, PUT, DELETE used on /usermanagement/teams/{pk}."""
+    """Contains HTTP methods GET, PUT, DELETE used on \
+        /usermanagement/teams/{pk}."""
 
     @swagger_auto_schema(
         operation_description='Send the requested Team.',
@@ -96,7 +101,7 @@ class TeamDetail(APIView):
         """
         try:
             team = Team.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.view_team"):
             serializer = TeamDetailsSerializer(team)
@@ -131,9 +136,9 @@ class TeamDetail(APIView):
         """
         try:
             team = Team.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("usersmanagement.change_team"):
+        if request.user.has_perm(CHANGE_TEAM):
             serializer = TeamSerializer(team, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -167,7 +172,7 @@ class TeamDetail(APIView):
         """
         try:
             team = Team.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.delete_team"):
             team.delete()
@@ -194,7 +199,8 @@ class AddUserToTeam(APIView):
 
     If the user doesn't have the permissions, it will send HTTP 401.
     """
-    """Contains HTTP methods POST, PUT used on /usermanagement/add_user_to_team."""
+    """Contains HTTP methods POST, PUT used on \
+        /usermanagement/add_user_to_team."""
 
     @swagger_auto_schema(
         operation_description='Add the user to the team.',
@@ -217,7 +223,7 @@ class AddUserToTeam(APIView):
         id_user (the id of the user to add, int) and id_team (the id of the\
         team where the user will be add, int)
         """
-        if request.user.has_perm("usersmanagement.change_team"):
+        if request.user.has_perm(CHANGE_TEAM):
             user = UserProfile.objects.get(pk=request.data["id_user"])
             team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.add(user)
@@ -247,7 +253,7 @@ class AddUserToTeam(APIView):
 
         If the user doesn't have the permissions, it will send HTTP 401.
         """
-        if request.user.has_perm("usersmanagement.change_team"):
+        if request.user.has_perm(CHANGE_TEAM):
             user = UserProfile.objects.get(pk=request.data["id_user"])
             team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.remove(user)

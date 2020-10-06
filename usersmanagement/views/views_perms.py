@@ -1,6 +1,8 @@
 """This module exposes the permissions."""
-from django.contrib.auth.models import Permission
 from drf_yasg.utils import swagger_auto_schema
+
+from django.contrib.auth.models import Permission
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -64,7 +66,7 @@ class PermDetail(APIView):
         """
         try:
             perm = Permission.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("auth.view_permission"):
             serializer = PermissionSerializer(perm)

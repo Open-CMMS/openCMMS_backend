@@ -66,7 +66,12 @@ class TaskList(APIView):
     )
     def get(self, request):
         if request.user.has_perm(VIEW_TASK):
-            tasks = Task.objects.all()
+            only_template = request.GET.get("template", None)
+            print(only_template)
+            if only_template == "true":
+                tasks = Task.objects.filter(is_template=True)
+            else:
+                tasks = Task.objects.filter(is_template=False)
             serializer = TaskSerializer(tasks, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -100,12 +105,9 @@ class TaskList(APIView):
         end_conditions = request.data.pop('end_conditions', None)
         conditions = []
         if trigger_conditions:
-            conditions = trigger_conditions
-            if end_conditions:
-                for condition in end_conditions:
-                    conditions.append(condition)
-        elif end_conditions:
-            conditions = end_conditions
+            conditions.extend(trigger_conditions)
+        if end_conditions:
+            conditions.extend(end_conditions)
         return conditions
 
     def _save_conditions(self, conditions, task):
