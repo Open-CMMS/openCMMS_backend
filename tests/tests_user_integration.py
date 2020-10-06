@@ -41,7 +41,7 @@ class UserTests(TestCase):
         user.save()
         return user
 
-    def test_UScan_acces_users_list_with_perm(self):
+    def test_US2_I1_userlist_get_with_perm(self):
         """
             Test if a user with perm receive the data
         """
@@ -53,7 +53,7 @@ class UserTests(TestCase):
         response = client.get('/api/usersmanagement/users/', format='json')
         self.assertEqual(response.data, serializer.data)
 
-    def test_can_acces_users_list_without_perm(self):
+    def test_US2_I1_userlist_get_without_perm(self):
         """
             Test if a user without perm doesn't receive the data
         """
@@ -63,7 +63,7 @@ class UserTests(TestCase):
         response = client.get('/api/usersmanagement/users/', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_add_user_first_user(self):
+    def test_US2_I2_userlist_post_is_first_user_without_perm(self):
         """
             Test if a user without perm and is first user can add a user
         """
@@ -77,7 +77,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_add_user_with_perm(self):
+    def test_US2_I2_userlist_post_with_perm(self):
         """
             Test if a user with perm and is not first user can add a user
         """
@@ -94,7 +94,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_add_user_without_perm(self):
+    def test_US2_I2_userlist_post_without_perm(self):
         """
             Test if a user without perm can't add a user
         """
@@ -111,7 +111,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_is_first_user_with_first_user_request(self):
+    def test_US2_I6_isfirstuserrequest_with_no_user(self):
         """
             Test is_first_user with the first user
         """
@@ -120,7 +120,7 @@ class UserTests(TestCase):
         request = client.get('/api/usersmanagement/users/is_first_user', format='json')
         self.assertEqual(request.data, True)
 
-    def test_is_first_user_without_first_user_request(self):
+    def test_US2_I6_isfirstuserrequest_with_user(self):
         """
             Test is_first_user without the first user
         """
@@ -130,7 +130,7 @@ class UserTests(TestCase):
         request = client.get('/api/usersmanagement/users/is_first_user', format='json')
         self.assertEqual(request.data, False)
 
-    def test_username_suffix_with_existant(self):
+    def test_US2_I7_usernamesuffix_with_existant(self):
         """
             Test that the fonction give the correct number to put after an username
         """
@@ -139,7 +139,7 @@ class UserTests(TestCase):
         response = c.get('/api/usersmanagement/users/username_suffix?username=tom')
         self.assertEqual(response.data, '1')
 
-    def test_username_suffix_without_existant(self):
+    def test_US2_I7_usernamesuffix_without_existant(self):
         """
             Test that the fonction give empty string to put after an username
         """
@@ -147,7 +147,7 @@ class UserTests(TestCase):
         response = c.get('/api/usersmanagement/users/username_suffix?username=yolo')
         self.assertEqual(response.data, "")
 
-    def test_view_user_request_own_detail(self):
+    def test_US2_I3_userdetail_get_own_detail(self):
         """
             Test if a user without perm can see his own detail
         """
@@ -157,7 +157,7 @@ class UserTests(TestCase):
         response = client.get('/api/usersmanagement/users/' + str(user.pk) + '/')
         self.assertEqual(response.data['username'], 'tom')
 
-    def test_view_user_request_with_perm(self):
+    def test_US2_I3_userdetail_get_with_perm(self):
         """
             Test if a user with perm can see another user detail
         """
@@ -174,7 +174,7 @@ class UserTests(TestCase):
         response = client.get('/api/usersmanagement/users/' + str(pk) + '/')
         self.assertEqual(response.data['username'], 'joey')
 
-    def test_view_user_request_without_perm(self):
+    def test_US2_I3_userdetail_get_without_perm(self):
         """
             Test if a user without perm can see another user detail
         """
@@ -194,7 +194,7 @@ class UserTests(TestCase):
         response = client.get('/api/usersmanagement/users/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
 
-    def test_change_user_request_own_detail(self):
+    def test_US2_I4_userdetail_put_own_detail(self):
         """
             Test if a user can change his own detail
         """
@@ -206,7 +206,7 @@ class UserTests(TestCase):
         )
         self.assertEqual(response.data['first_name'], 'Paul')
 
-    def test_change_user_request_with_perm(self):
+    def test_US2_I4_userdetail_put_with_perm(self):
         """
             Test if a user with perm can change another user detail
         """
@@ -226,7 +226,7 @@ class UserTests(TestCase):
         response = client.put('/api/usersmanagement/users/' + str(pk) + '/', {'first_name': 'Paul'}, format='json')
         self.assertEqual(response.data['first_name'], 'Paul')
 
-    def test_change_user_request_without_perm(self):
+    def test_US2_I4_userdetail_put_without_perm(self):
         """
             Test if a user without perm can change another user detail
         """
@@ -249,7 +249,7 @@ class UserTests(TestCase):
         response = client.put('/api/usersmanagement/users/' + str(pk) + '/', {'first_name': 'Paul'}, format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_delete_user_request_with_perm(self):
+    def test_US2_I5_userdetail_delete_with_perm(self):
         """
             Test if a user with perm can delete another user
         """
@@ -269,7 +269,7 @@ class UserTests(TestCase):
         response = client.delete('/api/usersmanagement/users/' + str(pk) + '/')
         self.assertEqual(response.status_code, 204)
 
-    def test_delete_user_request_without_perm(self):
+    def test_US2_I5_userdetail_delete_without_perm(self):
         """
             Test if a user without perm can delete another user
         """
@@ -292,7 +292,7 @@ class UserTests(TestCase):
         response = client.delete('/api/usersmanagement/users/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
 
-    def test_get_user_permissions_with_perm(self):
+    def test_US2_I8_getuserpermissions_with_perm(self):
         """
             Test if a user with perm can see the permissions of a user
         """
@@ -303,7 +303,7 @@ class UserTests(TestCase):
         response = client.get('/api/usersmanagement/users/' + str(pk) + '/get_user_permissions')
         self.assertEqual(len(response.data), 4)
 
-    def test_get_user_permissions_without_perm_but_self(self):
+    def test_US2_I8_getuserpermissions_own_perm(self):
         """
             Test if a user without perm can see the permissions of himself
         """
@@ -314,7 +314,7 @@ class UserTests(TestCase):
         response = client.get('/api/usersmanagement/users/' + str(pk) + '/get_user_permissions')
         self.assertEqual(len(response.data), 0)
 
-    def test_get_user_permissions_without_perm(self):
+    def test_US2_I8_getuserpermissions_without_perm(self):
         """
             Test if a user without perm can see the permissions of himself
         """

@@ -54,9 +54,9 @@ class FieldObject(models.Model):
         FieldValue, on_delete=models.SET_NULL, related_name="object_set", related_query_name="object", null=True
     )
 
-    value = models.CharField(max_length=100, default="")
+    value = models.CharField(max_length=100, default="", null=True, blank=True)
 
-    description = models.CharField(max_length=100, default="")
+    description = models.CharField(max_length=100, default="", null=True, blank=True)
 
 
 class EquipmentType(models.Model):
