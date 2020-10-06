@@ -1,11 +1,13 @@
 """This module exposes our User model."""
 from secrets import token_hex
 
+from drf_yasg.utils import swagger_auto_schema
+
 from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,6 +18,8 @@ from usersmanagement.serializers import (
 )
 
 User = settings.AUTH_USER_MODEL
+
+ADD_USERPROFILE = "usersmanagement.add_userprofile"
 
 
 class UserList(APIView):
@@ -29,9 +33,11 @@ class UserList(APIView):
 
     GET request : list all users and return the data
     POST request :
-    - create a new user, send HTTP 201.  If the request is not valid, send HTTP 400.
+    - create a new user, send HTTP 201.  If the request is not valid, \
+        send HTTP 400.
     - If the user doesn't have the permissions, it will send HTTP 401.
-    - The request must contain username (the username of the user (String)) and password (password of the user (String))
+    - The request must contain username (the username of the user (String))\
+         and password (password of the user (String))
     - The request can also contain :
         - first_name (String): User first name
         - last_name (String): User last name
@@ -48,7 +54,7 @@ class UserList(APIView):
     )
     def get(self, request):
         """docstrings."""
-        if request.user.has_perm("usersmanagement.add_userprofile"):
+        if request.user.has_perm(ADD_USERPROFILE):
             users = UserProfile.objects.all()
             serializer = UserProfileSerializer(users, many=True)
             return Response(serializer.data)
@@ -66,7 +72,7 @@ class UserList(APIView):
     )
     def post(self, request):
         """docstrings."""
-        if request.user.has_perm("usersmanagement.add_userprofile") or is_first_user():
+        if request.user.has_perm(ADD_USERPROFILE) or is_first_user():
             serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():
                 if is_first_user():
@@ -92,7 +98,8 @@ class UserDetail(APIView):
     response (Response) : the response.
 
     GET request : return the user's data.
-    PUT request : change the user with the data on the request or if the data isn't well formed, send HTTP 400.
+    PUT request : change the user with the data on the request or if\
+         the data isn't well formed, send HTTP 400.
     DELETE request: delete the tasktype and send HTTP 204.
 
     If the user doesn't have the permissions, it will send HTTP 401.
@@ -120,7 +127,7 @@ class UserDetail(APIView):
         """docstrings."""
         try:
             user = UserProfile.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if (request.user == user) or (request.user.has_perm("usersmanagement.view_userprofile")):
             serializer = UserProfileSerializer(user)
@@ -142,7 +149,7 @@ class UserDetail(APIView):
         """docstrings."""
         try:
             user = UserProfile.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
             serializer = UserProfileSerializer(user, data=request.data, partial=True)
@@ -166,10 +173,11 @@ class UserDetail(APIView):
         """docstrings."""
         try:
             user = UserProfile.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.delete_userprofile"):
-            # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer le dernier Administrateur
+            # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer
+            #  le dernier Administrateur
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -325,10 +333,10 @@ class GetUserPermissions(APIView):
     def get(self, request, pk):
         try:
             user = UserProfile.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if request.user.has_perm("usersmanagement.add_userprofile") or request.user == user:
+        if request.user.has_perm(ADD_USERPROFILE) or request.user == user:
             permissions = user.get_all_permissions()
             codename = []
             for perm in permissions:
@@ -349,9 +357,11 @@ def send_mail_to_setup_password(data):
     user.set_password(token)
     user.save()
     if (settings.DEBUG is True):
-        url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
+
     else:
-        url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
+            &username={user.username}"
 
     email = EmailMessage()
     email.subject = "Set Your Password"
@@ -372,13 +382,15 @@ def send_mail_to_setup_password_after_blocking(id):
     user.set_password(token)
     user.save()
     if (settings.DEBUG is True):
-        url = "https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
     else:
-        url = "https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token=" + token + "&username=" + user.username
+        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
+            &username={user.username}"
 
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been blocked after 3 unsuccessful login. \nTo setup your new password, please follow this link : " + url
+    email.body = "You have been blocked after 3 unsuccessful login. \nTo setup your new password,\
+         please follow this link : " + url
     email.to = [user.email]
 
     email.send()
@@ -391,7 +403,8 @@ class SetNewPassword(APIView):
     request (HttpRequest) : the request coming from the front-end
 
     Return :
-    Response (response) : the response (200 if the password is changed, 401 if the user doesn't have the permission)
+    Response (response) : the response (200 if the password is changed,\
+         401 if the user doesn't have the permission)
     """
 
     @swagger_auto_schema(
@@ -446,7 +459,7 @@ def init_database():
     MTs = TeamType.objects.create(name="Maintenance Team")
 
     # Creation of the 3 inital Teams
-    T_Admin = Team.objects.create(name="Administrators 1", team_type=Admins)
+    Team.objects.create(name="Administrators 1", team_type=Admins)
     T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=MMs)
     T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
 

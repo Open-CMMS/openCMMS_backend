@@ -1,9 +1,8 @@
-from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
-from django.db.models import query
 from drf_yasg.utils import swagger_auto_schema
+
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from usersmanagement.models import TeamType
@@ -26,8 +25,11 @@ class TeamTypesList(APIView):
 
     GET request : list all team types and return the data
     POST request :
-    - create a new team type, send HTTP 201.  If the request is not valid, send HTTP 400.
-    - The request must contain name (the name of the team type, string) and team_set (the id's list of the teams belonging to that type, can be empty, []), can contain perms (the permissions' id list, [])
+    - create a new team type, send HTTP 201.  If the request is\
+         not valid, send HTTP 400.
+    - The request must contain name (the name of the team type, string) and \
+        team_set (the id's list of the teams belonging to that type, can be \
+            empty,[]), can contain perms (the permissions' id list, [])
 
     If the user doesn't have the permissions, it will send HTTP 401.
     """
@@ -79,7 +81,8 @@ class TeamTypesDetail(APIView):
     response (Response) : the response.
 
     GET request : return the team type's data.
-    PUT request : change the team type with the data on the request or if the data isn't well formed, send HTTP 400.
+    PUT request : change the team type with the data on the request or if\
+         the data isn't well formed, send HTTP 400.
     DELETE request: delete the team type and send HTTP 204.
 
     If the user doesn't have the permissions, it will send HTTP 401.
@@ -103,7 +106,7 @@ class TeamTypesDetail(APIView):
         """docstring."""
         try:
             group_type = TeamType.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.view_teamtype"):
             serializer = TeamTypeDetailsSerializer(group_type)
@@ -124,7 +127,7 @@ class TeamTypesDetail(APIView):
         """docstrings."""
         try:
             group_type = TeamType.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.change_teamtype"):
             serializer = TeamTypeSerializer(group_type, data=request.data)
@@ -146,7 +149,7 @@ class TeamTypesDetail(APIView):
         """docstrings."""
         try:
             group_type = TeamType.objects.get(pk=pk)
-        except:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.delete_teamtype"):
             group_type.delete()
