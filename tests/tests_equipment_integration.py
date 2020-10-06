@@ -46,6 +46,9 @@ class EquipmentTests(TestCase):
         FieldValue.objects.create(value="Bosch", field=marque)
         FieldValue.objects.create(value="GAI", field=marque)
 
+        field_group_temp = FieldGroup.objects.create(name="GroupeTest", is_equipment=False)
+        Field.objects.create(name="Toto", field_group=field_group_temp)
+
     def temporary_file(self):
         """
         Returns a new temporary file
@@ -593,14 +596,14 @@ class EquipmentTests(TestCase):
                             "field": Field.objects.get(name="Marque").id,
                             "value": "GAI"
                         }, {
-                            "field": 117117,
-                            "value": "UNEXPECTED_FIELD"
+                            "field": Field.objects.get(name="Toto").id,
+                            "value": "EXTRA_FIELD"
                         }
                     ]
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
 
     def test_get_equipment_types_requirements_with_perm(self):
         """
