@@ -1,34 +1,48 @@
+from drf_yasg.utils import swagger_auto_schema
+
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from usersmanagement.models import TeamType
-from usersmanagement.serializers import TeamTypeSerializer
+from usersmanagement.serializers import (
+    TeamTypeDetailsSerializer,
+    TeamTypeSerializer,
+)
 
 User = settings.AUTH_USER_MODEL
 
 
-@api_view(['GET', 'POST'])
-def teamtypes_list(request):
+class TeamTypesList(APIView):
+    """# List all the team types or create a new one.
+
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    response (Response) : the response.
+
+    GET request : list all team types and return the data
+    POST request :
+    - create a new team type, send HTTP 201.  If the request is\
+         not valid, send HTTP 400.
+    - The request must contain name (the name of the team type, string) and \
+        team_set (the id's list of the teams belonging to that type, can be \
+            empty,[]), can contain perms (the permissions' id list, [])
+
+    If the user doesn't have the permissions, it will send HTTP 401.
     """
-        \n# List all the team types or create a new one
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
-
-        Return :
-        response (Response) : the response.
-
-        GET request : list all team types and return the data
-        POST request :
-        - create a new team type, send HTTP 201.  If the request is not valid, send HTTP 400.
-        - The request must contain name (the name of the team type, string) and team_set (the id's list of the teams belonging to that type, can be empty, []), can contain perms (the permissions' id list, [])
-
-        If the user doesn't have the permissions, it will send HTTP 401.
-    """
-
-    if request.method == 'GET':
+    @swagger_auto_schema(
+        operation_description='Send the list of all TeamType.',
+        responses={
+            200: 'The request went well',
+            401: 'The client was not authorized to view the ressource.'
+        },
+    )
+    def get(self, request):
+        """docstring."""
         if request.user.has_perm("usersmanagement.view_teamtype"):
             group_types = TeamType.objects.all()
             serializer = TeamTypeSerializer(group_types, many=True)
@@ -36,8 +50,18 @@ def teamtypes_list(request):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if request.method == 'POST':
-        if request.user.has_perm("usersmanagement.add_teamtype"):
+    @swagger_auto_schema(
+        query_serializer=TeamTypeSerializer,
+        operation_description='Create a new TeamType object and save it in the database.',
+        responses={
+            201: 'The request went well',
+            400: 'The request did not contain valid data.',
+            401: 'The client was not authorized to view the ressource.'
+        }
+    )
+    def post(self, request):
+        """docstring."""
+        if request.user.has_perm('usersmanagement.add_teamtype'):
             serializer = TeamTypeSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -46,42 +70,65 @@ def teamtypes_list(request):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def teamtypes_detail(request, pk):
+class TeamTypesDetail(APIView):
+    """# Retrieve, update or delete a team type.
+
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+    pk (int) : the id of the team type
+
+    Return :
+    response (Response) : the response.
+
+    GET request : return the team type's data.
+    PUT request : change the team type with the data on the request or if\
+         the data isn't well formed, send HTTP 400.
+    DELETE request: delete the team type and send HTTP 204.
+
+    If the user doesn't have the permissions, it will send HTTP 401.
+    If the id doesn't exist, it will send HTTP 404.
+
+    The PUT request can contain one or more of the following fields :
+        - name (string) : the name of the team type
+        - team_set ([]): the id's list of the teams belonging to that type
+        - perms ([]) : the permissions' id list
     """
-        \n# Retrieve, update or delete a team type
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-        pk (int) : the id of the team type
-
-        Return :
-        response (Response) : the response.
-
-        GET request : return the team type's data.
-        PUT request : change the team type with the data on the request or if the data isn't well formed, send HTTP 400.
-        DELETE request: delete the team type and send HTTP 204.
-
-        If the user doesn't have the permissions, it will send HTTP 401.
-        If the id doesn't exist, it will send HTTP 404.
-
-        The PUT request can contain one or more of the following fields :
-            - name (string) : the name of the team type
-            - team_set ([]): the id's list of the teams belonging to that type
-            - perms ([]) : the permissions' id list
-    """
-    try:
-        group_type = TeamType.objects.get(pk=pk)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
+    @swagger_auto_schema(
+        operation_description='Send the requested TeamType.',
+        responses={
+            200: 'The request went well.',
+            401: 'The client was not authorized to see the ressource.',
+            404: 'The ressource was not found.'
+        }
+    )
+    def get(self, request, pk):
+        """docstring."""
+        try:
+            group_type = TeamType.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.view_teamtype"):
-            serializer = TeamTypeSerializer(group_type)
+            serializer = TeamTypeDetailsSerializer(group_type)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if request.method == 'PUT':
+    @swagger_auto_schema(
+        operation_description='Update the ressource.',
+        query_serializer=TeamTypeSerializer,
+        responses={
+            200: 'The request went well.',
+            400: 'The request did not contain valid data.',
+            401: 'The client was not authorized to update the ressource',
+            404: 'The ressource was not found.'
+        }
+    )
+    def put(self, request, pk):
+        """docstrings."""
+        try:
+            group_type = TeamType.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.change_teamtype"):
             serializer = TeamTypeSerializer(group_type, data=request.data)
             if serializer.is_valid():
@@ -90,7 +137,20 @@ def teamtypes_detail(request, pk):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if request.method == 'DELETE':
+    @swagger_auto_schema(
+        operation_description='Delete the ressource.',
+        responses={
+            204: 'The request went well.',
+            401: 'The client was not authorized to delete the ressource.',
+            404: 'The ressource was not found.'
+        }
+    )
+    def delete(self, request, pk):
+        """docstrings."""
+        try:
+            group_type = TeamType.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.delete_teamtype"):
             group_type.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

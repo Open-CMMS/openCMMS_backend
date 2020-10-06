@@ -1,3 +1,4 @@
+"""This module is to access usermangement from the built-in admin menu."""
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 

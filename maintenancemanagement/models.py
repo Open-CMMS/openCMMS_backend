@@ -1,11 +1,9 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import FileField
 from usersmanagement.models import Team
 
 # Create your models here.
-
 
 
 class File(models.Model):
@@ -37,13 +35,18 @@ class FieldValue(models.Model):
 
 
 class FieldObject(models.Model):
+    """
+        Define a field object.
 
-    # Ces 3 attributs permettent de faire en sorte que described_object puisse référencer TaskType ou EquipmentType
+        content_type and object_id allow described_object to \
+            reference TaskType or EquipmentType
+    """
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)
     object_id = models.PositiveIntegerField()
     described_object = GenericForeignKey(
         'content_type', 'object_id'
-    )  # pour ajouter on fera fo = FieldObject(described_object=taskType, ...) où task type est une instance de tasktype
+    )  # pour ajouter on fera fo = FieldObject(described_object=taskType, ...)
+    # où task type est une instance de tasktype
 
     field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="object_set", related_query_name="object")
 
@@ -60,7 +63,7 @@ class EquipmentType(models.Model):
     """
         Define an equipment type
     """
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     fields_groups = models.ManyToManyField(
         FieldGroup,
         verbose_name='Equipment Type Field',
@@ -90,28 +93,26 @@ class Equipment(models.Model):
     )
 
 
-class TaskType(models.Model):
-    name = models.CharField(max_length=100)
-    fields_groups = models.ManyToManyField(
-        FieldGroup,
-        verbose_name="Fields Group",
-        help_text="Fields Groups of the Task Type",
-        related_name="task_type_set",
-        related_query_name="tasktype",
-        blank=True
-    )
-
-
 class Task(models.Model):
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=2000, default="")
-    end_date = models.DateField(null=True, blank=True)  #Correspond à la date butoire
-    time = models.DurationField(null=True, blank=True)  #Correspond à la durée forfaitaire
+    end_date = models.DateField(null=True, blank=True)  # Correspond à la date butoire
+    description = models.TextField(max_length=2000, default="")
+    duration = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
     equipment = models.ForeignKey(
         Equipment,
         verbose_name="Assigned equipment",
         help_text="The equipment assigned to the task",
+        related_name="task_set",
+        related_query_name="task",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    equipment_type = models.ForeignKey(
+        EquipmentType,
+        verbose_name="Assigned equipment type",
+        help_text="The type of equipment assigned to the task",
         related_name="task_set",
         related_query_name="task",
         on_delete=models.CASCADE,
@@ -126,17 +127,6 @@ class Task(models.Model):
         related_name="task_set",
         related_query_name="task",
     )
-    task_type = models.ForeignKey(
-        TaskType,
-        verbose_name="Task Type",
-        on_delete=models.CASCADE,
-        help_text='The type of this task',
-        related_name="task_set",
-        related_query_name="task",
-        blank=True,
-        null=True
-    )
-
     files = models.ManyToManyField(
         File,
         verbose_name="Task File",
@@ -144,5 +134,4 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
     )
-
     over = models.BooleanField(default=False)

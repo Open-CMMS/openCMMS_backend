@@ -1,11 +1,12 @@
+from usersmanagement.models import UserProfile
+from usersmanagement.views.views_user import SignOut
+
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.test import APIClient, APIRequestFactory
-from usersmanagement.models import UserProfile
-from usersmanagement.views.views_user import sign_in, sign_out
 
 
 class AuthentificationTests(TestCase):
@@ -151,5 +152,6 @@ class AuthentificationTests(TestCase):
         middleware = SessionMiddleware()
         middleware.process_request(request)
         request.session.save()
-        response = sign_out(request)
+        sign_out = SignOut()
+        response = sign_out.get(request)
         self.assertEqual(response.data, True)

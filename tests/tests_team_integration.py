@@ -5,7 +5,10 @@ from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 from usersmanagement.serializers import (
-    PermissionSerializer, TeamSerializer, UserProfileSerializer,
+    PermissionSerializer,
+    TeamDetailsSerializer,
+    TeamSerializer,
+    UserProfileSerializer,
 )
 from usersmanagement.views.views_team import belongs_to_team
 
@@ -222,7 +225,7 @@ class TeamsTests(TestCase):
         self.set_up()
 
         team = Team.objects.get(name="Administrators 1")
-        serializer = TeamSerializer(team)
+        serializer = TeamDetailsSerializer(team)
 
         c = APIClient()
 

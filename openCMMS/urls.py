@@ -1,4 +1,4 @@
-"""openCMMS URL Configuration
+"""openCMMS URL Configuration.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.0/topics/http/urls/
@@ -14,6 +14,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from rest_framework_swagger.views import get_swagger_view
 
 from django.conf import settings
@@ -21,13 +23,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-schema_view = get_swagger_view(title='API name')
+schema_view = get_schema_view(openapi.Info(
+    title='OPEN CMMS',
+    default_version='v1',
+))
 
 urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/usersmanagement/', include('usersmanagement.urls')),
     path('api/maintenancemanagement/', include('maintenancemanagement.urls')),
-    path('api/docs/', schema_view),
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui')
 ]
 
 if settings.DEBUG:

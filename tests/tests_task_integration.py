@@ -1,9 +1,14 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-from django.test import Client, TestCase
-from maintenancemanagement.models import File, Task, TaskType
+from django.test import TestCase
+from maintenancemanagement.models import (
+    Field,
+    FieldGroup,
+    FieldObject,
+    FieldValue,
+    Task,
+)
 from maintenancemanagement.serializers import TaskSerializer
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -69,7 +74,7 @@ class TaskTests(TestCase):
             Test if a user with perm receive the data
         """
         user = self.set_up_perm()
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(is_template=False)
         serializer = TaskSerializer(tasks, many=True)
         client = APIClient()
         client.force_authenticate(user=user)
@@ -246,7 +251,7 @@ class TaskTests(TestCase):
             Test if a user with perm receive the data with end_date
         """
         user = self.set_up_perm()
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(is_template=False)
         serializer = TaskSerializer(tasks, many=True)
         client = APIClient()
         client.force_authenticate(user=user)
@@ -426,21 +431,21 @@ class TaskTests(TestCase):
         response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
 
-    def test_can_acces_task_list_with_perm_with_time(self):
+    def test_can_acces_task_list_with_perm_with_duration(self):
         """
             Test if a user with perm receive the data with end_date
         """
         user = self.set_up_perm()
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(is_template=False)
         serializer = TaskSerializer(tasks, many=True)
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
         self.assertEqual(response.data, serializer.data)
 
-    def test_can_acces_task_list_without_perm_with_time(self):
+    def test_can_acces_task_list_without_perm_with_duration(self):
         """
-            Test if a user without perm doesn't receive the data with time
+            Test if a user without perm doesn't receive the data with duration
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -448,9 +453,9 @@ class TaskTests(TestCase):
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_add_task_with_perm_with_time(self):
+    def test_add_task_with_perm_with_duration(self):
         """
-            Test if a user with perm can add a task with time
+            Test if a user with perm can add a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -459,16 +464,16 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': '1 day, 8:00:00'
+                'duration': '1 day, 8:00:00'
             },
             format='json'
         )
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['time'], '1 08:00:00')
+        self.assertEqual(response.data['duration'], '1 08:00:00')
 
-    def test_add_task_without_perm_with_time(self):
+    def test_add_task_without_perm_with_duration(self):
         """
-            Test if a user without perm can't add a task with time
+            Test if a user without perm can't add a task with duration
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -477,15 +482,15 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_view_task_request_with_perm_with_time(self):
+    def test_view_task_request_with_perm_with_duration(self):
         """
-            Test if a user with perm can see a task detail with time
+            Test if a user with perm can see a task detail with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -494,17 +499,17 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
-        self.assertEqual(response.data['time'], '1 08:00:00')
+        self.assertEqual(response.data['duration'], '1 08:00:00')
 
-    def test_view_task_request_without_perm_with_time(self):
+    def test_view_task_request_without_perm_with_duration(self):
         """
-            Test if a user without perm can't see a task detail with time
+            Test if a user without perm can't see a task detail with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -513,7 +518,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
@@ -526,7 +531,7 @@ class TaskTests(TestCase):
 
     def test_change_task_with_perm_with_time(self):
         """
-            Test if a user with perm can change a task with time
+            Test if a user with perm can change a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -535,20 +540,21 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
         pk = response1.data['id']
         response = client.put(
-            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'time': timedelta(days=2, hours=4)}, format='json'
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'duration': timedelta(days=2, hours=4)},
+            format='json'
         )
-        self.assertEqual(response.data['time'], '2 04:00:00')
+        self.assertEqual(response.data['duration'], '2 04:00:00')
         self.assertEqual(response.status_code, 200)
 
     def test_change_task_without_perm_with_time(self):
         """
-            Test if a user without perm can change a task with time
+            Test if a user without perm can change a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -557,7 +563,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
@@ -566,13 +572,14 @@ class TaskTests(TestCase):
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
         response = client.put(
-            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'time': timedelta(days=2, hours=4)}, format='json'
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'duration': timedelta(days=2, hours=4)},
+            format='json'
         )
         self.assertEqual(response.status_code, 401)
 
     def test_delete_task_with_perm_with_time(self):
         """
-            Test if a user with perm can delete a task with time
+            Test if a user with perm can delete a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -581,7 +588,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
@@ -591,7 +598,7 @@ class TaskTests(TestCase):
 
     def test_delete_task_without_perm_with_time(self):
         """
-            Test if a user without perm can delete a task with time
+            Test if a user without perm can delete a task with duration
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -600,7 +607,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu',
-                'time': timedelta(days=1, hours=8)
+                'duration': timedelta(days=1, hours=8)
             },
             format='json'
         )
@@ -954,4 +961,203 @@ class TaskTests(TestCase):
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        self.assertEqual(response.status_code, 401)
+
+    def test_add_task_with_perm_with_trigger_conditions(self):
+        """
+            Test if a user with perm can add a task with trigger_conditions
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_trigger_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Date").id,
+                            "value": "2020-09-30",
+                            "description": "test_add_task_with_perm_with_trigger_conditions_1"
+                        },
+                        {
+                            "field": conditions.get(name="Recurrence").id,
+                            "value": "Day",
+                            "description": "test_add_task_with_perm_with_trigger_conditions_2"
+                        },
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_conditions")
+        field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_1")
+        field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_2")
+        self.assertEqual(field_object_1.described_object, task)
+        self.assertEqual(field_object_2.described_object, task)
+
+    def test_add_task_with_perm_with_end_conditions(self):
+        """
+            Test if a user with perm can add a task with end_conditions
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_end_conditions',
+                'end_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Checkbox").id,
+                            "value": "false",
+                            "description": "test_add_task_with_perm_with_end_conditions_1"
+                        },
+                        {
+                            "field": conditions.get(name="Integer").id,
+                            "value": 0,
+                            "description": "test_add_task_with_perm_with_end_conditions_2"
+                        },
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_end_conditions")
+        field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_1")
+        field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_2")
+        self.assertEqual(field_object_1.described_object, task)
+        self.assertEqual(field_object_2.described_object, task)
+
+    def test_add_task_with_perm_with_trigger_and_end_conditions(self):
+        """
+            Test if a user with perm can add a task with trigger_condition and end_condition
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_trigger_and_end__conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": trigger_conditions.get(name="Recurrence").id,
+                            "value": "Month",
+                            "description": "test_add_task_with_perm_with_trigger_and_end_conditions_1"
+                        }
+                    ],
+                'end_conditions':
+                    [
+                        {
+                            "field": end_conditions.get(name="Checkbox").id,
+                            "value": "false",
+                            "description": "test_add_task_with_perm_with_trigger_and_end_conditions_2"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_and_end__conditions")
+        field_object_1 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_and_end_conditions_1"
+        )
+        field_object_2 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_and_end_conditions_2"
+        )
+        self.assertEqual(field_object_1.described_object, task)
+        self.assertEqual(field_object_2.described_object, task)
+        self.assertEqual(field_object_1.field_value, FieldValue.objects.get(value='Month'))
+
+    def test_add_task_with_perm_with_conditions_with_bad_values(self):
+        """
+            Test if a user with perm can add a task with conditons with bad values
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_conditions_with_bad_values',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Recurrence").id,
+                            "value": "BAD_VALUE",
+                            "description": "test_add_task_with_perm_with_conditions_with_bad_values"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_template_requirements_with_perm(self):
+        """
+            Test if a user can get template requirements with permission
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/requirements')
+        trigger_conditions = response.data['trigger_conditions']
+        end_conditions = response.data['end_conditions']
+        template = Task.objects.get(name='TemplateTest')
+        template_json = {
+            'id': template.id,
+            'name': template.name,
+            'end_date': template.end_date,
+            'description': template.description,
+            'duration': '2 00:00:00',
+            'is_template': template.is_template,
+            'equipment': template.equipment,
+            'files': list(template.files.all()),
+            'teams': list(template.teams.all().values_list('id', flat=True)),
+            'equipment_type':
+                {
+                    'id': template.equipment_type.id,
+                    'name': template.equipment_type.name,
+                    'fields_groups': list(template.equipment_type.fields_groups.all().values_list('id', flat=True)),
+                    'equipment_set': list(template.equipment_type.equipment_set.all().values_list('id', flat=True)),
+                },
+            'over': template.over,
+            'trigger_conditions': [],
+            'end_conditions': []
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(trigger_conditions),
+            len(Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions")))
+        )
+        self.assertEqual(
+            len(end_conditions), len(Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")))
+        )
+        self.assertTrue(template_json in response.json().get('task_templates'))
+
+    def test_get_template_requirements_without_perm(self):
+        """
+            Test if a user can get template requirements without permission
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/requirements')
         self.assertEqual(response.status_code, 401)

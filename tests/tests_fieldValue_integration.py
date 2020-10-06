@@ -31,9 +31,9 @@ class FieldValueTests(TestCase):
         perm_view = Permission.objects.get(codename="view_fieldvalue")
         user.user_permissions.set([perm_view])
 
-    def test_fieldValue_for_field_get_authorized(self):
+    def test_field_value_for_field_get_authorized(self):
         """
-            Test if fieldValue_for_field view in GET return all the fieldValues in a list and HTTP 200 for a authorized user.
+            Test if field_value_for_field view in GET return all the fieldValues in a list and HTTP 200 for a authorized user.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
@@ -48,9 +48,9 @@ class FieldValueTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_fieldValue_for_field_get_unauthorized(self):
+    def test_field_value_for_field_get_unauthorized(self):
         """
-            Test if fieldValue_for_field view in GET return HTTP 401 for a unauthorized user.
+            Test if field_value_for_field view in GET return HTTP 401 for a unauthorized user.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()

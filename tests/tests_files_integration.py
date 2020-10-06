@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
 from maintenancemanagement.models import File
 from maintenancemanagement.serializers import FileSerializer
+from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
 
@@ -105,7 +106,9 @@ class FileTests(TestCase):
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/files/' + str(pk) + '/')
-        file = open(response.data["file"])
+        path = settings.BASE_DIR + response.data["file"]
+
+        file = open(path)
         self.assertEqual(file.read(), "Coco veut un gateau")
 
     def test_view_task_request_without_perm(self):

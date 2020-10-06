@@ -1,14 +1,24 @@
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from .models import (
-    Equipment, EquipmentType, Field, FieldObject, FieldValue, File, Task,
-    TaskType,
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldGroup,
+    FieldObject,
+    FieldValue,
+    File,
+    Task,
 )
-
 """
 Serializers enable the link between front-end and back-end
 """
+
+#############################################################################
+############################## BASE SERIALIZER ##############################
+#############################################################################
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -16,16 +26,8 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = [
-            'id', 'name', 'description', 'end_date', 'time', 'is_template', 'equipment', 'teams', 'task_type', 'files',
-            'over'
+            'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over'
         ]
-
-
-class TaskTypeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = TaskType
-        fields = ['id', 'name', 'fields_groups']
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -93,40 +95,331 @@ class DescribedObjectRelatedField(serializers.RelatedField):
             return "Task: " + str(value.id)
         elif isinstance(value, Equipment):
             return "Equipment: " + str(value.id)
-        elif isinstance(value, TaskType):
-            return "TaskType: " + str(value.id)
         raise Exception('Unexpected type of tagged object')
 
     def to_internal_value(self, data):
         return data
 
 
+class FieldRequirementsSerializer(serializers.ModelSerializer):
+    """This serializer serialize Fields in an explicite way.
+
+    This serializer does not serialize the id of FieldValues associated to the
+    Field serialized but serialize the values instead.
+
+    Exemple of JSON we get by using it :
+    {
+        "id":5,
+        "name":"Marque",
+        "value":["Volvo", "Peugeot", "Ferrari"]
+    }
+    """
+
+    value = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata.
+
+        model is the Model the Serializer is associated to.
+        fields represents the fields it serializes.
+        """
+
+        model = Field
+        fields = ['id', 'name', 'value']
+
+    def get_value(self, obj):
+        """Get the values of the FieldValues associated \
+            with the Field as obj."""
+        if obj.value_set.count() == 0:
+            return []
+        else:
+            return obj.value_set.all().values_list('value', flat=True)
+
+
+class TaskDetailsSerializer(serializers.ModelSerializer):
+
+    equipment_type = EquipmentTypeSerializer()
+    equipment = EquipmentSerializer()
+    trigger_conditions = serializers.SerializerMethodField()
+    end_conditions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Task
+        fields = [
+            'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over',
+            'trigger_conditions', 'end_conditions', 'equipment_type'
+        ]
+
+    def get_trigger_conditions(self, obj):
+        content_type_object = ContentType.objects.get_for_model(obj)
+        trigger_fields = Field.objects.filter(
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='Trigger Conditions'
+        )
+        return FieldRequirementsSerializer(trigger_fields, many=True).data
+
+    def get_end_conditions(self, obj):
+        content_type_object = ContentType.objects.get_for_model(obj)
+        end_fields = Field.objects.filter(
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='End Conditions'
+        )
+        return FieldRequirementsSerializer(end_fields, many=True).data
+
+
+class TaskTemplateRequirementsSerializer(serializers.Serializer):
+
+    trigger_conditions = serializers.SerializerMethodField()
+    end_conditions = serializers.SerializerMethodField()
+    task_templates = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = ['trigger_conditions', 'end_conditions', 'task_templates']
+
+    def get_task_templates(self, obj):
+        templates = Task.objects.filter(is_template=True)
+        print(templates)
+        serializer = TaskDetailsSerializer(templates, many=True)
+        print(serializer.data)
+        return serializer.data
+
+    def get_trigger_conditions(self, obj):
+        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
+        print(trigger_fields)
+        serializer = FieldRequirementsSerializer(trigger_fields, many=True)
+        print(serializer.data)
+        return serializer.data
+
+    def get_end_conditions(self, obj):
+        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
+        return FieldRequirementsSerializer(end_fields, many=True).data
+
+
 class FieldObjectSerializer(serializers.ModelSerializer):
-    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
 
     class Meta:
         model = FieldObject
         fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
 
-    def create(self, validated_data):
-        return FieldObject.objects.create(
-            content_type=ContentType.objects.get(
-                model=self.validated_data['described_object'].partition(":")[0].lower()
-            ),
-            object_id=self.validated_data['described_object'].partition(":")[2],
-            field=self.validated_data['field'],
-            field_value=self.validated_data['field_value'],
-            value=self.validated_data['value'],
-            description=self.validated_data['description']
-        )
 
-    def update(self, instance, validated_data):
-        instance.content_type = ContentType.objects.get(
-            model=self.validated_data['described_object'].partition(":")[0].lower()
-        )
-        instance.object_id = self.validated_data['described_object'].partition(":")[2]
-        instance.field = validated_data.get('created', instance.field)
-        instance.field_value = validated_data.get('field_value', instance.field_value)
-        instance.value = validated_data.get('value', instance.value)
-        instance.description = validated_data.get('description', instance.description)
-        return instance
+#############################################################################
+############################# FIELD SERIALIZER ##############################
+#############################################################################
+
+
+class FieldValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Field
+        fields = ['id', 'name']
+
+
+class FieldCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Field
+        fields = ['id', 'name', 'field_group']
+
+
+#############################################################################
+########################## FIELD OBJECT SERIALIZER ##########################
+#############################################################################
+
+
+class FieldObjectValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FieldObject
+        fields = ['field', 'value', 'description']
+
+    def validate(self, data):
+        field_values = FieldValue.objects.filter(field=data.get("field"))
+        if field_values:
+            try:
+                value = field_values.get(value=data.get("value")), None
+                data.update({"value": None})
+                data.update({"field_value": value})
+                return data
+            except ObjectDoesNotExist:
+                raise serializers.ValidationError({
+                    'error': ("Value doesn't match a FieldValue of the given Field"),
+                })
+        elif data.get("value") is None:
+            raise serializers.ValidationError({
+                'error': ("Value required"),
+            })
+        data.update({"field_value": None})
+        return data
+
+
+class FieldObjectCreateSerializer(serializers.ModelSerializer):
+    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+
+    class Meta:
+        model = FieldObject
+        fields = ['described_object', 'field', 'field_value', 'value', 'description']
+
+    def validate(self, data):
+        field_values = FieldValue.objects.filter(field=data.get("field"))
+        if field_values:
+            value = field_values.get(value=data.get("value"))
+            data.update({"value": ""})
+            data.update({"field_value": value})
+            return data
+        data.update({"field_value": None})
+        return data
+
+
+#############################################################################
+########################## FIELD VALUE SERIALIZER ###########################
+#############################################################################
+
+
+class FieldValueValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FieldValue
+        fields = ['id', 'value']
+
+
+class FieldValueCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FieldValue
+        fields = ['id', 'value', 'field']
+
+
+#############################################################################
+############################## TASK SERIALIZER ##############################
+#############################################################################
+
+# class TaskDetailsSerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = Task
+#         fields = []
+
+
+class TaskCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Task
+        exclude = []
+
+
+#############################################################################
+########################## EQUIPMENT SERIALIZER #############################
+#############################################################################
+
+
+class EquipmentDetailsSerializer(serializers.ModelSerializer):
+
+    equipment_type = EquipmentTypeSerializer()
+    files = FileSerializer(many=True)
+
+    class Meta:
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files']
+
+
+class EquipmentCreateSerializer(serializers.ModelSerializer):
+
+    equipment_type = EquipmentTypeSerializer()
+    files = FileSerializer(many=True)
+
+    class Meta:
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files']
+
+
+class EquipmentRequirementsSerializer(serializers.ModelSerializer):
+    """This serializer serialize EquipementType in a explicite way.
+
+    This serializer does not serialize the id of the Field of its
+    EquipementType, but use the data of FieldRequirementsSerializer instead.
+
+    Exemple of a JSON we get by using it :
+    {
+        "id":1,
+        "name":"Voiture",
+        "fields":[
+            {
+                "id":5,
+                "name":"Marque",
+                "value":["Volvo", "Peugeot", "Ferrari"]
+            },
+            {
+                "id":6,
+                "name":"Kilometrage",
+                "value":[]
+            }
+        ]
+    },
+    {
+        "id":3,
+        "name":"Embouteilleuse",
+        "fields":[
+            {
+                "id":5,
+                "name":"Marque",
+                "value":["GAI", "Bosch"]
+            },
+            {
+                "id":6,
+                "name":"Capacité",
+                "value":[]
+            }
+        ]
+    }
+    """
+
+    field = serializers.SerializerMethodField()
+
+    # This would make more sens to use `fields`, but it does not work
+    # so we use `field`.
+
+    class Meta:
+        """This class contains the serializer metadata.
+
+        model is the Model the Serializer is associated to.
+        fields represents the fields it serializes.
+        """
+
+        model = EquipmentType
+        fields = ['id', 'name', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            EquipementType as obj. """
+
+        fields_groups = obj.fields_groups.all()
+        fields = []
+        for fields_group in fields_groups:
+            fields.extend(fields_group.field_set.all())
+        return FieldRequirementsSerializer(fields, many=True).data
+
+
+#############################################################################
+########################## EQUIPMENTTYPE SERIALIZER #########################
+#############################################################################
+
+
+class EquipmentTypeDetailsSerializer(serializers.ModelSerializer):
+
+    equipment_set = EquipmentSerializer(many=True)
+
+    class Meta:
+        model = EquipmentType
+        fields = ['id', 'name', 'fields_groups', 'equipment_set']
+
+
+class EquipmentTypeValidationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EquipmentType
+        fields = ['id', 'name', 'equipment_set']
+
+
+class EquipmentTypeCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EquipmentType
+        fields = ['id', 'name', 'fields_groups', 'equipment_set']
