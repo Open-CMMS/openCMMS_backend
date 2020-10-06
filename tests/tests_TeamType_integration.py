@@ -107,7 +107,7 @@ class TeamTypeTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_teamtypes_detail_get_authorized(self):
+    def test_US1_I3_teamtypesdetail_get_with_perm(self):
         """
             Test if a user with perm can get a teamtype
         """
@@ -122,7 +122,7 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_teamtypes_detail_get_unauthorized(self):
+    def test_US1_I3_teamtypesdetail_get_without_perm(self):
         """
             Test if a user without perm can't get a teamtype
         """
@@ -133,7 +133,7 @@ class TeamTypeTests(TestCase):
         response = c.get("/api/usersmanagement/teamtypes/" + str(team_type.id) + "/")
         self.assertEqual(response.status_code, 401)
 
-    def test_teamtypes_detail_put_authorized(self):
+    def test_US1_I4_teamtypesdetail_put_with_perm(self):
         """
             Test if a user with perm can change a teamtype
         """
@@ -155,7 +155,7 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(TeamType.objects.get(name="test_teamtype"))
 
-    def test_teamtypes_detail_put_unauthorized(self):
+    def test_US1_I4_teamtypesdetail_put_without_perm(self):
         """
             Test if a user without perm can't change a teamtype
         """
@@ -175,7 +175,7 @@ class TeamTypeTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_teamtypes_delete_authorized(self):
+    def test_US1_I5_teamtypesdetail_delete_with_perm(self):
         """
             Test if a user with perm can delete a teamtype
         """
@@ -188,7 +188,7 @@ class TeamTypeTests(TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertFalse(TeamType.objects.filter(id=team_type.id).exists())
 
-    def test_teamtypes_delete_authorized(self):
+    def test_US1_I5_teamtypesdetail_delete_without_perm(self):
         """
             Test if a user without perm can't delete a teamtype
         """

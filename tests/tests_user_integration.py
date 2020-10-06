@@ -41,7 +41,7 @@ class UserTests(TestCase):
         user.save()
         return user
 
-    def test_can_acces_users_list_with_perm(self):
+    def test_UScan_acces_users_list_with_perm(self):
         """
             Test if a user with perm receive the data
         """
