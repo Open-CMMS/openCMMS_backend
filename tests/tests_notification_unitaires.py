@@ -1,6 +1,6 @@
 import datetime
-import os
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from usersmanagement.models import Team, TeamType, UserProfile
 from utils.notifications import *
@@ -28,6 +28,7 @@ class NotificationsTests(TestCase):
 
         joe.groups.add(t_mt1)
         joe.save()
+        UserProfile.objects.create(username='toto')
         team = Team.objects.create(name="team")
         task1 = Task.objects.create(name="task_today", end_date=datetime.date.today())
         task2 = Task.objects.create(name="task_yesterday", end_date=datetime.date.today() - datetime.timedelta(days=1))
@@ -41,18 +42,28 @@ class NotificationsTests(TestCase):
         team.user_set.add(joe)
         team.save()
 
-    def test_get_imminent_tasks(self):
+    def test_US17_U1_get_imminent_tasks_user_with_tasks(self):
         self.set_up()
-        tasks = get_imminent_tasks(UserProfile.objects.get(username="jd"))
-        self.assertTrue(Task.objects.get(name="task_yesterday") in tasks[0])
-        self.assertTrue(Task.objects.get(name="task_today") in tasks[1])
-        self.assertTrue(Task.objects.get(name="task_tomorrow") in tasks[2])
+        tasks = get_imminent_tasks(UserProfile.objects.get(username='jd'))
+        self.assertTrue(Task.objects.get(name='task_yesterday') in tasks[0])
+        self.assertTrue(Task.objects.get(name='task_today') in tasks[1])
+        self.assertTrue(Task.objects.get(name='task_tomorrow') in tasks[2])
 
-    def test_send_notification(self):
+    def test_US17_U1_get_imminent_tasks_user_without_tasks(self):
         self.set_up()
-        send_notifications()
-        # os.mkdir()
-        with open('/tmp/mails', 'w') as f:
-            for email in mail.outbox:
-                f.write(str(email.body))
-        self.assertEqual(1, len(mail.outbox))
+        tasks = get_imminent_tasks(UserProfile.objects.get(username='toto'))
+        self.assertFalse(tasks[0])
+        self.assertFalse(tasks[1])
+        self.assertFalse(tasks[2])
+
+    def test_US17_U2_get_notification_template_user_with_tasks(self):
+        self.set_up()
+        user = UserProfile.objects.get(username='jd')
+        template = get_notification_template(user)
+        self.assertTrue(template)
+
+    def test_US17_U2_get_notification_template_user_without_tasks(self):
+        self.set_up()
+        user = UserProfile.objects.get(username='toto')
+        template = get_notification_template(user)
+        self.assertFalse(template)
