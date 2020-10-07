@@ -36,7 +36,7 @@ class TeamsTests(TestCase):
         task.teams.add(T_MT1)
         task.save()
 
-    def test_participate_to_task_true(self):
+    def test_US5_U1_participate_to_task_true(self):
         """
             Test if a user participating to a task send true
         """
@@ -48,7 +48,7 @@ class TeamsTests(TestCase):
 
         self.assertTrue(participate_to_task(tom, task))
 
-    def test_participate_to_task_false(self):
+    def test_US5_U1_participate_to_task_false(self):
         """
             Test if a user not participating to a task send false
         """
