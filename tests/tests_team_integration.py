@@ -66,7 +66,7 @@ class TeamsTests(TestCase):
         joe.groups.add(T_MT1)
         joe.save()
 
-    def test_add_user_to_team_post_authorized(self):
+    def test_US3_I1_addusertoteam_post_with_perm(self):
         """
             Test if a user with permission can add a user to a team
         """
@@ -89,7 +89,7 @@ class TeamsTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(user.groups.get(name="Administrators 1").name, team.name)
 
-    def test_add_user_to_team_post_unauthorized(self):
+    def test_US3_I1_addusertoteam_post_without_perm(self):
         """
             Test if a user without permission can't add a user to a team
         """
@@ -108,7 +108,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_add_user_to_team_put_authorized(self):
+    def test_US3_I1_addusertoteam_put_with_perm(self):
         """
             Test if a user with permission can remove a user to a team
         """
@@ -131,7 +131,7 @@ class TeamsTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertFalse(user.groups.filter(name="Administrators 1").exists())
 
-    def test_add_user_to_team_put_unauthorized(self):
+    def test_US3_I1_addusertoteam_put_without_perm(self):
         """
             Test if a user without permission can't remove a user to a team
         """
@@ -151,7 +151,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_team_list_get_authorized(self):
+    def test_US3_I2_teamlist_get_with_perm(self):
         """
             Test if a user with permission can view the teams' list
         """
@@ -169,7 +169,7 @@ class TeamsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_team_list_get_unauthorized(self):
+    def test_US3_I2_teamlist_get_without_perm(self):
         """
             Test if a user without permission can't view the teams' list
         """
@@ -184,7 +184,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_team_list_post_authorized(self):
+    def test_US3_I3_teamlist_post_with_perm(self):
         """
             Test if a user with permission can add a team
         """
@@ -203,7 +203,7 @@ class TeamsTests(TestCase):
         self.assertTrue(Team.objects.filter(name="test_team"))
         self.assertEqual(team.team_type, tt)
 
-    def test_team_list_post_unauthorized(self):
+    def test_US3_I3_teamlist_get_without_perm(self):
         """
             Test if a user without permission can't add a team
         """
@@ -218,7 +218,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_team_detail_get_authorized(self):
+    def test_US3_I4_teamdetail_get_with_perm(self):
         """
             Test if a user with permission can view a team
         """
@@ -239,7 +239,7 @@ class TeamsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_team_detail_get_unauthorized(self):
+    def test_US3_I4_teamdetail_get_without_perm(self):
         """
             Test if a user without permission can't view a team
         """
@@ -258,7 +258,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_team_detail_put_change_name_authorized(self):
+    def test_US3_I5_teamdetail_put_with_perm(self):
         """
             Test if a user with permission can change a team's name
         """
@@ -277,7 +277,7 @@ class TeamsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['name'], "new_name")
 
-    def test_team_detail_put_change_team_type_authorized(self):
+    def test_US3_I5_teamdetail_put_with_perm(self):
         """
             Test if a user with permission can change a team's team type
         """
@@ -299,7 +299,7 @@ class TeamsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(team.team_type, teamApres.team_type)
 
-    def test_team_detail_put_unauthorized(self):
+    def test_US3_I5_teamdetail_put_without_perm(self):
         """
             Test if a user without permission can't change a team's informations
         """
@@ -318,7 +318,7 @@ class TeamsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_team_detail_delete_authorized(self):
+    def test_US3_I6_teamdetail_delete_with_perm(self):
         """
             Test if a user with permission can delete a team
         """
@@ -338,7 +338,7 @@ class TeamsTests(TestCase):
         with self.assertRaises(Team.DoesNotExist):
             team_final = Team.objects.get(name="Maintenance Team 1")
 
-    def test_team_detail_delete_unauthorized(self):
+    def test_US3_I6_teamdetail_delete_without_perm(self):
         """
             Test if a user without permission can't delete a team
         """

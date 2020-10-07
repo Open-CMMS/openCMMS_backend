@@ -16,14 +16,14 @@ class TeamTypeTests(TestCase):
         admin_team.set_team_type(admin_type)
         admin_type.perms.add(perm_1, perm_2)
 
-    def test_create_get_team_type(self):
+    def test_US1_U1_create_get_team_type(self):
         """
             Test the creation of a team type in the model
         """
         MaintenanceManager_type = TeamType.objects.create(name="Maintenance Manager")
         self.assertEqual(MaintenanceManager_type, TeamType.objects.get(name="Maintenance Manager"))
 
-    def test_add_perm(self):
+    def test_US1_U2_add_perm(self):
         """
             Test the addition of a permission on a team type
         """
@@ -32,7 +32,7 @@ class TeamTypeTests(TestCase):
         MaintenanceManager_type.perms.add(perm)
         self.assertEqual(MaintenanceManager_type.perms.get(id=1), perm)
 
-    def test_apply_(self):
+    def test_US1_U3_apply_(self):
         """
             Test add a set of permissions to a set of teams
         """
@@ -42,7 +42,7 @@ class TeamTypeTests(TestCase):
         self.assertEqual(admin_team.permissions.get(id=1), Permission.objects.get(id=1))
         self.assertEqual(admin_team.permissions.get(id=2), Permission.objects.get(id=2))
 
-    def test_apply_change_teamtype(self):
+    def test_US1_U4_apply_change_teamtype(self):
         """
             Test change teamtype
         """

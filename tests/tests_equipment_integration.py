@@ -94,7 +94,7 @@ class EquipmentTests(TestCase):
         perm_delete = Permission.objects.get(codename="delete_equipment")
         user.user_permissions.set([perm_delete])
 
-    def test_equipment_list_get_authorized(self):
+    def test_US4_I1_equipmentlist_get_with_perm(self):
         """
             Test if a user with perm receive the equipments' list
         """
@@ -108,7 +108,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_equipment_list_get_unauthorized(self):
+    def test_US4_I1_equipmentlist_get_without_perm(self):
         """
             Test if a user without perm doesn't receive the equipments' list
         """
@@ -120,7 +120,7 @@ class EquipmentTests(TestCase):
         response = c.get("/api/maintenancemanagement/equipments/")
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_list_post_authorized(self):
+    def test_US4_I2_equipmentlist_post_with_perm(self):
         """
             Test if a user with perm can add an equipment
         """
@@ -138,7 +138,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Equipment.objects.get(name="Renault Kangoo"))
 
-    def test_equipment_list_post_unauthorized(self):
+    def test_US4_I2_equipmentlist_post_without_perm(self):
         """
             Test if a user without perm can't add an equipment
         """
@@ -153,7 +153,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_detail_get_authorized(self):
+    def test_US4_I3_equipmentdetail_get_with_perm(self):
         """
             Test if a user with perm can receive the equipment data
         """
@@ -168,7 +168,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_equipment_detail_get_unauthorized(self):
+    def test_US4_I3_equipmentdetail_get_without_perm(self):
         """
             Test if a user without perm can't receive the equipment data
         """
@@ -180,7 +180,7 @@ class EquipmentTests(TestCase):
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_detail_put_authorized(self):
+    def test_US4_I4_equipmentdetail_put_with_perm(self):
         """
             Test if a user with perm can change an equipment
         """
@@ -196,7 +196,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Equipment.objects.get(name="Renault Trafic"))
 
-    def test_equipment_detail_put_unauthorized(self):
+    def test_US4_I4_equipmentdetail_put_without_perm(self):
         """
             Test if a user without perm can't change an equipment
         """
@@ -210,7 +210,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_detail_delete_authorized(self):
+    def test_US4_I5_equipmentdetail_delete_with_perm(self):
         """
             Test if a user with perm can delete an equipment
         """
@@ -223,7 +223,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Equipment.objects.filter(id=equipment.id).exists())
 
-    def test_equipment_detail_delete_unauthorized(self):
+    def test_US4_I5_equipmentdetail_delete_without_perm(self):
         """
             Test if a user without perm can't delete an equipment
         """
@@ -234,7 +234,7 @@ class EquipmentTests(TestCase):
         response = c.delete("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_list_post_authorized_with_file(self):
+    def test_US7_I1_equipmentlist_post_with_file_with_perm(self):
         """
             Test if a user with perm can add an equipment with a file
         """
@@ -256,7 +256,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_equipment_list_post_unauthorized_with_file(self):
+    def test_US7_I1_equipmentlist_post_with_file_without_perm(self):
         """
             Test if a user without perm can't add an equipment with a file
         """
@@ -277,7 +277,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_detail_get_authorized_with_file(self):
+    def test_US7_I2_equipmentdetail_get_with_file_with_perm(self):
         """
             Test if a user with perm can receive the equipment data with a file
         """
@@ -304,7 +304,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_equipment_detail_get_unauthorized_with_file(self):
+    def test_US7_I2_equipmentdetail_get_with_file_without_perm(self):
         """
             Test if a user without perm can't receive the equipment data with a file
         """
@@ -329,7 +329,7 @@ class EquipmentTests(TestCase):
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_list_post_authorized_with_files(self):
+    def test_US7_I1_equipmentlist_post_with_files_with_perm(self):
         """
             Test if a user with perm can add an equipment with multiple files
         """
@@ -354,7 +354,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_equipment_list_post_unauthorized_with_files(self):
+    def test_US7_I1_equipmentlist_post_with_files_without_perm(self):
         """
             Test if a user without perm can't add an equipment with multiple files
         """
@@ -378,7 +378,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_detail_get_authorized_with_files(self):
+    def test_US7_I2_equipmentdetail_get_with_files_with_perm(self):
         """
             Test if a user with perm can receive the equipment data with multiple files
         """
@@ -408,7 +408,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_equipment_detail_get_unauthorized_with_files(self):
+    def test_US7_I2_equipmentdetail_get_with_files_without_perm(self):
         """
             Test if a user without perm can't receive the equipment data with multiple files
         """
@@ -436,7 +436,7 @@ class EquipmentTests(TestCase):
         response = c.get("/api/maintenancemanagement/equipments/" + str(equipment.id) + "/")
         self.assertEqual(response.status_code, 401)
 
-    def test_equipment_list_post_authorized_with_all_fields(self):
+    def test_US20_I1_equipmentlist_post_with_all_fields_with_perm(self):
         """
             Test if a user with perm can add an equipment with fields from equipment type
         """
@@ -470,7 +470,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_equipment_list_post_authorized_with_missing_fields(self):
+    def test_US20_I1_equipmentlist_post_with_missing_fields_with_perm(self):
         """
             Test if a user with perm can add an equipment with some missing fields
         """
@@ -501,7 +501,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_equipment_list_post_authorized_with_field_without_value(self):
+    def test_US20_I1_equipmentlist_post_without_value_with_perm(self):
         """
             Test if a user with perm can add an equipment with some bad fields 
         """
@@ -534,7 +534,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_equipment_list_post_authorized_with_bad_field_value(self):
+    def test_US20_I1_equipmentlist_post_with_bad_field_value_with_perm(self):
         """
             Test if a user with perm can add an equipment with some bad fields 
         """
@@ -568,7 +568,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_equipment_list_post_authorized_with_extra_fields(self):
+    def test_US20_I1_equipmentlist_post_with_extra_fields_with_perm(self):
         """
             Test if a user with perm can add an equipment with fields from equipment type
         """
@@ -605,7 +605,7 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_get_equipment_types_requirements_with_perm(self):
+    def test_US4_I8_equipmentrequirements_get_with_perm(self):
         """
             Test if a user can get equipment types requirements with permission
         """
@@ -638,7 +638,7 @@ class EquipmentTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(equipment_type_requirements_json in response.json())
 
-    def test_get_equipment_types_requirements_without_perm(self):
+    def test_US4_I8_equipmentrequirements_get_without_perm(self):
         """
             Test if a user can get equipment types requirements without permission
         """

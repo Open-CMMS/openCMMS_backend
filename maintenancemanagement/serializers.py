@@ -48,7 +48,7 @@ class EquipmentTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EquipmentType
-        fields = ['id', 'name', 'fields_groups', 'equipment_set']
+        fields = ['id', 'name', 'fields_groups']
 
     def update(self, instance, validated_data):
         equipments = instance.equipment_set.all()
@@ -404,22 +404,42 @@ class EquipmentRequirementsSerializer(serializers.ModelSerializer):
 
 class EquipmentTypeDetailsSerializer(serializers.ModelSerializer):
 
-    equipment_set = EquipmentSerializer(many=True)
+    field = serializers.SerializerMethodField()
+    equipments = EquipmentSerializer(source="equipment_set", many=True)
+
+    # This would make more sens to use `fields`, but it does not work
+    # so we use `field`.
 
     class Meta:
+        """This class contains the serializer metadata.
+
+        model is the Model the Serializer is associated to.
+        fields represents the fields it serializes.
+        """
+
         model = EquipmentType
-        fields = ['id', 'name', 'fields_groups', 'equipment_set']
+        fields = ['id', 'name', 'field', 'equipments']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            EquipementType as obj. """
+
+        fields_groups = obj.fields_groups.all()
+        fields = []
+        for fields_group in fields_groups:
+            fields.extend(fields_group.field_set.all())
+        return FieldRequirementsSerializer(fields, many=True).data
 
 
 class EquipmentTypeValidationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EquipmentType
-        fields = ['id', 'name', 'equipment_set']
+        fields = ['id', 'name']
 
 
 class EquipmentTypeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EquipmentType
-        fields = ['id', 'name', 'fields_groups', 'equipment_set']
+        fields = ['id', 'name', 'fields_groups']
