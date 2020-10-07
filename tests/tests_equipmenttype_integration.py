@@ -7,7 +7,10 @@ from maintenancemanagement.models import (
     FieldGroup,
     FieldValue,
 )
-from maintenancemanagement.serializers import EquipmentTypeSerializer
+from maintenancemanagement.serializers import (
+    EquipmentTypeDetailsSerializer,
+    EquipmentTypeSerializer,
+)
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
@@ -48,7 +51,7 @@ class EquipmentTypeTests(TestCase):
         user.save()
         return user
 
-    def test_can_access_equipmenttype_list_with_perm(self):
+    def test_US4_I9_equipmenttypelist_get_with_perm(self):
         """
             Test if a user with perm receive the data
         """
@@ -61,7 +64,7 @@ class EquipmentTypeTests(TestCase):
         response = client.get('/api/maintenancemanagement/equipmenttypes/', format='json')
         self.assertEqual(serializer.data, response.json())
 
-    def test_can_access_equipmenttype_list_without_perm(self):
+    def test_US4_I9_equipmenttypelist_get_without_perm(self):
         """
             Test if a user without perm doesn't receive the data
         """
@@ -72,7 +75,7 @@ class EquipmentTypeTests(TestCase):
         response = client.get('/api/maintenancemanagement/equipmenttypes/', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_add_equipmenttype_with_perm(self):
+    def test_US4_I10_equipmenttypelist_post_with_perm(self):
         """
             Test if a user with perm can add an equipment type
         """
@@ -88,7 +91,7 @@ class EquipmentTypeTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_add_equipmenttype_without_perm(self):
+    def test_US4_I10_equipmenttypelist_post_without_perm(self):
         """
             Test if a user without perm can't add an equipment type
         """
@@ -99,13 +102,13 @@ class EquipmentTypeTests(TestCase):
         response = client.post('/api/maintenancemanagement/equipmenttypes/', {'name': 'tool'}, format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_view_equipmenttype_request_with_perm(self):
+    def test_US4_I11_equipmenttypedetail_get_with_perm(self):
         """
             Test if a user with perm can see an equipment type detail
         """
         self.set_up_perm()
         tool = EquipmentType.objects.create(name="tool")
-        serializer = EquipmentTypeSerializer(tool)
+        serializer = EquipmentTypeDetailsSerializer(tool)
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
@@ -113,7 +116,7 @@ class EquipmentTypeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
-    def test_view_equipmenttype_request_without_perm(self):
+    def test_US4_I11_equipmenttypedetail_get_without_perm(self):
         """
             Test if a user without perm can't see
         """
@@ -126,7 +129,7 @@ class EquipmentTypeTests(TestCase):
         response = client.get('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + "/", format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_change_equipmenttype_request_with_perm(self):
+    def test_US4_I12_equipmenttypedetail_put_with_perm(self):
         """
             Test if a user with perm can change an equipment type detail
         """
@@ -141,7 +144,7 @@ class EquipmentTypeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(EquipmentType.objects.get(name="car"))
 
-    def test_change_equipmenttype_request_without_perm(self):
+    def test_US4_I12_equipmenttypedetail_put_without_perm(self):
         """
             Test if a user without perm can't change an equipment type detail
         """
@@ -155,7 +158,7 @@ class EquipmentTypeTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_delete_equipmenttype_request_with_perm(self):
+    def test_US4_I13_equipmenttypedetail_delete_with_perm(self):
         """
             Test if a user with perm can delete an equipment type
         """
@@ -170,7 +173,7 @@ class EquipmentTypeTests(TestCase):
         self.assertEqual(response_2.status_code, 204)
         self.assertFalse(EquipmentType.objects.filter(id=tool.id).exists())
 
-    def test_delete_equipmenttype_request_without_perm(self):
+    def test_US4_I13_equipmenttypedetail_delete_without_perm(self):
         """
             Test if a user without perm can't deletean equipment type
         """
@@ -185,7 +188,7 @@ class EquipmentTypeTests(TestCase):
         self.assertEqual(response_2.status_code, 204)
         self.assertFalse(EquipmentType.objects.filter(id=tool.id).exists())
 
-    def test_add_equipmenttype_with_perm_with_fields(self):
+    def test_US20_I1_equipmenttypelist_post_with_fields_with_perm(self):
         """
             Test if a user with perm can add an equipment type with fields
         """

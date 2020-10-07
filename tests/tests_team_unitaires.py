@@ -4,7 +4,9 @@ from django.test import RequestFactory, TestCase
 from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 from usersmanagement.serializers import (
-    PermissionSerializer, TeamSerializer, UserProfileSerializer,
+    PermissionSerializer,
+    TeamSerializer,
+    UserProfileSerializer,
 )
 from usersmanagement.views.views_team import belongs_to_team
 
@@ -60,7 +62,7 @@ class TeamsTests(TestCase):
         joe.groups.add(T_MT1)
         joe.save()
 
-    def test_belongs_to_team_true(self):
+    def test_US3_U1_belongstoteam_true(self):
         """
             Test if a user belonging to a team send true
         """
@@ -72,7 +74,7 @@ class TeamsTests(TestCase):
 
         self.assertTrue(belongs_to_team(joe, team))
 
-    def test_belongs_to_team_false(self):
+    def test_US3_U1_belongstoteam_false(self):
         """
             Test if a user not belonging to a team send false
         """
