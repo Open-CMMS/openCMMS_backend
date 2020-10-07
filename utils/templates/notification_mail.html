@@ -16,7 +16,7 @@
         <ul>
         {% for task in late_tasks %}
             <li>
-                {{task.name}} 
+                <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a> 
                 {% if task.descritpion %}
                     : {{task.descritpion}}
                 {% endif %}
@@ -27,7 +27,7 @@
         <ul>
         {% for task in today_tasks %}
             <li>
-                {{task.name}} 
+                <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a>  
                 {% if task.descritpion %}
                     : {{task.descritpion}}
                 {% endif %}
@@ -38,7 +38,7 @@
         <ul>
         {% for task in coming_tasks %}
             <li>
-                {{task.name}} 
+                <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a>  
                 {% if task.descritpion %}
                     : {{task.descritpion}}
                 {% endif %}
