@@ -43,20 +43,20 @@ ALLOWED_HOSTS = [
     'https://dev.lxc.pic.brasserie-du-slalom.fr',
 ]
 
+if os.getenv('ENVIRONMENT') == 'DEV':
+    BASE_URL = 'https://dev.lxc.pic.brasserie-du-slalom.fr/'
+elif os.getenv('ENVIRONMENT') == 'LOCAL':
+    BASE_URL = 'https://localhost:8000/'
+if os.getenv('ENVIRONMENT') == 'PROD':
+    BASE_URL = 'https://prod.lxc.pic.brasserie-du-slalom.fr/'
+
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework_swagger',
-    'drf_yasg',
-    'usersmanagement.apps.UsersmanagementConfig',
-    'maintenancemanagement.apps.MaintenancemanagementConfig',
+    'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions',
+    'django.contrib.messages', 'django.contrib.staticfiles', 'rest_framework', 'rest_framework_swagger', 'drf_yasg',
+    'usersmanagement.apps.UsersmanagementConfig', 'maintenancemanagement.apps.MaintenancemanagementConfig',
+    'utils.apps.UtilsConfig'
 ]
 
 MIDDLEWARE = [
@@ -74,7 +74,7 @@ ROOT_URLCONF = 'openCMMS.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'utils/templates')],
         'APP_DIRS': True,
         'OPTIONS':
             {
@@ -271,8 +271,11 @@ if 'pytest' in sys.argv:
 ################################################################
 ############################# EMAIL ############################
 ################################################################
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+if DEBUG is True:
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = '/tmp/app-messages'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
