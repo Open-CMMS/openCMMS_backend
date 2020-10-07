@@ -3,7 +3,7 @@ from django import template
 register = template.Library()
 
 
-@register.filter(name='extraire')
+@register.filter(name='extract')
 def extract(list, position):
     """
     Retourne l'élement de la liste 'liste' à la position 'position'
