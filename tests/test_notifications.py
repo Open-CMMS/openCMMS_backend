@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from django.test import TestCase
 from usersmanagement.models import Team, TeamType, UserProfile
@@ -14,10 +15,10 @@ class NotificationsTests(TestCase):
         """
             Set up team types, teams, users, permissions for the tests
         """
-        MTs = TeamType.objects.create(name="Maintenance Team")
+        mts = TeamType.objects.create(name="Maintenance Team")
 
         #Creation of 3 TeamTypes
-        T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
+        t_mt1 = Team.objects.create(name="Maintenance Team 1", team_type=mts)
 
         #User creation
 
@@ -25,7 +26,7 @@ class NotificationsTests(TestCase):
             first_name="Joe", last_name="D", email="joe.d@ll.com", password="bouh", username="jd"
         )
 
-        joe.groups.add(T_MT1)
+        joe.groups.add(t_mt1)
         joe.save()
         team = Team.objects.create(name="team")
         task1 = Task.objects.create(name="task_today", end_date=datetime.date.today())
@@ -46,3 +47,12 @@ class NotificationsTests(TestCase):
         self.assertTrue(Task.objects.get(name="task_yesterday") in tasks[0])
         self.assertTrue(Task.objects.get(name="task_today") in tasks[1])
         self.assertTrue(Task.objects.get(name="task_tomorrow") in tasks[2])
+
+    def test_send_notification(self):
+        self.set_up()
+        send_notifications()
+        # os.mkdir()
+        with open('/tmp/mails', 'w') as f:
+            for email in mail.outbox:
+                f.write(str(email.body))
+        self.assertEqual(1, len(mail.outbox))

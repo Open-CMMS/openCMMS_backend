@@ -16,7 +16,7 @@ def send_notifications():
         if template:
             plain_message = strip_tags(template)
             mail.send_mail(
-                'Notification Open-CMMS', plain_message, settings.EMAIL_HOST_USER, [user.email], html_message=template
+                'Notification Open-CMMS', template, settings.EMAIL_HOST_USER, [user.email], html_message=template
             )
 
 
