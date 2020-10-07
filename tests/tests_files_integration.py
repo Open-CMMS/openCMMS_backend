@@ -107,7 +107,6 @@ class FileTests(TestCase):
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/files/' + str(pk) + '/')
         path = settings.BASE_DIR + response.data["file"]
-        print("voici le path", path)
         file = open(path)
         self.assertEqual(file.read(), "Coco veut un gateau")
 
