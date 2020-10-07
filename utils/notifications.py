@@ -31,7 +31,8 @@ def get_notification_template(user):
 
 def get_imminent_tasks(user):
     result = (set(), set(), set())
-    tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
+    tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(), over=False)
+    print(tasks)
     for task in tasks:
         if task.end_date:
             if task.end_date < date.today():
