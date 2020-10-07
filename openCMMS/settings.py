@@ -45,11 +45,10 @@ ALLOWED_HOSTS = [
 
 if os.getenv('ENVIRONMENT') == 'DEV':
     BASE_URL = 'https://dev.lxc.pic.brasserie-du-slalom.fr/'
-elif os.getenv('ENVIRONMENT') == 'LOCAL':
-    BASE_URL = 'http://localhost:4200/'
-if os.getenv('ENVIRONMENT') == 'PROD':
+elif os.getenv('ENVIRONMENT') == 'PROD':
     BASE_URL = 'https://prod.lxc.pic.brasserie-du-slalom.fr/'
 
+BASE_URL = 'http://localhost:4200/'
 # Application definition
 
 INSTALLED_APPS = [
