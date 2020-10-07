@@ -46,7 +46,7 @@ ALLOWED_HOSTS = [
 if os.getenv('ENVIRONMENT') == 'DEV':
     BASE_URL = 'https://dev.lxc.pic.brasserie-du-slalom.fr/'
 elif os.getenv('ENVIRONMENT') == 'LOCAL':
-    BASE_URL = 'https://localhost:8000/'
+    BASE_URL = 'http://localhost:4200/'
 if os.getenv('ENVIRONMENT') == 'PROD':
     BASE_URL = 'https://prod.lxc.pic.brasserie-du-slalom.fr/'
 
@@ -74,7 +74,7 @@ ROOT_URLCONF = 'openCMMS.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'utils/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'utils/static/html/')],
         'APP_DIRS': True,
         'OPTIONS':
             {
@@ -187,6 +187,11 @@ SWAGGER_SETTINGS = {'LOGIN_URL': "/api/admin/login"}
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "utils/static/"),
+)
 
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'staticfiles')
 

@@ -1,0 +1,102 @@
+{% load static extra_tags %}
+
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {
+                background-color: lightgray;
+            }
+
+            h1 {
+                width: 70%;
+                margin-right: auto;
+                margin-left: auto;
+                text-align: center;
+                margin-bottom: 60px;
+            }
+
+            h2 {
+                width: 80%;
+                margin-right: auto;
+                margin-left: auto;
+            }
+
+            .tasks {
+                background-color: white;
+                padding-top: 1%;
+                padding-bottom: 1%;
+                padding-right: 3%;
+                padding-left: 3%;
+                border-radius: 14px;
+                width: 80%;
+                margin-right: auto;
+                margin-left: auto;
+                margin-bottom: 20px;
+            }
+
+            #late_tasks {
+                border: 2px solid red;
+            }
+
+            #today_tasks {
+                border: 2px solid orange;
+            }
+
+            #coming_tasks {
+                border: 2px solid green;
+            }
+
+            a {
+                text-decoration: none;   
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Notifications Open-CMMS</h1>
+        <h2>Bonjour, veuillez prendre connaisance des taĉhes ci-dessous qui vous sont assignées</h2>
+        {% def_element tasks|extract:0 as late_tasks%}
+        {% def_element tasks|extract:1 as today_tasks%}
+        {% def_element tasks|extract:2 as coming_tasks%}
+        <div class="tasks" id="late_tasks">
+            <h3>Tâches en retard</h3>
+            <ul>
+            {% for task in late_tasks %}
+                <li>
+                    <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a> 
+                    {% if task.descritpion %}
+                        : {{task.descritpion}}
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="tasks" id="today_tasks">
+            <h3>Tâches à réaliser aujourd'hui</h3>
+            <ul>
+            {% for task in today_tasks %}
+                <li>
+                    <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a>  
+                    {% if task.descritpion %}
+                        : {{task.descritpion}}
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="tasks" id="coming_tasks">
+            <h3>Tâches à réaliser dans la semaine</h3>
+            <ul>
+            {% for task in coming_tasks %}
+                <li>
+                    <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a>  
+                    {% if task.descritpion %}
+                        : {{task.descritpion}}
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </body>
+</html>
