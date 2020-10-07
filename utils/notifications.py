@@ -2,6 +2,8 @@
 
 from datetime import date, timedelta
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from django.conf import settings
 from django.core import mail
 from django.template.loader import render_to_string
@@ -16,7 +18,7 @@ def send_notifications():
         if template:
             plain_message = strip_tags(template)
             mail.send_mail(
-                'Notification Open-CMMS', template, settings.EMAIL_HOST_USER, [user.email], html_message=template
+                'Notification Open-CMMS', plain_message, settings.EMAIL_HOST_USER, [user.email], html_message=template
             )
 
 
@@ -41,5 +43,7 @@ def get_imminent_tasks(user):
     return result
 
 
-# UserProfile -> Team -> Tasker.
-# Task renvoyées sous cette forme : (set en retard, set journée, set semaine)
+def start():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(send_notifications, 'cron', day_of_week='mon-fri', hour='6', minute='30')
+    scheduler.start()
