@@ -256,7 +256,7 @@ class TaskTests(TestCase):
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="tache")
         response = client.post(
-            '/api/maintenancemanagement/add_team_to_task/', {
+            '/api/maintenancemanagement/addteamtotask', {
                 "id_team": f"{team.pk}",
                 "id_task": f"{task.pk}"
             },
@@ -736,7 +736,6 @@ class TaskTests(TestCase):
                     'id': template.equipment_type.id,
                     'name': template.equipment_type.name,
                     'fields_groups': list(template.equipment_type.fields_groups.all().values_list('id', flat=True)),
-                    'equipment_set': list(template.equipment_type.equipment_set.all().values_list('id', flat=True)),
                 },
             'over': template.over,
             'trigger_conditions': [],

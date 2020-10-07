@@ -7,7 +7,10 @@ from maintenancemanagement.models import (
     FieldGroup,
     FieldValue,
 )
-from maintenancemanagement.serializers import EquipmentTypeSerializer
+from maintenancemanagement.serializers import (
+    EquipmentTypeDetailsSerializer,
+    EquipmentTypeSerializer,
+)
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
@@ -105,7 +108,7 @@ class EquipmentTypeTests(TestCase):
         """
         self.set_up_perm()
         tool = EquipmentType.objects.create(name="tool")
-        serializer = EquipmentTypeSerializer(tool)
+        serializer = EquipmentTypeDetailsSerializer(tool)
         client = APIClient()
         user = UserProfile.objects.get(username='tom')
         client.force_authenticate(user=user)
