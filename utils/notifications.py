@@ -22,7 +22,7 @@ def send_notifications():
 
 def get_notification_template(user):
     tasks = get_imminent_tasks(user)
-    if len(tasks[0]) + len(task[1]) + len(task[2]) > 0:
+    if len(tasks[0]) + len(tasks[1]) + len(tasks[2]) > 0:
         return render_to_string('nom_de_template_html', {'tasks': tasks})
     return None
 
