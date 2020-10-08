@@ -1,0 +1,46 @@
+body {
+    background-color: lightgray;
+}
+
+h1 {
+    width: 70%;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+h2 {
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.tasks {
+    background-color: white;
+    padding-top: 1%;
+    padding-bottom: 1%;
+    padding-right: 3%;
+    padding-left: 3%;
+    border-radius: 14px;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+    margin-bottom: 20px;
+}
+
+#late_tasks {
+    border: 2px solid red;
+}
+
+#today_tasks {
+    border: 2px solid orange;
+}
+
+#coming_tasks {
+    border: 2px solid green;
+}
+
+a {
+    text-decoration: none;   
+}
