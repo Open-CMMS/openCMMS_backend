@@ -11,28 +11,28 @@ from rest_framework.views import APIView
 
 
 class FieldObjectList(APIView):
-    """
-        \n# List all fieldObjects or create a new one.
+    r"""
+    \n# List all fieldObjects or create a new one.
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : List all fieldObjects and send HTTP 200. If the user \
-            doesn't have the permissions, it will send HTTP 401.
-        POST request :
-        - create a new fieldObject, send HTTP 201.  If the request is not \
-            valid, send HTTP 400.
-        - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain:
-            - described_object(String): The described object of this form: \
-                "Object: id", example: "Task: 2"
-            - field(Int): an id which refers to the concerned field
-            - field_value(Int): an id which refers to the concerned field_value
-            - value(String): The value to put for the FieldValue
-            - description(String): The description of value
+    GET request : List all fieldObjects and send HTTP 200. If the user \
+        doesn't have the permissions, it will send HTTP 401.
+    POST request :
+    - create a new fieldObject, send HTTP 201.  If the request is not \
+        valid, send HTTP 400.
+    - If the user doesn't have the permissions, it will send HTTP 401.
+    - The request must contain:
+        - described_object(String): The described object of this form: \
+            "Object: id", example: "Task: 2"
+        - field(Int): an id which refers to the concerned field
+        - field_value(Int): an id which refers to the concerned field_value
+        - value(String): The value to put for the FieldValue
+        - description(String): The description of value
     """
 
     @swagger_auto_schema(
@@ -44,6 +44,7 @@ class FieldObjectList(APIView):
         },
     )
     def get(self, request):
+        """Send the list of FieldObject in the database."""
         if request.user.has_perm("maintenancemanagement.view_fieldobject"):
             field_objects = FieldObject.objects.all()
             serializer = FieldObjectSerializer(field_objects, many=True)
@@ -60,6 +61,7 @@ class FieldObjectList(APIView):
         },
     )
     def post(self, request):
+        """Add a FieldObject into the database."""
         if request.user.has_perm("maintenancemanagement.add_fieldobject"):
             serializer = FieldObjectSerializer(data=request.data)
             if serializer.is_valid():
@@ -70,32 +72,31 @@ class FieldObjectList(APIView):
 
 
 class FieldObjectDetail(APIView):
-    """
-        Retrieve, update or delete a fieldObject.
+    r"""
+    Retrieve, update or delete a fieldObject.
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : Detail the FieldObject, send HTTP 200. If the user \
-            doesn't have the permissions, it will send HTTP 401.
-        PUT request :
-        Update the fieldObject, send HTTP 200. If the request is not \
-            valid, send HTTP 400.
-        If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain:
-            - described_object(String): The described object of this \
-                form: "Object: id", example: "Task: 2"
-            - field(Int): an id which refers to the concerned field
-            - field_value(Int): an id which refers to the concerned field_value
-            - value(String): The value to put for the FieldValue
-            - description(String): The description of value
+    GET request : Detail the FieldObject, send HTTP 200. If the user \
+        doesn't have the permissions, it will send HTTP 401.
+    PUT request :
+    Update the fieldObject, send HTTP 200. If the request is not \
+        valid, send HTTP 400.
+    If the user doesn't have the permissions, it will send HTTP 401.
+    - The request must contain:
+        - described_object(String): The described object of this \
+            form: "Object: id", example: "Task: 2"
+        - field(Int): an id which refers to the concerned field
+        - field_value(Int): an id which refers to the concerned field_value
+        - value(String): The value to put for the FieldValue
+        - description(String): The description of value
 
-        DELETE request: Delete the fieldObject, send HTTP 204. If the user \
-            doesn't have the permissions, it will send HTTP 401.
-
+    DELETE request: Delete the fieldObject, send HTTP 204. If the user \
+        doesn't have the permissions, it will send HTTP 401.
     """
 
     @swagger_auto_schema(
@@ -108,6 +109,7 @@ class FieldObjectDetail(APIView):
         },
     )
     def get(self, request, pk):
+        """Send the FieldObject corresponding to the given key."""
         try:
             field_object = FieldObject.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -128,6 +130,7 @@ class FieldObjectDetail(APIView):
         },
     )
     def put(self, request, pk):
+        """Update the FieldObject corresponding to the given key."""
         try:
             field_object = FieldObject.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -150,6 +153,7 @@ class FieldObjectDetail(APIView):
         },
     )
     def delete(self, request, pk):
+        """Delete the FieldObject corresponding to the given key."""
         try:
             field_object = FieldObject.objects.get(pk=pk)
         except ObjectDoesNotExist:

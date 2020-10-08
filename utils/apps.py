@@ -1,5 +1,3 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-
 from django.apps import AppConfig
 
 

@@ -1,4 +1,4 @@
-"""This files allows to send notifications."""
+"""This file allows to send email notifications."""
 
 from datetime import date, timedelta
 
@@ -13,6 +13,7 @@ from usersmanagement.models import UserProfile
 
 
 def send_notifications():
+    r"""\n# Send notifications to users who have late or imminent tasks."""
     for user in UserProfile.objects.all():
         template = get_notification_template(user)
         if template:
@@ -23,6 +24,16 @@ def send_notifications():
 
 
 def get_notification_template(user):
+    r"""\n# Get notification template for a user.
+
+    Parameter :
+    user (UserProfile) : the user for whom we wish to obtain the template.
+
+    Return :
+    notifictaion-template (String) : the template.
+    OR
+    None : if the user has no imminent tasks
+    """
     tasks = get_imminent_tasks(user)
     if len(tasks[0]) + len(tasks[1]) + len(tasks[2]) > 0:
         return render_to_string('notification_mail.html', {'tasks': tasks, 'base_url': settings.BASE_URL})
@@ -30,6 +41,16 @@ def get_notification_template(user):
 
 
 def get_imminent_tasks(user):
+    r"""\n# Get late, today and coming tasks for a user.
+
+    Parameter :
+    user (UserProfile) : the user for whom we wish to obtain the late\
+         and imminent tasks.
+
+    Return :
+    tuple_of_sets_of_tasks ((late_tasks_set(), today_tasks_set(), \
+        coming_tasks_set())) : the tasks assigned to the user.
+    """
     result = (set(), set(), set())
     tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(), over=False)
     for task in tasks:
@@ -44,6 +65,7 @@ def get_imminent_tasks(user):
 
 
 def start():
+    r"""\n# Set up the cron job to send daily notifications."""
     scheduler = BackgroundScheduler()
     scheduler.add_job(send_notifications, 'cron', day_of_week='mon-fri', hour='6', minute='30')
     scheduler.start()

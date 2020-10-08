@@ -1,3 +1,5 @@
+"""This file defines extra_tags to use in django html templates."""
+
 from django import template
 
 register = template.Library()
@@ -5,22 +7,11 @@ register = template.Library()
 
 @register.filter(name='extract')
 def extract(list, position):
-    """
-    Retourne l'élement de la liste 'liste' à la position 'position'
-
-    :param liste: La liste d'objets.
-    :param position: La position de l'objet à extraire de la liste.
-    :return: L'objet demandé.
-    """
+    """Return the element of list 'list' at position 'position'."""
     return list[position]
 
 
 @register.simple_tag
 def def_element(element):
-    """
-    Permet de définir un objet 'element' dans un template
-
-    :param element: L'objet à définir.
-    :return: L'objet demandé.
-    """
+    """Define an object 'element' in a template."""
     return element

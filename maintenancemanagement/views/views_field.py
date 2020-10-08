@@ -10,16 +10,16 @@ from rest_framework.views import APIView
 
 
 class FieldList(APIView):
-    """
-        \n# List all Fields.
+    r"""
+    \n# List all Fields.
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : List all Fields
+    GET request : List all Fields
     """
 
     @swagger_auto_schema(
@@ -31,6 +31,7 @@ class FieldList(APIView):
         },
     )
     def get(self, request):
+        """Send the list of Field in the database."""
         if request.user.has_perm("maintenancemanagement.view_field"):
             field = Field.objects.all()
             serializer = FieldSerializer(field, many=True)
