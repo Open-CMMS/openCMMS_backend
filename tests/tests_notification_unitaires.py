@@ -33,12 +33,15 @@ class NotificationsTests(TestCase):
         task1 = Task.objects.create(name="task_today", end_date=datetime.date.today())
         task2 = Task.objects.create(name="task_yesterday", end_date=datetime.date.today() - datetime.timedelta(days=1))
         task3 = Task.objects.create(name="task_tomorrow", end_date=datetime.date.today() + datetime.timedelta(days=1))
+        achieved_task = Task.objects.create(name="achieved_task", end_date=datetime.date.today(), over=True)
         task1.teams.add(team)
         task1.save()
         task2.teams.add(team)
         task2.save()
         task3.teams.add(team)
         task3.save()
+        achieved_task.teams.add(team)
+        achieved_task.save()
         team.user_set.add(joe)
         team.save()
 
@@ -67,3 +70,10 @@ class NotificationsTests(TestCase):
         user = UserProfile.objects.get(username='toto')
         template = get_notification_template(user)
         self.assertFalse(template)
+
+    def test_US17_U3_get_imminent_tasks_user_with_some_achieved_tasks(self):
+        self.set_up()
+        tasks = get_imminent_tasks(UserProfile.objects.get(username='jd'))
+        self.assertFalse(Task.objects.get(name='achieved_task') in tasks[0])
+        self.assertFalse(Task.objects.get(name='achieved_task') in tasks[1])
+        self.assertFalse(Task.objects.get(name='achieved_task') in tasks[2])
