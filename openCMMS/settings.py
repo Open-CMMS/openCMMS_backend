@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions',
     'django.contrib.messages', 'django.contrib.staticfiles', 'rest_framework', 'rest_framework_swagger', 'drf_yasg',
     'usersmanagement.apps.UsersmanagementConfig', 'maintenancemanagement.apps.MaintenancemanagementConfig',
-    'utils.apps.UtilsConfig'
+    'utils.apps.UtilsConfig', 'django_inlinecss'
 ]
 
 MIDDLEWARE = [
@@ -73,7 +73,7 @@ ROOT_URLCONF = 'openCMMS.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'utils/static/html/')],
+        'DIRS': [os.path.join(BASE_DIR, 'utils/templates/')],
         'APP_DIRS': True,
         'OPTIONS':
             {
@@ -189,7 +189,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
-    os.path.join(BASE_DIR, "utils/static/"),
+    os.path.join(BASE_DIR, "utils/templates/"),
 )
 
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'staticfiles')
