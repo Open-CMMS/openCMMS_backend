@@ -63,6 +63,6 @@ def main():
     for permission in permissions_maintenance_team:
         maintenance_teams.perms.add(permission)
 
-    user = UserProfile.objects.get(id=1)
+    user = UserProfile.objects.all()[0]
     admin = Team.objects.get(name="Administrators 1")
     admin.user_set.add(user)
