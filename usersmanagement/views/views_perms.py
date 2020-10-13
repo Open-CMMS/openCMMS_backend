@@ -1,4 +1,4 @@
-"""This module exposes the permissions."""
+"""This module defines the views corresponding to permissions."""
 from drf_yasg.utils import swagger_auto_schema
 
 from django.contrib.auth.models import Permission

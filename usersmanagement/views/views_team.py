@@ -1,4 +1,4 @@
-"""This modules expose the Team model."""
+"""This module defines the views corresponding to teams."""
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -122,7 +122,6 @@ class TeamDetail(APIView):
     def put(self, request, pk, format='None'):
         """Implement the PUT method.
 
-
         Parameters :
         request (HttpRequest) : the request coming from the front-end
         pk (int) : the id of the team
@@ -199,8 +198,6 @@ class AddUserToTeam(APIView):
 
     If the user doesn't have the permissions, it will send HTTP 401.
     """
-    """Contains HTTP methods POST, PUT used on \
-        /usermanagement/add_user_to_team."""
 
     @swagger_auto_schema(
         operation_description='Add the user to the team.',

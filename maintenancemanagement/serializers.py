@@ -1,3 +1,5 @@
+"""Serializers enable the link between front-end and back-end."""
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
@@ -12,9 +14,6 @@ from .models import (
     File,
     Task,
 )
-"""
-Serializers enable the link between front-end and back-end
-"""
 
 #############################################################################
 ############################## BASE SERIALIZER ##############################
@@ -22,8 +21,11 @@ Serializers enable the link between front-end and back-end
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    """Basic task serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Task
         fields = [
             'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over'
@@ -31,26 +33,36 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class FileSerializer(serializers.ModelSerializer):
+    """Basic file serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = File
         fields = ['id', 'file', 'is_manual']
 
 
 class EquipmentSerializer(serializers.ModelSerializer):
+    """Basic equipment serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Equipment
         fields = ['id', 'name', 'equipment_type', 'files']
 
 
 class EquipmentTypeSerializer(serializers.ModelSerializer):
+    """Basic equimpent type serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = EquipmentType
         fields = ['id', 'name', 'fields_groups']
 
     def update(self, instance, validated_data):
+        """Redefine the update method."""
         equipments = instance.equipment_set.all()
 
         for attr, value in validated_data.items():
@@ -69,28 +81,41 @@ class EquipmentTypeSerializer(serializers.ModelSerializer):
 
 
 class FieldValueSerializer(serializers.ModelSerializer):
+    """Basic field value serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldValue
         fields = ['id', 'value', 'field']
 
 
 class FieldSerializer(serializers.ModelSerializer):
+    """Basic field serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Field
         fields = ['id', 'name', 'field_group']
 
 
+class FieldObjectSerializer(serializers.ModelSerializer):
+    """Basic field object serializer."""
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
+
+
 class DescribedObjectRelatedField(serializers.RelatedField):
-    """
-    A custom field to use for the `described_object` generic relationship.
-    """
+    """A custom field to use for the `described_object` \
+        generic relationship."""
 
     def to_representation(self, value):
-        """
-        Serialize described_object to a simple textual representation.
-        """
+        """Serialize described_object to a simple textual representation."""
         if isinstance(value, Task):
             return "Task: " + str(value.id)
         elif isinstance(value, Equipment):
@@ -98,7 +123,33 @@ class DescribedObjectRelatedField(serializers.RelatedField):
         raise Exception('Unexpected type of tagged object')
 
     def to_internal_value(self, data):
+        """Redefine the to_internal_value method."""
         return data
+
+
+#############################################################################
+############################# FIELD SERIALIZER ##############################
+#############################################################################
+
+
+class FieldValidationSerializer(serializers.ModelSerializer):
+    """Field validation serializer."""
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Field
+        fields = ['id', 'name']
+
+
+class FieldCreateSerializer(serializers.ModelSerializer):
+    """Field create serializer."""
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Field
+        fields = ['id', 'name', 'field_group']
 
 
 class FieldRequirementsSerializer(serializers.ModelSerializer):
@@ -118,11 +169,7 @@ class FieldRequirementsSerializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
 
     class Meta:
-        """This class contains the serializer metadata.
-
-        model is the Model the Serializer is associated to.
-        fields represents the fields it serializes.
-        """
+        """This class contains the serializer metadata."""
 
         model = Field
         fields = ['id', 'name', 'value']
@@ -136,101 +183,22 @@ class FieldRequirementsSerializer(serializers.ModelSerializer):
             return obj.value_set.all().values_list('value', flat=True)
 
 
-class TaskDetailsSerializer(serializers.ModelSerializer):
-
-    equipment_type = EquipmentTypeSerializer()
-    equipment = EquipmentSerializer()
-    trigger_conditions = serializers.SerializerMethodField()
-    end_conditions = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Task
-        fields = [
-            'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over',
-            'trigger_conditions', 'end_conditions', 'equipment_type'
-        ]
-
-    def get_trigger_conditions(self, obj):
-        content_type_object = ContentType.objects.get_for_model(obj)
-        trigger_fields = Field.objects.filter(
-            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='Trigger Conditions'
-        )
-        return FieldRequirementsSerializer(trigger_fields, many=True).data
-
-    def get_end_conditions(self, obj):
-        content_type_object = ContentType.objects.get_for_model(obj)
-        end_fields = Field.objects.filter(
-            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='End Conditions'
-        )
-        return FieldRequirementsSerializer(end_fields, many=True).data
-
-
-class TaskTemplateRequirementsSerializer(serializers.Serializer):
-
-    trigger_conditions = serializers.SerializerMethodField()
-    end_conditions = serializers.SerializerMethodField()
-    task_templates = serializers.SerializerMethodField()
-
-    class Meta:
-        fields = ['trigger_conditions', 'end_conditions', 'task_templates']
-
-    def get_task_templates(self, obj):
-        templates = Task.objects.filter(is_template=True)
-        print(templates)
-        serializer = TaskDetailsSerializer(templates, many=True)
-        print(serializer.data)
-        return serializer.data
-
-    def get_trigger_conditions(self, obj):
-        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
-        print(trigger_fields)
-        serializer = FieldRequirementsSerializer(trigger_fields, many=True)
-        print(serializer.data)
-        return serializer.data
-
-    def get_end_conditions(self, obj):
-        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
-        return FieldRequirementsSerializer(end_fields, many=True).data
-
-
-class FieldObjectSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
-
-
-#############################################################################
-############################# FIELD SERIALIZER ##############################
-#############################################################################
-
-
-class FieldValidationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Field
-        fields = ['id', 'name']
-
-
-class FieldCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Field
-        fields = ['id', 'name', 'field_group']
-
-
 #############################################################################
 ########################## FIELD OBJECT SERIALIZER ##########################
 #############################################################################
 
 
 class FieldObjectValidationSerializer(serializers.ModelSerializer):
+    """Field object validation serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldObject
         fields = ['field', 'value', 'description']
 
     def validate(self, data):
+        """Redefine the validate method."""
         field_values = FieldValue.objects.filter(field=data.get("field"))
         if field_values:
             try:
@@ -251,13 +219,18 @@ class FieldObjectValidationSerializer(serializers.ModelSerializer):
 
 
 class FieldObjectCreateSerializer(serializers.ModelSerializer):
+    """Field object create serializer."""
+
     described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldObject
         fields = ['described_object', 'field', 'field_value', 'value', 'description']
 
     def validate(self, data):
+        """Redefine the validate method."""
         field_values = FieldValue.objects.filter(field=data.get("field"))
         if field_values:
             value = field_values.get(value=data.get("value"))
@@ -274,15 +247,21 @@ class FieldObjectCreateSerializer(serializers.ModelSerializer):
 
 
 class FieldValueValidationSerializer(serializers.ModelSerializer):
+    """Field value validation serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldValue
         fields = ['id', 'value']
 
 
 class FieldValueCreateSerializer(serializers.ModelSerializer):
+    """Field value create serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldValue
         fields = ['id', 'value', 'field']
 
@@ -291,18 +270,83 @@ class FieldValueCreateSerializer(serializers.ModelSerializer):
 ############################## TASK SERIALIZER ##############################
 #############################################################################
 
-# class TaskDetailsSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = Task
-#         fields = []
-
 
 class TaskCreateSerializer(serializers.ModelSerializer):
+    """Task creatre serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Task
         exclude = []
+
+
+class TaskDetailsSerializer(serializers.ModelSerializer):
+    """Task details serializer."""
+
+    equipment_type = EquipmentTypeSerializer()
+    equipment = EquipmentSerializer()
+    trigger_conditions = serializers.SerializerMethodField()
+    end_conditions = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Task
+        fields = [
+            'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over',
+            'trigger_conditions', 'end_conditions', 'equipment_type'
+        ]
+
+    def get_trigger_conditions(self, obj):
+        """Retrieve task trigger conditions."""
+        content_type_object = ContentType.objects.get_for_model(obj)
+        trigger_fields = Field.objects.filter(
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='Trigger Conditions'
+        )
+        return FieldRequirementsSerializer(trigger_fields, many=True).data
+
+    def get_end_conditions(self, obj):
+        """Retrieve task end conditions."""
+        content_type_object = ContentType.objects.get_for_model(obj)
+        end_fields = Field.objects.filter(
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='End Conditions'
+        )
+        return FieldRequirementsSerializer(end_fields, many=True).data
+
+
+class TaskTemplateRequirementsSerializer(serializers.Serializer):
+    """Task template requirements serializer."""
+
+    trigger_conditions = serializers.SerializerMethodField()
+    end_conditions = serializers.SerializerMethodField()
+    task_templates = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        fields = ['trigger_conditions', 'end_conditions', 'task_templates']
+
+    def get_task_templates(self, obj):
+        """Retrieve the task template to give requirements."""
+        templates = Task.objects.filter(is_template=True)
+        print(templates)
+        serializer = TaskDetailsSerializer(templates, many=True)
+        print(serializer.data)
+        return serializer.data
+
+    def get_trigger_conditions(self, obj):
+        """Retrieve task trigger conditions."""
+        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
+        print(trigger_fields)
+        serializer = FieldRequirementsSerializer(trigger_fields, many=True)
+        print(serializer.data)
+        return serializer.data
+
+    def get_end_conditions(self, obj):
+        """Retrieve task end conditions."""
+        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
+        return FieldRequirementsSerializer(end_fields, many=True).data
 
 
 #############################################################################
@@ -311,21 +355,27 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
 
 class EquipmentDetailsSerializer(serializers.ModelSerializer):
+    """Equipment details serializer."""
 
     equipment_type = EquipmentTypeSerializer()
     files = FileSerializer(many=True)
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Equipment
         fields = ['id', 'name', 'equipment_type', 'files']
 
 
 class EquipmentCreateSerializer(serializers.ModelSerializer):
+    """Equipment create serializer."""
 
     field = serializers.ListField()
     files = FileSerializer(many=True)
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Equipment
         fields = ['id', 'name', 'equipment_type', 'files', 'field']
 
@@ -377,19 +427,14 @@ class EquipmentRequirementsSerializer(serializers.ModelSerializer):
     # so we use `field`.
 
     class Meta:
-        """This class contains the serializer metadata.
-
-        model is the Model the Serializer is associated to.
-        fields represents the fields it serializes.
-        """
+        """This class contains the serializer metadata."""
 
         model = EquipmentType
         fields = ['id', 'name', 'field']
 
     def get_field(self, obj):
         """Get the explicit field associated with the \
-            EquipementType as obj. """
-
+            EquipementType as obj."""
         fields_groups = obj.fields_groups.all()
         fields = []
         for fields_group in fields_groups:
@@ -403,6 +448,7 @@ class EquipmentRequirementsSerializer(serializers.ModelSerializer):
 
 
 class EquipmentTypeDetailsSerializer(serializers.ModelSerializer):
+    """Equipment type details serializer."""
 
     field = serializers.SerializerMethodField()
     equipments = EquipmentSerializer(source="equipment_set", many=True)
@@ -411,19 +457,14 @@ class EquipmentTypeDetailsSerializer(serializers.ModelSerializer):
     # so we use `field`.
 
     class Meta:
-        """This class contains the serializer metadata.
-
-        model is the Model the Serializer is associated to.
-        fields represents the fields it serializes.
-        """
+        """This class contains the serializer metadata."""
 
         model = EquipmentType
         fields = ['id', 'name', 'field', 'equipments']
 
     def get_field(self, obj):
         """Get the explicit field associated with the \
-            EquipementType as obj. """
-
+            EquipementType as obj."""
         fields_groups = obj.fields_groups.all()
         fields = []
         for fields_group in fields_groups:
@@ -432,14 +473,20 @@ class EquipmentTypeDetailsSerializer(serializers.ModelSerializer):
 
 
 class EquipmentTypeValidationSerializer(serializers.ModelSerializer):
+    """Equipment type validation serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = EquipmentType
         fields = ['id', 'name']
 
 
 class EquipmentTypeCreateSerializer(serializers.ModelSerializer):
+    """Equipment type create serializer."""
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = EquipmentType
         fields = ['id', 'name', 'fields_groups']

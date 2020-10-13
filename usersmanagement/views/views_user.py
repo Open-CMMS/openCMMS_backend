@@ -1,4 +1,5 @@
-"""This module exposes our User model."""
+"""This module defines the views corresponding to users."""
+
 from secrets import token_hex
 
 from drf_yasg.utils import swagger_auto_schema
@@ -204,9 +205,7 @@ class IsFirstUserRequest(APIView):
 
 
 def is_first_user():
-    """
-        Check, for internal needs, if there is an user in the database.
-    """
+    """Check, for internal needs, if there is an user in the database."""
     users = UserProfile.objects.all()
     return users.count() == 0
 
@@ -331,6 +330,7 @@ class GetUserPermissions(APIView):
         }
     )
     def get(self, request, pk):
+        """Send the authorization of the user."""
         try:
             user = UserProfile.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -452,37 +452,37 @@ class CheckToken(APIView):
 
 
 def init_database():
-
+    """Initialise the database for tests."""
     # Creation of 3 TeamTypes
-    Admins = TeamType.objects.create(name="Administrators")
-    MMs = TeamType.objects.create(name="Maintenance Manager")
-    MTs = TeamType.objects.create(name="Maintenance Team")
+    admins = TeamType.objects.create(name="Administrators")
+    mms = TeamType.objects.create(name="Maintenance Manager")
+    mts = TeamType.objects.create(name="Maintenance Team")
 
     # Creation of the 3 inital Teams
-    Team.objects.create(name="Administrators 1", team_type=Admins)
-    T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=MMs)
-    T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=MTs)
+    Team.objects.create(name="Administrators 1", team_type=admins)
+    T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=mms)
+    T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=mts)
 
     # Adding all permissions to admins
     permis = Permission.objects.all()
     for perm in permis:
-        Admins.perms.add(perm)
+        admins.perms.add(perm)
 
-    Admins._apply_()
-    Admins.save()
-    Admins = TeamType.objects.get(name="Administrators")
-    T_Admin = Admins.team_set.all()[0]
+    admins._apply_()
+    admins.save()
+    admins = TeamType.objects.get(name="Administrators")
+    t_admin = admins.team_set.all()[0]
 
     # Adding first user to admins
     user = UserProfile.objects.all()[0]
-    user.groups.add(T_Admin)
+    user.groups.add(t_admin)
     user.save()
 
-    T_Admin.save()
-    Admins.save()
-    MMs.save()
-    MTs.save()
+    t_admin.save()
+    admins.save()
+    mms.save()
+    mts.save()
 
-    T_Admin.save()
+    t_admin.save()
     T_MM1.save()
     T_MT1.save()

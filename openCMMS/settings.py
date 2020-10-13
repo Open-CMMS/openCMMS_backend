@@ -43,20 +43,19 @@ ALLOWED_HOSTS = [
     'https://dev.lxc.pic.brasserie-du-slalom.fr',
 ]
 
+if os.getenv('ENVIRONMENT') == 'DEV':
+    BASE_URL = 'https://dev.lxc.pic.brasserie-du-slalom.fr/'
+elif os.getenv('ENVIRONMENT') == 'PROD':
+    BASE_URL = 'https://prod.lxc.pic.brasserie-du-slalom.fr/'
+
+BASE_URL = 'http://localhost:4200/'
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework_swagger',
-    'drf_yasg',
-    'usersmanagement.apps.UsersmanagementConfig',
-    'maintenancemanagement.apps.MaintenancemanagementConfig',
+    'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions',
+    'django.contrib.messages', 'django.contrib.staticfiles', 'rest_framework', 'rest_framework_swagger', 'drf_yasg',
+    'usersmanagement.apps.UsersmanagementConfig', 'maintenancemanagement.apps.MaintenancemanagementConfig',
+    'utils.apps.UtilsConfig', 'django_inlinecss'
 ]
 
 MIDDLEWARE = [
@@ -74,7 +73,7 @@ ROOT_URLCONF = 'openCMMS.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'utils/templates/')],
         'APP_DIRS': True,
         'OPTIONS':
             {
@@ -188,6 +187,11 @@ SWAGGER_SETTINGS = {'LOGIN_URL': "/api/admin/login"}
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "utils/templates/"),
+)
+
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'staticfiles')
 
 ################################################################
@@ -271,8 +275,11 @@ if 'pytest' in sys.argv:
 ################################################################
 ############################# EMAIL ############################
 ################################################################
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+if DEBUG is True:
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = '/tmp/app-messages'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False

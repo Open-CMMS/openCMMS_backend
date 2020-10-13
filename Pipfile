@@ -13,6 +13,8 @@ python-ldap = "*"
 django-auth-ldap = "*"
 djangorestframework-jwt = "*"
 drf_yasg = "*"
+apscheduler = "*"
+django_inlinecss = "*"
 
 
 [dev-packages]

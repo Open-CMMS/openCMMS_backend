@@ -46,6 +46,7 @@ class EquipmentList(APIView):
         },
     )
     def get(self, request):
+        """Send the list of Equipment in the database."""
         if request.user.has_perm("maintenancemanagement.view_equipment"):
             equipments = Equipment.objects.all()
             serializer = EquipmentSerializer(equipments, many=True)
@@ -62,6 +63,7 @@ class EquipmentList(APIView):
         },
     )
     def post(self, request):
+        """Add an Equipment into the database."""
         if request.user.has_perm("maintenancemanagement.add_equipment"):
             fields = request.data.pop('fields', None)
             equipment_serializer = EquipmentSerializer(data=request.data)
@@ -107,28 +109,27 @@ class EquipmentList(APIView):
 
 class EquipmentDetail(APIView):
     r"""
-        \n# Retrieve, update or delete an equipment
+    \n# Retrieve, update or delete an equipment.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-        id (int) : the id of the equipment
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+    id (int) : the id of the equipment
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : return the equipment's data.
-        PUT request : change the equipment with the data on the request \
-             or send HTTP 400 if the data isn't well formed.
-        DELETE request: delete the equipment and send HTTP 204.
+    GET request : return the equipment's data.
+    PUT request : change the equipment with the data on the request \
+            or send HTTP 400 if the data isn't well formed.
+    DELETE request: delete the equipment and send HTTP 204.
 
-        If the user doesn't have the permissions, it will send HTTP 401.
-        If the id doesn't exist, it will send HTTP 404.
+    If the user doesn't have the permissions, it will send HTTP 401.
+    If the id doesn't exist, it will send HTTP 404.
 
-        The PUT request can contain one or more of the following fields :
-            - name (String): the name of the equipment
-            - equipment_type (int): an id of the updated equipment_type
-            - files (List<int>): an id list of the updated list of files
-
+    The PUT request can contain one or more of the following fields :
+        - name (String): the name of the equipment
+        - equipment_type (int): an id of the updated equipment_type
+        - files (List<int>): an id list of the updated list of files
     """
 
     @swagger_auto_schema(
@@ -141,6 +142,7 @@ class EquipmentDetail(APIView):
         },
     )
     def get(self, request, pk):
+        """Send the Equipment corresponding to the given key."""
         try:
             equipment = Equipment.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -161,6 +163,7 @@ class EquipmentDetail(APIView):
         },
     )
     def put(self, request, pk):
+        """Update the Equipment corresponding to the given key."""
         try:
             equipment = Equipment.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -184,6 +187,7 @@ class EquipmentDetail(APIView):
         },
     )
     def delete(self, request, pk):
+        """Delete the Equipment corresponding to the given key."""
         try:
             equipment = Equipment.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -195,14 +199,15 @@ class EquipmentDetail(APIView):
 
 
 class EquipmentRequirements(APIView):
-    '''The view to get all equipements with their values.'''
+    """The view to get all equipements with their values."""
 
     @swagger_auto_schema(
         operation_description='Send the list of equipement types with their fields and the values associated.',
         responses={200: 'The request went well.'}
     )
     def get(self, request):
-        '''This is the get method of the view.'''
+        """Send the list of equipement types with their fields \
+            and the values associated."""
         if request.user.has_perm("maintenancemanagement.add_equipment"):
             equipment_types = EquipmentType.objects.all()
             serializer = EquipmentRequirementsSerializer(equipment_types, many=True)

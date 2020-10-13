@@ -143,7 +143,7 @@ class TeamDetailsSerializer(serializers.ModelSerializer):
     user_details = UserProfileSerializer(source='user_set', many=True)
 
     class Meta:
-        """ Add metadata on the class."""
+        """Add metadata on the class."""
 
         model = Team
         fields = ['id', 'name', 'team_type', 'user_set', 'team_type_name', 'user_details']
@@ -233,5 +233,6 @@ class TeamTypeDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Add metadata on the class."""
+
         model = TeamType
         fields = ['id', 'name', 'perms', 'team_set']
