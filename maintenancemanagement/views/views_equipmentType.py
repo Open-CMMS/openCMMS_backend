@@ -8,6 +8,7 @@ from maintenancemanagement.models import EquipmentType, FieldGroup
 from maintenancemanagement.serializers import (
     EquipmentTypeCreateSerializer,
     EquipmentTypeDetailsSerializer,
+    EquipmentTypeQuerySerializer,
     EquipmentTypeSerializer,
     EquipmentTypeValidationSerializer,
     FieldCreateSerializer,
@@ -62,9 +63,9 @@ class EquipmentTypeList(APIView):
 
     @swagger_auto_schema(
         operation_description='Add an EquipmentType into the database.',
-        query_serializer=EquipmentTypeSerializer(many=False),
+        query_serializer=EquipmentTypeQuerySerializer(many=False),
         responses={
-            201: EquipmentTypeSerializer(many=False),
+            201: EquipmentTypeDetailsSerializer(many=False),
             400: "Bad request",
             401: "Unhauthorized",
         },
@@ -72,9 +73,9 @@ class EquipmentTypeList(APIView):
     def post(self, request):
         """Add an EquipmentType into the database."""
         if request.user.has_perm("maintenancemanagement.add_equipmenttype"):
-            fields = request.data.pop('fields', None)
-            equipment_validation_serializer = EquipmentTypeValidationSerializer(data=request.data)
-            if equipment_validation_serializer.is_valid():
+            fields = request.data.pop('field', None)
+            equipment_type_validation_serializer = EquipmentTypeValidationSerializer(data=request.data)
+            if equipment_type_validation_serializer.is_valid():
                 data = request.data
                 if fields:
                     error = self._validate_fields(fields)
@@ -83,12 +84,13 @@ class EquipmentTypeList(APIView):
                     else:
                         field_group = self._create_fields(request, fields)
                         data.update({'fields_groups': [field_group.id]})
-                equipment_serializer = EquipmentTypeCreateSerializer(data=data)
-                if equipment_serializer.is_valid():
-                    equipment_serializer.save()
-                    return Response(equipment_serializer.data, status=status.HTTP_201_CREATED)
-                return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            return Response(equipment_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                equipment_type_serializer = EquipmentTypeCreateSerializer(data=data)
+                if equipment_type_serializer.is_valid():
+                    equipment_type = equipment_type_serializer.save()
+                    equipment_type_details = EquipmentTypeDetailsSerializer(equipment_type)
+                    return Response(equipment_type_details.data, status=status.HTTP_201_CREATED)
+                return Response(equipment_type_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(equipment_type_validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def _validate_fields(self, fields):
