@@ -451,7 +451,7 @@ class EquipmentTests(TestCase):
                     "Embouteilleuse AXB1",
                 "equipment_type":
                     EquipmentType.objects.get(name="Embouteilleuse").id,
-                "fields":
+                "field":
                     [
                         {
                             "field": Field.objects.get(name="Capacité").id,
@@ -485,7 +485,7 @@ class EquipmentTests(TestCase):
                     "Embouteilleuse AXB1",
                 "equipment_type":
                     EquipmentType.objects.get(name="Embouteilleuse").id,
-                "fields":
+                "field":
                     [
                         {
                             "field": Field.objects.get(name="Capacité").id,
@@ -583,7 +583,7 @@ class EquipmentTests(TestCase):
                     "Embouteilleuse AXB1",
                 "equipment_type":
                     EquipmentType.objects.get(name="Embouteilleuse").id,
-                "fields":
+                "field":
                     [
                         {
                             "field": Field.objects.get(name="Capacité").id,

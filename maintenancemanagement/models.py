@@ -25,7 +25,12 @@ class FieldGroup(models.Model):
 class Field(models.Model):
     name = models.CharField(max_length=50)
     field_group = models.ForeignKey(
-        FieldGroup, on_delete=models.CASCADE, related_name="field_set", related_query_name="field"
+        FieldGroup,
+        on_delete=models.CASCADE,
+        related_name="field_set",
+        related_query_name="field",
+        null=True,
+        blank=True
     )
 
 
@@ -51,7 +56,12 @@ class FieldObject(models.Model):
     field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="object_set", related_query_name="object")
 
     field_value = models.ForeignKey(
-        FieldValue, on_delete=models.SET_NULL, related_name="object_set", related_query_name="object", null=True
+        FieldValue,
+        on_delete=models.SET_NULL,
+        related_name="object_set",
+        related_query_name="object",
+        null=True,
+        blank=True
     )
 
     value = models.CharField(max_length=100, default="", null=True, blank=True)
@@ -134,4 +144,4 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
     )
-    over = models.BooleanField(default=False)
+    over = models.NullBooleanField(default=False)

@@ -10,6 +10,7 @@ from maintenancemanagement.serializers import (
     EquipmentRequirementsSerializer,
     EquipmentSerializer,
     FieldObjectCreateSerializer,
+    FieldObjectNewFieldValidationSerializer,
     FieldObjectValidationSerializer,
 )
 from rest_framework import status
@@ -62,17 +63,19 @@ class EquipmentList(APIView):
         },
     )
     def post(self, request):
+        print(request.data)
         if request.user.has_perm("maintenancemanagement.add_equipment"):
-            fields = request.data.pop('fields', None)
-            equipment_serializer = EquipmentSerializer(data=request.data)
+            fields = request.data.pop('field', None)
+            equipment_serializer = EquipmentCreateSerializer(data=request.data)
             if equipment_serializer.is_valid():
                 error = self._validate_fields(request, fields)
                 if error:
                     return error
                 else:
-                    equipment_serializer.save()
-                    self._save_fields(fields)
-                    return Response(equipment_serializer.data, status=status.HTTP_201_CREATED)
+                    equipment = equipment_serializer.save()
+                    self._save_fields(fields, equipment)
+                    equipment_details_serializer = EquipmentDetailsSerializer(equipment)
+                    return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -91,15 +94,22 @@ class EquipmentList(APIView):
             for field in fields:
                 if field.get('field') in expected_fields:
                     expected_fields.remove(field.get('field'))
-                validation_serializer = FieldObjectValidationSerializer(data=field)
+                    validation_serializer = FieldObjectValidationSerializer(data=field)
+                else:
+                    validation_serializer = FieldObjectNewFieldValidationSerializer(data=field)
                 if not validation_serializer.is_valid():
                     return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         if expected_fields:
             return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
 
-    def _save_fields(self, fields):
+    def _save_fields(self, fields, equipment):
         if fields:
             for field in fields:
+                print('le field : ', field)
+                if field.get('field', None) is None:
+                    field.update({'field': Field.objects.create(name=field.get('name')).pk})
+                field.update({'described_object': equipment})
                 field_object_serializer = FieldObjectCreateSerializer(data=field)
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()

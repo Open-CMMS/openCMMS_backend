@@ -201,7 +201,7 @@ class EquipmentTypeTests(TestCase):
                 'name':
                     'car',
                 'equipment_set': [],
-                'fields':
+                'field':
                     [
                         {
                             "name": "test_add_equipmenttype_with_perm_with_fields_1"

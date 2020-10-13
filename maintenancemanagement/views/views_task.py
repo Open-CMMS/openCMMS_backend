@@ -12,6 +12,8 @@ from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
     TaskCreateSerializer,
+    TaskDetailsSerializer,
+    TaskListingSerializer,
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
 )
@@ -60,7 +62,7 @@ class TaskList(APIView):
         operation_description='Send the list of Task in the database.',
         query_serializer=None,
         responses={
-            200: TaskSerializer(many=True),
+            200: TaskListingSerializer(many=True),
             401: "Unhauthorized",
         },
     )
@@ -72,7 +74,7 @@ class TaskList(APIView):
                 tasks = Task.objects.filter(is_template=True)
             else:
                 tasks = Task.objects.filter(is_template=False)
-            serializer = TaskSerializer(tasks, many=True)
+            serializer = TaskListingSerializer(tasks, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -156,7 +158,7 @@ class TaskDetail(APIView):
         operation_description='Send the Task corresponding to the given key.',
         query_serializer=None,
         responses={
-            200: TaskSerializer(many=False),
+            200: TaskDetailsSerializer(many=False),
             401: "Unhauthorized",
             404: "Not found",
         },
@@ -167,7 +169,8 @@ class TaskDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(VIEW_TASK) or participate_to_task(request.user, task):
-            serializer = TaskSerializer(task)
+            serializer = TaskDetailsSerializer(task)
+            print('le serailizer')
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -325,7 +328,7 @@ class UserTaskList(APIView):
         operation_description='Send the list of Task corresponding to the given User key.',
         query_serializer=None,
         responses={
-            200: TaskSerializer(many=True),
+            200: TaskListingSerializer(many=True),
             401: "Unhauthorized",
             404: "Not found",
         },
@@ -338,7 +341,7 @@ class UserTaskList(APIView):
 
         if request.user.has_perm(VIEW_TASK) or request.user == user:
             tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
-            serializer = TaskSerializer(tasks, many=True)
+            serializer = TaskListingSerializer(tasks, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -404,10 +407,10 @@ def init_database():
     Field.objects.create(name="Description", field_group=field_gr_cri_fin)
     Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
 
-    field_gr_test = FieldGroup.objects.create(name='FieldGroupTest')
-    Field.objects.create(name="FieldWithoutValueTest", field_group=field_gr_test)
-    field_with_value = Field.objects.create(name="FieldWithValueTest", field_group=field_gr_test)
-    FieldValue.objects.create(value="FieldValueTest", field=field_with_value)
-    equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
-    equip_type.fields_groups.add(field_gr_test)
-    Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)
+    # field_gr_test = FieldGroup.objects.create(name='FieldGroupTest')
+    # Field.objects.create(name="FieldWithoutValueTest", field_group=field_gr_test)
+    # field_with_value = Field.objects.create(name="FieldWithValueTest", field_group=field_gr_test)
+    # FieldValue.objects.create(value="FieldValueTest", field=field_with_value)
+    # equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
+    # equip_type.fields_groups.add(field_gr_test)
+    # Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)
