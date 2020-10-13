@@ -85,7 +85,7 @@ class FieldObject(models.Model):
 
     value = models.CharField(max_length=100, default="", blank=True, null=True)
 
-    description = models.CharField(max_length=100, default="", blank=True)
+    description = models.CharField(max_length=100, default="", blank=True, null=True)
 
     def __str__(self):
         """Define string representation of a field object."""
