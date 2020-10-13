@@ -1,3 +1,5 @@
+"""This file contains all maintenance management paths."""
+
 from django.urls import path
 
 from .views import (

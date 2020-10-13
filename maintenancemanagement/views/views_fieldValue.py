@@ -10,17 +10,17 @@ from rest_framework.views import APIView
 
 
 class FieldValueForField(APIView):
-    """
-        \n# List all the fieldValues for a specific field
+    r"""
+    \n# List all the fieldValues for a specific field.
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
-        pk (int) : id of the specific field
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
+    pk (int) : id of the specific field
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : List all the fieldValues for a specific field
+    GET request : List all the fieldValues for a specific field
     """
 
     @swagger_auto_schema(
@@ -32,6 +32,7 @@ class FieldValueForField(APIView):
         },
     )
     def get(self, request, pk):
+        """Send the FieldValue corresponding to the given key."""
         if request.user.has_perm("maintenancemanagement.view_fieldvalue"):
             field = Field.objects.get(id=pk)
             field_values = FieldValue.objects.filter(field=field)

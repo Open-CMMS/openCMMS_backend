@@ -13,10 +13,7 @@ from rest_framework.views import APIView
 
 
 class FileList(APIView):
-    """
-        List all Files or add one. taskType_detailtaskType_detailtaskType_\
-            detailtaskType_detailtaskType_detailtaskType_detailtaskType_detailtaskType_detailtaskType_detail
-    """
+    """List all Files or add one."""
 
     @swagger_auto_schema(
         operation_description='Send the list of File in the database.',
@@ -27,6 +24,7 @@ class FileList(APIView):
         },
     )
     def get(self, request):
+        """Send the list of File in the database."""
         if request.user.has_perm("maintenancemanagement.view_file"):
             files = File.objects.all()
             serializer = FileSerializer(files, many=True)
@@ -43,6 +41,7 @@ class FileList(APIView):
         },
     )
     def post(self, request):
+        """Add a File into the database."""
         if request.user.has_perm("maintenancemanagement.add_file"):
             serializer = FileSerializer(data=request.data)
             if serializer.is_valid():
@@ -53,9 +52,7 @@ class FileList(APIView):
 
 
 class FileDetail(APIView):
-    """
-        Retrieve or delete a File
-    """
+    """Retrieve or delete a File."""
 
     @swagger_auto_schema(
         operation_description='Send the File corresponding to the given key.',
@@ -67,6 +64,7 @@ class FileDetail(APIView):
         },
     )
     def get(self, request, pk):
+        """Send the File corresponding to the given key."""
         try:
             file = File.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -86,6 +84,7 @@ class FileDetail(APIView):
         },
     )
     def delete(self, request, pk):
+        """Delete the File corresponding to the given key."""
         try:
             file = File.objects.get(pk=pk)
         except ObjectDoesNotExist:

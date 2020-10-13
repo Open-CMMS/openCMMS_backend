@@ -1,3 +1,5 @@
+"""This module defines the views corresponding to the tasks."""
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -29,33 +31,31 @@ ADD_TASK = "maintenancemanagement.add_task"
 
 
 class TaskList(APIView):
-    """
-        \n# List all tasks or create a new one
+    r"""
+    \n# List all tasks or create a new one.
 
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
 
+    Return :
+    response (Response) : the response.
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
-
-        Return :
-        response (Response) : the response.
-
-        GET request : list all tasks and return the data
-        POST request :
-        - create a new task, send HTTP 201.  If the request is not valid,\
-             send HTTP 400.
-        - If the user doesn't have the permissions, it will send HTTP 401.
-        - The request must contain name (the name of the task (String)) and \
-            description (a description of the task (String))
-        - The request can also contain :
-            - end_date (String): Date (format DD-MM-YYYY) of the deadline
-            - time (String): estimated duration of the task
-            - is_template (Boolean): boolean to specify if this task is \
-                just a template or not
-            - equipment (int): an id which refers to the concerned equipment
-            - teams (List<int>): an id list of the teams in charge of this task
-            - task_type (int): an id which refers to the task_type of this task
-            - files (List<int>): an id list of the files explaining this task
+    GET request : list all tasks and return the data
+    POST request :
+    - create a new task, send HTTP 201.  If the request is not valid,\
+            send HTTP 400.
+    - If the user doesn't have the permissions, it will send HTTP 401.
+    - The request must contain name (the name of the task (String)) and \
+        description (a description of the task (String))
+    - The request can also contain :
+        - end_date (String): Date (format DD-MM-YYYY) of the deadline
+        - time (String): estimated duration of the task
+        - is_template (Boolean): boolean to specify if this task is \
+            just a template or not
+        - equipment (int): an id which refers to the concerned equipment
+        - teams (List<int>): an id list of the teams in charge of this task
+        - task_type (int): an id which refers to the task_type of this task
+        - files (List<int>): an id list of the files explaining this task
     """
 
     @swagger_auto_schema(
@@ -67,6 +67,7 @@ class TaskList(APIView):
         },
     )
     def get(self, request):
+        """Send the list of Task in the database."""
         if request.user.has_perm(VIEW_TASK):
             only_template = request.GET.get("template", None)
             print(only_template)
@@ -88,6 +89,7 @@ class TaskList(APIView):
         },
     )
     def post(self, request):
+        """Add a Task into the database."""
         if request.user.has_perm("maintenancemanagement.add_task"):
             conditions = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
@@ -121,37 +123,35 @@ class TaskList(APIView):
 
 
 class TaskDetail(APIView):
-    """
-        \n# Retrieve, update or delete a task
+    r"""
+    \n# Retrieve, update or delete a task.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-        id (int) : the id of the task
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+    id (int) : the id of the task
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : return the task's data.
-        PUT request : change the task with the data on the request \
-            or if the data isn't well formed, send HTTP 400.
-        DELETE request: delete the task and send HTTP 204.
+    GET request : return the task's data.
+    PUT request : change the task with the data on the request \
+        or if the data isn't well formed, send HTTP 400.
+    DELETE request: delete the task and send HTTP 204.
 
-        If the user doesn't have the permissions, it will send HTTP 401.
-        If the id doesn't exist, it will send HTTP 404.
+    If the user doesn't have the permissions, it will send HTTP 401.
+    If the id doesn't exist, it will send HTTP 404.
 
-        The PUT request can contain one or more of the following fields :
-            - name (String): The name of the task
-            - description (String): The description of the task
-            - end_date (String): Date (format DD-MM-YYYY) of the deadline
-            - time (String): estimated duration of the task
-            - is_template (Boolean): boolean to specify if this task is just \
-                a template or not
-            - equipment (int): an id which refers to the concerned equipment
-            - teams (List<int>): an id list of the teams in charge of this task
-            - task_type (int): an id which refers to the task_type of this task
-            - files (List<int>): an id list of the files explaining this task
-
-
+    The PUT request can contain one or more of the following fields :
+        - name (String): The name of the task
+        - description (String): The description of the task
+        - end_date (String): Date (format DD-MM-YYYY) of the deadline
+        - time (String): estimated duration of the task
+        - is_template (Boolean): boolean to specify if this task is just \
+            a template or not
+        - equipment (int): an id which refers to the concerned equipment
+        - teams (List<int>): an id list of the teams in charge of this task
+        - task_type (int): an id which refers to the task_type of this task
+        - files (List<int>): an id list of the files explaining this task
     """
 
     @swagger_auto_schema(
@@ -164,6 +164,7 @@ class TaskDetail(APIView):
         },
     )
     def get(self, request, pk):
+        """Send the Task corresponding to the given key."""
         try:
             task = Task.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -185,6 +186,7 @@ class TaskDetail(APIView):
         },
     )
     def put(self, request, pk):
+        """Update the Task corresponding to the given key."""
         try:
             task = Task.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -207,6 +209,7 @@ class TaskDetail(APIView):
         },
     )
     def delete(self, request, pk):
+        """Delete the Task corresponding to the given key."""
         try:
             task = Task.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -218,27 +221,25 @@ class TaskDetail(APIView):
 
 
 class AddTeamToTask(APIView):
-    """
-        \n# Assign a team to a task
+    r"""
+    \n# Assign a team to a task.
 
-        Parameters :
-        request (HttpRequest) : the request coming from the front-end
-        id (int) : the id of the task
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+    id (int) : the id of the task
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        POST request : add team to task
-        PUT request : remove team from task
+    POST request : add team to task
+    PUT request : remove team from task
 
-        If the user doesn't have the permissions, it will send HTTP 401.
+    If the user doesn't have the permissions, it will send HTTP 401.
 
-        Both request must contain :
-            - id_task : the id of the task we want to edit
-            - id_team : the id ot the team we want to add/remove \
-                to/from the task
-
-
+    Both request must contain :
+        - id_task : the id of the task we want to edit
+        - id_team : the id ot the team we want to add/remove \
+            to/from the task
     """
 
     @swagger_auto_schema(
@@ -250,6 +251,7 @@ class AddTeamToTask(APIView):
         },
     )
     def post(self, request):
+        """Assign a team to a task."""
         if request.user.has_perm(CHANGE_TASK):
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
@@ -266,6 +268,7 @@ class AddTeamToTask(APIView):
         },
     )
     def put(self, request):
+        """Remove a team from a task."""
         if request.user.has_perm(CHANGE_TASK):
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
@@ -275,17 +278,17 @@ class AddTeamToTask(APIView):
 
 
 class TeamTaskList(APIView):
-    """
-        \n# List all the tasks a team is assigned to.
+    r"""
+    \n# List all the tasks a team is assigned to.
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
-        pk (int) : the team's database id.
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
+    pk (int) : the team's database id.
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : list all tasks of a team.
+    GET request : list all tasks of a team.
     """
 
     @swagger_auto_schema(
@@ -298,6 +301,7 @@ class TeamTaskList(APIView):
         },
     )
     def get(self, request, pk):
+        """Send the list of Task corresponding to the given Team key."""
         try:
             team = Team.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -311,17 +315,17 @@ class TeamTaskList(APIView):
 
 
 class UserTaskList(APIView):
-    """
-        \n# List all the tasks the user is assigned to.
+    r"""
+    \n# List all the tasks the user is assigned to.
 
-        Parameter :
-        request (HttpRequest) : the request coming from the front-end
-        pk (int) : the user's database id.
+    Parameter :
+    request (HttpRequest) : the request coming from the front-end
+    pk (int) : the user's database id.
 
-        Return :
-        response (Response) : the response.
+    Return :
+    response (Response) : the response.
 
-        GET request : list all tasks of the user.
+    GET request : list all tasks of the user.
     """
 
     @swagger_auto_schema(
@@ -334,6 +338,7 @@ class UserTaskList(APIView):
         },
     )
     def get(self, request, pk):
+        """Send the list of Task corresponding to the given User key."""
         try:
             user = UserProfile.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -354,10 +359,7 @@ class UserTaskList(APIView):
     },
 )
 def participate_to_task(user, task):
-    """
-        \n# Check if a user is assigned to the task
-
-    """
+    r"""\n# Check if a user is assigned to the task."""
     for team in task.teams.values_list("id", flat=True).iterator():
         belong = belongs_to_team(user, Team.objects.get(id=team))
         if belong:
@@ -373,7 +375,8 @@ class TaskRequirements(APIView):
             If specified, send the task templates as well.',
     )
     def get(self, request):
-        """docstrings."""
+        """Send the End Conditions and Trigger Conditions. \
+            If specified, send the task templates as well."""
         if request.user.has_perm(ADD_TASK):
             serializer = TaskTemplateRequirementsSerializer(1)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -387,6 +390,7 @@ class TaskRequirements(APIView):
     responses={},
 )
 def init_database():
+    """Initialize the database with basic groups and fields."""
     field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
 
     Field.objects.create(name="Date", field_group=field_gr_cri_dec)

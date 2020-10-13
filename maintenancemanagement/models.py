@@ -1,28 +1,36 @@
+"""This file define all models concerning the maintenance management."""
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from usersmanagement.models import Team
 
-# Create your models here.
-
 
 class File(models.Model):
-    """
-        Define a file
-    """
+    """Define a file."""
+
     file = models.FileField(blank=False, null=False)
     is_manual = models.BooleanField(default=True)
 
     def __str__(self):
+        """Define string representation of a file."""
         return self.file.name
 
 
 class FieldGroup(models.Model):
+    """Define a field group."""
+
     name = models.CharField(max_length=50)
     is_equipment = models.BooleanField(default=False)
 
+    def __str__(self):
+        """Define string representation of a field group."""
+        return self.name
+
 
 class Field(models.Model):
+    """Define a field."""
+
     name = models.CharField(max_length=50)
     field_group = models.ForeignKey(
         FieldGroup,
@@ -33,19 +41,30 @@ class Field(models.Model):
         blank=True
     )
 
+    def __str__(self):
+        """Define string representation of a field."""
+        return self.name
+
 
 class FieldValue(models.Model):
+    """Define a field value."""
+
     value = models.CharField(max_length=100)
     field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="value_set", related_query_name="value")
+
+    def __str__(self):
+        """Define string representation of a field value."""
+        return self.value
 
 
 class FieldObject(models.Model):
     """
-        Define a field object.
+    Define a field object.
 
-        content_type and object_id allow described_object to \
-            reference TaskType or EquipmentType
+    content_type and object_id allow described_object to \
+        reference TaskType or EquipmentType
     """
+
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)
     object_id = models.PositiveIntegerField()
     described_object = GenericForeignKey(
@@ -64,15 +83,18 @@ class FieldObject(models.Model):
         blank=True
     )
 
-    value = models.CharField(max_length=100, default="", null=True, blank=True)
+    value = models.CharField(max_length=100, default="", blank=True, null=True)
 
-    description = models.CharField(max_length=100, default="", null=True, blank=True)
+    description = models.CharField(max_length=100, default="", blank=True)
+
+    def __str__(self):
+        """Define string representation of a field object."""
+        return self.value + str(self.field_value)
 
 
 class EquipmentType(models.Model):
-    """
-        Define an equipment type
-    """
+    """Define an equipment type."""
+
     name = models.CharField(max_length=100, unique=True)
     fields_groups = models.ManyToManyField(
         FieldGroup,
@@ -83,11 +105,14 @@ class EquipmentType(models.Model):
         related_query_name="equipmentType"
     )
 
+    def __str__(self):
+        """Define string representation of an equipment type."""
+        return self.name
+
 
 class Equipment(models.Model):
-    """
-        Define an equipment.
-    """
+    """Define an equipment."""
+
     name = models.CharField(max_length=100)
     equipment_type = models.ForeignKey(
         EquipmentType,
@@ -102,8 +127,14 @@ class Equipment(models.Model):
         File, verbose_name="Equipment File", related_name="equipment_set", related_query_name="equipment", blank=True
     )
 
+    def __str__(self):
+        """Define string representation of an equipment."""
+        return self.name
+
 
 class Task(models.Model):
+    """Define a task."""
+
     name = models.CharField(max_length=100)
     end_date = models.DateField(null=True, blank=True)  # Correspond à la date butoire
     description = models.TextField(max_length=2000, default="")

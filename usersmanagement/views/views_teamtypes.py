@@ -1,3 +1,5 @@
+"""This module defines the views corresponding to team types."""
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
