@@ -15,7 +15,7 @@ def main():
     maintenance_teams = TeamType.objects.create(name="Maintenance Team")
 
     # Creation of the 3 inital Teams
-    admin = Team.objects.create(name="Administrators 1", team_type=admins)
+    Team.objects.create(name="Administrators 1", team_type=admins)
     Team.objects.create(name="Maintenance Manager 1", team_type=maintenance_managers)
     Team.objects.create(name="Maintenance Team 1", team_type=maintenance_teams)
 
@@ -64,4 +64,5 @@ def main():
         maintenance_teams.perms.add(permission)
 
     user = UserProfile.objects.get(id=1)
+    admin = Team.objects.get(name="Administrators 1")
     admin.user_set.add(user)
