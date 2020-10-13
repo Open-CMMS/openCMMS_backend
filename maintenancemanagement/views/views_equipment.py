@@ -5,6 +5,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import Equipment, EquipmentType, Field
 from maintenancemanagement.serializers import (
+    EquipmentCreateSerializer,
     EquipmentDetailsSerializer,
     EquipmentRequirementsSerializer,
     EquipmentSerializer,
@@ -54,7 +55,7 @@ class EquipmentList(APIView):
 
     @swagger_auto_schema(
         operation_description='Add an Equipment into the database.',
-        query_serializer=EquipmentSerializer(many=False),
+        query_serializer=EquipmentCreateSerializer(many=False),
         responses={
             201: EquipmentSerializer(many=False),
             400: "Bad request",
