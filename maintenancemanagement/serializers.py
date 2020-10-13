@@ -370,14 +370,14 @@ class EquipmentDetailsSerializer(serializers.ModelSerializer):
 class EquipmentCreateSerializer(serializers.ModelSerializer):
     """Equipment create serializer."""
 
-    equipment_type = EquipmentTypeSerializer()
+    field = serializers.ListField()
     files = FileSerializer(many=True)
 
     class Meta:
         """This class contains the serializer metadata."""
 
         model = Equipment
-        fields = ['id', 'name', 'equipment_type', 'files']
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
 
 
 class EquipmentRequirementsSerializer(serializers.ModelSerializer):
