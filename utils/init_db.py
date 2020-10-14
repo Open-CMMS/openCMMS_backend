@@ -1,14 +1,15 @@
 """This script initiate the database with some default values."""
 from django.contrib.contenttypes.models import ContentType
-from maintenancemanagement.models import FieldGroup, Task
+from maintenancemanagement.models import Field, FieldGroup, FieldValue, Task
 from usersmanagement.models import Permission, Team, TeamType, UserProfile
 
 
 def main():
     """Initiate the database."""
-    FieldGroup.objects.create(name="End Conditions", is_equipment=False)
-    FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
 
+    #######################
+    # Init users database #
+    #######################
     # Creation of 3 TeamTypes
     admins = TeamType.objects.create(name="Administrators")
     maintenance_managers = TeamType.objects.create(name="Maintenance Manager")
@@ -66,3 +67,27 @@ def main():
     user = UserProfile.objects.all()[0]
     admin = Team.objects.get(name="Administrators 1")
     admin.user_set.add(user)
+
+    #############################
+    # Init maintenance database #
+    #############################
+
+    field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
+
+    Field.objects.create(name="Date", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Integer", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Float", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
+    field_recurrence_dec = Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
+
+    FieldValue.objects.create(value="Day", field=field_recurrence_dec)
+    FieldValue.objects.create(value="Week", field=field_recurrence_dec)
+    FieldValue.objects.create(value="Month", field=field_recurrence_dec)
+    FieldValue.objects.create(value="Year", field=field_recurrence_dec)
+
+    field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
+
+    Field.objects.create(name="Checkbox", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Description", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
