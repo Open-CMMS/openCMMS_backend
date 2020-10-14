@@ -89,7 +89,7 @@ class FieldObject(models.Model):
 
     def __str__(self):
         """Define string representation of a field object."""
-        return self.value + str(self.field_value)
+        return str(self.id) + ' : ' + str(self.value) + str(self.field_value)
 
 
 class EquipmentType(models.Model):
@@ -175,4 +175,4 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
     )
-    over = models.NullBooleanField(default=False)
+    over = models.BooleanField(default=False, null=True)

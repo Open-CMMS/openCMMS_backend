@@ -1,13 +1,18 @@
 """This module defines the views corresponding to the tasks."""
 
+from datetime import timedelta
+
 from drf_yasg.utils import swagger_auto_schema
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import (
     EquipmentType,
     Field,
     FieldGroup,
+    FieldObject,
     FieldValue,
+    File,
     Task,
 )
 from maintenancemanagement.serializers import (
@@ -192,12 +197,75 @@ class TaskDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(CHANGE_TASK):
+            end_conditions = request.data.pop('end_conditions', None)
+            if end_conditions:
+                if end_conditions[0].get('file', None) is not None:
+                    end_file = File.objects.get(pk=end_conditions[0].get('file'))
+                    task.files.add(end_file)
+                    task.save()
+                    end_conditions[0].update({'value': end_file.file.path})
+                field_object = FieldObject.objects.get(pk=end_conditions[0].get('id'))
+                field_object_serializer = FieldObjectCreateSerializer(
+                    field_object, data=end_conditions[0], partial=True
+                )
+                if field_object_serializer.is_valid():
+                    field_object_serializer.save()
+
             serializer = TaskSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                task = serializer.save()
+                self._check_if_over(task)
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def _check_if_over(self, task):
+        content_type_object = ContentType.objects.get_for_model(task)
+        end_fields_objects = FieldObject.objects.filter(
+            object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
+        )
+        over = True
+        for end_field_object in end_fields_objects:
+            print(end_field_object)
+            if end_field_object.value is None:
+                over = False
+
+        print("over ? : ", over)
+        task.over = over
+        task.save()
+
+    def _trigger_recurrent_task(
+        self,
+        task,
+    ):
+        content_type_object = ContentType.objects.get_for_model(task)
+        end_fields_objects = FieldObject.objects.filter(
+            object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
+        )
+        trigger_fields_objects = FieldObject.objects.filter(
+            object_id=task.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
+        )
+        recurrend_object = FieldObject.objects.filter(
+            object_id=task.id,
+            content_type=content_type_object,
+            field__field_group__name='Trigger Conditions',
+            field__name="Duration"
+        )
+        new_task = Task.objects.get(pk=task.pk)
+        new_task.pk = None
+        new_task.save()
+        print('task : ', task.pk)
+        print('new_task : ', new_task.pk)
+        print('reccurency : ', recurrend_object.value)
+        new_task.end_date = task.end_date + timedelta(days=15)
+        new_task.save()
+
+        for trigger in trigger_fields_objects:
+            FieldObject.objects.create(
+                described_object=new_task, field=trigger.field, description=trigger.description, value=trigger.value
+            )
+        for end in end_fields_objects:
+            FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
 
     @swagger_auto_schema(
         operation_description='Delete the Task corresponding to the given key.',

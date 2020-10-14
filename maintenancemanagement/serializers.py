@@ -313,6 +313,8 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
     equipment = EquipmentSerializer()
     trigger_conditions = serializers.SerializerMethodField()
     end_conditions = serializers.SerializerMethodField()
+    files = FileSerializer(many=True)
+    duration = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
@@ -335,6 +337,22 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
         )
         return FieldObjectForTaskDetailsSerializer(end_fields_objects, many=True).data
 
+    def get_duration(self, obj):
+        duration = obj.duration
+        days = duration.days
+        hours = duration.seconds // 3600
+        minutes = (duration.seconds // 60) - hours * 60
+
+        result = ""
+        if days != 0:
+            result += str(days) + 'd '
+        if hours != 0:
+            result += str(hours) + 'h '
+        if minutes != 0:
+            result += str(minutes) + 'm'
+
+        return result
+
 
 class TemplateDetailsSerializer(serializers.ModelSerializer):
 
@@ -343,6 +361,7 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
     equipment = EquipmentSerializer()
     trigger_conditions = serializers.SerializerMethodField()
     end_conditions = serializers.SerializerMethodField()
+    duration = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
@@ -364,6 +383,22 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
             object__object_id=obj.id, object__content_type=content_type_object, field_group__name='End Conditions'
         )
         return FieldRequirementsSerializer(end_fields, many=True).data
+
+    def get_duration(self, obj):
+        duration = obj.duration
+        days = duration.days
+        hours = duration.seconds // 3600
+        minutes = (duration.seconds // 60) - hours * 60
+
+        result = ""
+        if days != 0:
+            result += str(days) + 'd '
+        if hours != 0:
+            result += str(hours) + 'h '
+        if minutes != 0:
+            result += str(minutes) + 'm'
+
+        return result
 
 
 class TaskTemplateRequirementsSerializer(serializers.Serializer):
@@ -407,12 +442,29 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 class TaskListingSerializer(serializers.ModelSerializer):
 
     teams = TeamSerializer(many=True)
+    duration = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
         fields = [
             'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over'
         ]
+
+    def get_duration(self, obj):
+        duration = obj.duration
+        days = duration.days
+        hours = duration.seconds // 3600
+        minutes = (duration.seconds // 60) - hours * 60
+
+        result = ""
+        if days != 0:
+            result += str(days) + 'd '
+        if hours != 0:
+            result += str(hours) + 'h '
+        if minutes != 0:
+            result += str(minutes) + 'm'
+
+        return result
 
 
 #############################################################################
