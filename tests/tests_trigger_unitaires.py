@@ -11,8 +11,7 @@ class TaskTriggerTests(TestCase):
     """
 
     def set_up(self):
-        field_gr_cri_dec = FieldGroup.objects.create(name='Trigger Conditions', is_equipment=False)
-        date_condition = Field.objects.create(name='Date', field_group=field_gr_cri_dec)
+        date_condition = Field.objects.get(name='Date')
 
         task_to_trigger_yesterday = Task.objects.create(name='task_yesterday', over=None)
         FieldObject.objects.create(
