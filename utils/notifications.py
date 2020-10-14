@@ -2,8 +2,6 @@
 
 from datetime import date, timedelta
 
-from apscheduler.schedulers.background import BackgroundScheduler
-
 from django.conf import settings
 from django.core import mail
 from django.template.loader import render_to_string

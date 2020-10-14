@@ -176,3 +176,7 @@ class Task(models.Model):
         blank=True,
     )
     over = models.NullBooleanField(default=False)
+
+    def __str__(self):
+        """Define string representation of a task."""
+        return self.name

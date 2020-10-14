@@ -16,6 +16,9 @@ from .models import (
     Task,
 )
 
+TRIGGER_CONDITIONS = 'Trigger Conditions'
+END_CONDITIONS = 'End Conditions'
+
 #############################################################################
 ############################## BASE SERIALIZER ##############################
 #############################################################################
@@ -126,13 +129,6 @@ class DescribedObjectRelatedField(serializers.RelatedField):
     def to_internal_value(self, data):
         """Redefine the to_internal_value method."""
         return data
-
-
-class FieldObjectSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
 
 
 #############################################################################
@@ -324,14 +320,14 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
     def get_trigger_conditions(self, obj):
         content_type_object = ContentType.objects.get_for_model(obj)
         trigger_fields_objects = FieldObject.objects.filter(
-            object_id=obj.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
+            object_id=obj.id, content_type=content_type_object, field__field_group__name=TRIGGER_CONDITIONS
         )
         return FieldObjectForTaskDetailsSerializer(trigger_fields_objects, many=True).data
 
     def get_end_conditions(self, obj):
         content_type_object = ContentType.objects.get_for_model(obj)
         end_fields_objects = FieldObject.objects.filter(
-            object_id=obj.id, content_type=content_type_object, field__field_group__name='End Conditions'
+            object_id=obj.id, content_type=content_type_object, field__field_group__name=END_CONDITIONS
         )
         return FieldObjectForTaskDetailsSerializer(end_fields_objects, many=True).data
 
@@ -354,14 +350,14 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
     def get_trigger_conditions(self, obj):
         content_type_object = ContentType.objects.get_for_model(obj)
         trigger_fields = Field.objects.filter(
-            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='Trigger Conditions'
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name=TRIGGER_CONDITIONS
         )
         return FieldRequirementsSerializer(trigger_fields, many=True).data
 
     def get_end_conditions(self, obj):
         content_type_object = ContentType.objects.get_for_model(obj)
         end_fields = Field.objects.filter(
-            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='End Conditions'
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name=END_CONDITIONS
         )
         return FieldRequirementsSerializer(end_fields, many=True).data
 
@@ -383,14 +379,14 @@ class TaskTemplateRequirementsSerializer(serializers.Serializer):
         return serializer.data
 
     def get_trigger_conditions(self, obj):
-        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
+        trigger_fields = FieldGroup.objects.get(name=TRIGGER_CONDITIONS).field_set.all()
         print(trigger_fields)
         serializer = FieldRequirementsSerializer(trigger_fields, many=True)
         print(serializer.data)
         return serializer.data
 
     def get_end_conditions(self, obj):
-        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
+        end_fields = FieldGroup.objects.get(name=END_CONDITIONS).field_set.all()
         return FieldRequirementsSerializer(end_fields, many=True).data
 
 
@@ -445,8 +441,7 @@ class EquipmentDetailsSerializer(serializers.ModelSerializer):
 
     def get_field(self, obj):
         """Get the explicit field associated with the \
-            Equipement as obj. """
-
+            Equipement as obj."""
         content_type_object = ContentType.objects.get_for_model(obj)
         fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
         return EquipmentFieldSerializer(fields, many=True).data
