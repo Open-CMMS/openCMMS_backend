@@ -62,10 +62,3 @@ def get_imminent_tasks(user):
             if task.end_date > date.today() and task.end_date < (date.today() + timedelta(days=6)):
                 result[2].add(task)
     return result
-
-
-def start():
-    r"""\n# Set up the cron job to send daily notifications."""
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(send_notifications, 'cron', day_of_week='mon-fri', hour='6', minute='30')
-    scheduler.start()
