@@ -115,7 +115,6 @@ class EquipmentList(APIView):
     def _save_fields(self, fields, equipment):
         if fields:
             for field in fields:
-                print('le field : ', field)
                 if field.get('field', None) is None:
                     field.update({'field': Field.objects.create(name=field.get('name')).pk})
                 field.update({'described_object': equipment})
@@ -186,7 +185,6 @@ class EquipmentDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.change_equipment"):
-            print("La requete : ", request.data)
             field_objects = request.data.pop('field', None)
             equipment_serializer = EquipmentUpdateSerializer(equipment, data=request.data, partial=True)
             if equipment_serializer.is_valid():
@@ -244,7 +242,6 @@ class EquipmentDetail(APIView):
     def _save_fields(self, fields, equipment):
         if fields:
             for field in fields:
-                print('le field : ', field)
                 if field.get('field', None) is None:
                     field.update({'field': Field.objects.create(name=field.get('name')).pk})
                 field.update({'described_object': equipment})
@@ -274,16 +271,13 @@ class EquipmentDetail(APIView):
                 field_object = FieldObject.objects.get(pk=field_object_data.get('id'))
                 if field_object_data.get('field_value') is not None:
                     field_object_data.update({"value": field_object_data.get('field_value').get('value')})
+                    field_object_data.update({'field_value': None})
 
                 field_object_serializer = FieldObjectUpdateSerializer(
                     field_object, data=field_object_data, partial=True
                 )
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()
-                print(
-                    "le field object concerné après la save : ", str(field_object.id), ' : ', field_object.value,
-                    " and ", field_object.field_value
-                )
 
     @swagger_auto_schema(
         operation_description='Delete the Equipment corresponding to the given key.',

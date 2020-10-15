@@ -633,7 +633,6 @@ class EquipmentTests(TestCase):
             },
             format='json'
         )
-        print('Reponse : ', response.json())
         self.assertEqual(response.status_code, 201)
 
     def test_US4_I8_equipmentrequirements_get_with_perm(self):

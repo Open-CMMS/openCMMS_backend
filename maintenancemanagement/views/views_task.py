@@ -76,7 +76,6 @@ class TaskList(APIView):
         """Send the list of Task in the database."""
         if request.user.has_perm(VIEW_TASK):
             only_template = request.GET.get("template", None)
-            print(only_template)
             if only_template == "true":
                 tasks = Task.objects.filter(is_template=True)
             else:
@@ -97,17 +96,14 @@ class TaskList(APIView):
     def post(self, request):
         """Add a Task into the database."""
         if request.user.has_perm("maintenancemanagement.add_task"):
-            print(request.data)
             conditions = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
                 for condition in conditions:
                     validation_serializer = FieldObjectValidationSerializer(data=condition)
                     if not validation_serializer.is_valid():
-                        print("La condition qui pose pb : ", condition)
                         return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
-                print('files : ', task.files.all())
                 self._save_conditions(conditions, task)
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -180,7 +176,6 @@ class TaskDetail(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(VIEW_TASK) or participate_to_task(request.user, task):
             serializer = TaskDetailsSerializer(task)
-            print('le serailizer')
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -214,7 +209,6 @@ class TaskDetail(APIView):
                 )
                 if field_object_serializer.is_valid():
                     fo = field_object_serializer.save()
-                    print(fo)
 
             serializer = TaskSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
@@ -231,12 +225,10 @@ class TaskDetail(APIView):
         )
         over = True
         for end_field_object in end_fields_objects:
-            print(end_field_object)
             if end_field_object.value is None:
                 over = False
         if over is True:
             self._trigger_recurrent_task_if_recurrent(task)
-        print("over ? : ", over)
         task.over = over
         task.save()
 
@@ -274,9 +266,6 @@ class TaskDetail(APIView):
             new_task = Task.objects.get(pk=task.pk)
             new_task.pk = None
             new_task.save()
-            print('task : ', task.pk)
-            print('new_task : ', new_task.pk)
-            print('reccurency : ', recurrent_object.value)
             new_task.end_date = task.end_date + self._parse_time(recurrent_object.value)
             new_task.save()
 

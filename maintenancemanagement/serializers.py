@@ -212,7 +212,6 @@ class FieldObjectValidationSerializer(serializers.ModelSerializer):
         """Redefine the validate method."""
         field_values = FieldValue.objects.filter(field=data.get("field"))
         if field_values:
-            print("Il y a des fields values")
             try:
                 value = field_values.get(value=data.get("value")), None
                 data.update({"value": None})
@@ -223,7 +222,6 @@ class FieldObjectValidationSerializer(serializers.ModelSerializer):
                     'error': ("Value doesn't match a FieldValue of the given Field"),
                 })
         elif data.get("value") is None and data.get("field").field_group.name == "Trigger Conditions":
-            print("Il n'y en a pas")
             raise serializers.ValidationError({
                 'error': ("Value required"),
             })
@@ -450,16 +448,12 @@ class TaskTemplateRequirementsSerializer(serializers.Serializer):
 
     def get_task_templates(self, obj):
         templates = Task.objects.filter(is_template=True)
-        print(templates)
         serializer = TemplateDetailsSerializer(templates, many=True)
-        print(serializer.data)
         return serializer.data
 
     def get_trigger_conditions(self, obj):
         trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
-        print(trigger_fields)
         serializer = FieldRequirementsSerializer(trigger_fields, many=True)
-        print(serializer.data)
         return serializer.data
 
     def get_end_conditions(self, obj):

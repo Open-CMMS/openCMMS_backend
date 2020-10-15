@@ -765,9 +765,6 @@ class TaskTests(TestCase):
         self.assertEqual(
             len(end_conditions), len(Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")))
         )
-        print("Mon template : ", template_json)
-        print("Equipment ? : ", template.equipment)
-        print("La reponse : ", response.json().get('task_templates'))
         self.assertTrue(template_json in response.json().get('task_templates'))
 
     def test_US19_I1_taskrequirements_without_perm(self):
