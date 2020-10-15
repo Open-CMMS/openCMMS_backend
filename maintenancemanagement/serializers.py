@@ -1,5 +1,8 @@
 """Serializers enable the link between front-end and back-end."""
 
+import re
+from datetime import timedelta
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
@@ -219,7 +222,7 @@ class FieldObjectValidationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     'error': ("Value doesn't match a FieldValue of the given Field"),
                 })
-        elif data.get("value") is None:
+        elif data.get("value") is None and data.get("field").field_group.name == "Trigger Conditions":
             print("Il n'y en a pas")
             raise serializers.ValidationError({
                 'error': ("Value required"),
@@ -238,6 +241,29 @@ class FieldObjectCreateSerializer(serializers.ModelSerializer):
 
         model = FieldObject
         fields = ['described_object', 'field', 'field_value', 'value', 'description']
+
+    def validate(self, data):
+        """Redefine the validate method."""
+        field_values = FieldValue.objects.filter(field=data.get("field"))
+        if field_values:
+            value = field_values.get(value=data.get("value"))
+            data.update({"value": ""})
+            data.update({"field_value": value})
+            return data
+        data.update({"field_value": None})
+        return data
+
+
+class FieldObjectUpdateSerializer(serializers.ModelSerializer):
+    """Field object create serializer."""
+
+    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
 
     def validate(self, data):
         """Redefine the validate method."""
@@ -339,19 +365,25 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
 
     def get_duration(self, obj):
         duration = obj.duration
-        days = duration.days
-        hours = duration.seconds // 3600
-        minutes = (duration.seconds // 60) - hours * 60
+        if duration is not None:
+            days = duration.days
+            hours = duration.seconds // 3600
+            minutes = (duration.seconds // 60) - hours * 60
 
-        result = ""
-        if days != 0:
-            result += str(days) + 'd '
-        if hours != 0:
-            result += str(hours) + 'h '
-        if minutes != 0:
-            result += str(minutes) + 'm'
+            result = ""
+            if days != 0:
+                result += str(days) + 'd '
+            if hours != 0:
+                result += str(hours) + 'h '
+            if minutes != 0:
+                result += str(minutes) + 'm'
 
-        return result
+            if result[-1] == ' ':
+                result = result[:-1]
+
+            return result
+        else:
+            return ''
 
 
 class TemplateDetailsSerializer(serializers.ModelSerializer):
@@ -362,6 +394,7 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
     trigger_conditions = serializers.SerializerMethodField()
     end_conditions = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
+    files = FileSerializer(many=True)
 
     class Meta:
         model = Task
@@ -386,19 +419,24 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
 
     def get_duration(self, obj):
         duration = obj.duration
-        days = duration.days
-        hours = duration.seconds // 3600
-        minutes = (duration.seconds // 60) - hours * 60
+        if duration is not None:
+            days = duration.days
+            hours = duration.seconds // 3600
+            minutes = (duration.seconds // 60) - hours * 60
 
-        result = ""
-        if days != 0:
-            result += str(days) + 'd '
-        if hours != 0:
-            result += str(hours) + 'h '
-        if minutes != 0:
-            result += str(minutes) + 'm'
+            result = ""
+            if days != 0:
+                result += str(days) + 'd '
+            if hours != 0:
+                result += str(hours) + 'h '
+            if minutes != 0:
+                result += str(minutes) + 'm'
 
-        return result
+            if result[-1] == ' ':
+                result = result[:-1]
+            return result
+        else:
+            return ''
 
 
 class TaskTemplateRequirementsSerializer(serializers.Serializer):
@@ -452,19 +490,25 @@ class TaskListingSerializer(serializers.ModelSerializer):
 
     def get_duration(self, obj):
         duration = obj.duration
-        days = duration.days
-        hours = duration.seconds // 3600
-        minutes = (duration.seconds // 60) - hours * 60
+        if duration is not None:
+            days = duration.days
+            hours = duration.seconds // 3600
+            minutes = (duration.seconds // 60) - hours * 60
 
-        result = ""
-        if days != 0:
-            result += str(days) + 'd '
-        if hours != 0:
-            result += str(hours) + 'h '
-        if minutes != 0:
-            result += str(minutes) + 'm'
+            result = ""
+            if days != 0:
+                result += str(days) + 'd '
+            if hours != 0:
+                result += str(hours) + 'h '
+            if minutes != 0:
+                result += str(minutes) + 'm'
 
-        return result
+            if result[-1] == ' ':
+                result = result[:-1]
+
+            return result
+        else:
+            return ''
 
 
 #############################################################################
@@ -506,6 +550,18 @@ class EquipmentDetailsSerializer(serializers.ModelSerializer):
 
 class EquipmentCreateSerializer(serializers.ModelSerializer):
     """Equipment create serializer."""
+
+    field = serializers.ListField(required=False)
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+
+class EquipmentUpdateSerializer(serializers.ModelSerializer):
+    """Equipment update serializer."""
 
     field = serializers.ListField(required=False)
 

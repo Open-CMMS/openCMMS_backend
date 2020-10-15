@@ -1,5 +1,6 @@
 """This module defines the views corresponding to the tasks."""
 
+import re
 from datetime import timedelta
 
 from drf_yasg.utils import swagger_auto_schema
@@ -96,14 +97,17 @@ class TaskList(APIView):
     def post(self, request):
         """Add a Task into the database."""
         if request.user.has_perm("maintenancemanagement.add_task"):
+            print(request.data)
             conditions = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
                 for condition in conditions:
                     validation_serializer = FieldObjectValidationSerializer(data=condition)
                     if not validation_serializer.is_valid():
+                        print("La condition qui pose pb : ", condition)
                         return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
+                print('files : ', task.files.all())
                 self._save_conditions(conditions, task)
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -209,7 +213,8 @@ class TaskDetail(APIView):
                     field_object, data=end_conditions[0], partial=True
                 )
                 if field_object_serializer.is_valid():
-                    field_object_serializer.save()
+                    fo = field_object_serializer.save()
+                    print(fo)
 
             serializer = TaskSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
@@ -229,43 +234,61 @@ class TaskDetail(APIView):
             print(end_field_object)
             if end_field_object.value is None:
                 over = False
-
+        if over is True:
+            self._trigger_recurrent_task_if_recurrent(task)
         print("over ? : ", over)
         task.over = over
         task.save()
 
-    def _trigger_recurrent_task(
+    def _parse_time(self, time_str):
+        regex = re.compile(r'((?P<days>\d+?)d )?((?P<hours>\d+?)h )?((?P<minutes>\d+?)m)?')
+        parts = regex.match(time_str)
+        if not parts:
+            return
+        parts = parts.groupdict()
+        time_params = {}
+        for (name, param) in parts.items():
+            if param:
+                time_params[name] = int(param)
+        return timedelta(**time_params)
+
+    def _trigger_recurrent_task_if_recurrent(
         self,
         task,
     ):
         content_type_object = ContentType.objects.get_for_model(task)
-        end_fields_objects = FieldObject.objects.filter(
-            object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
-        )
-        trigger_fields_objects = FieldObject.objects.filter(
-            object_id=task.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
-        )
-        recurrend_object = FieldObject.objects.filter(
+        recurrent_object = FieldObject.objects.filter(
             object_id=task.id,
             content_type=content_type_object,
             field__field_group__name='Trigger Conditions',
             field__name="Duration"
         )
-        new_task = Task.objects.get(pk=task.pk)
-        new_task.pk = None
-        new_task.save()
-        print('task : ', task.pk)
-        print('new_task : ', new_task.pk)
-        print('reccurency : ', recurrend_object.value)
-        new_task.end_date = task.end_date + timedelta(days=15)
-        new_task.save()
-
-        for trigger in trigger_fields_objects:
-            FieldObject.objects.create(
-                described_object=new_task, field=trigger.field, description=trigger.description, value=trigger.value
+        if recurrent_object.count() == 1:
+            recurrent_object = recurrent_object[0]
+            end_fields_objects = FieldObject.objects.filter(
+                object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
             )
-        for end in end_fields_objects:
-            FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
+            trigger_fields_objects = FieldObject.objects.filter(
+                object_id=task.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
+            )
+            new_task = Task.objects.get(pk=task.pk)
+            new_task.pk = None
+            new_task.save()
+            print('task : ', task.pk)
+            print('new_task : ', new_task.pk)
+            print('reccurency : ', recurrent_object.value)
+            new_task.end_date = task.end_date + self._parse_time(recurrent_object.value)
+            new_task.save()
+
+            for trigger in trigger_fields_objects:
+                FieldObject.objects.create(
+                    described_object=new_task,
+                    field=trigger.field,
+                    description=trigger.description,
+                    value=trigger.value
+                )
+            for end in end_fields_objects:
+                FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
 
     @swagger_auto_schema(
         operation_description='Delete the Task corresponding to the given key.',
