@@ -17,6 +17,7 @@ from usersmanagement.serializers import (
     UserLoginSerializer,
     UserProfileSerializer,
 )
+from utils.init_db import initialize_db
 
 User = settings.AUTH_USER_MODEL
 
@@ -78,7 +79,7 @@ class UserList(APIView):
             if serializer.is_valid():
                 if is_first_user():
                     serializer.save()
-                    init_database()
+                    initialize_db()
                 else:
                     serializer.save()
                     send_mail_to_setup_password(serializer.data)

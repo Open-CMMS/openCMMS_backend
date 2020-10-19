@@ -1,20 +1,39 @@
 from datetime import timedelta
 
+import pytest
+
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
+    EquipmentType,
     Field,
     FieldGroup,
     FieldObject,
     FieldValue,
+    File,
     Task,
 )
-from maintenancemanagement.serializers import TaskSerializer
+from maintenancemanagement.serializers import (
+    EquipmentSerializer,
+    EquipmentTypeSerializer,
+    FileSerializer,
+    TaskDetailsSerializer,
+    TaskListingSerializer,
+    TaskSerializer,
+    TeamSerializer,
+)
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 
 User = settings.AUTH_USER_MODEL
+
+
+@pytest.fixture(scope="session", autouse=True)
+def init_db(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        equip_type = EquipmentType.objects.get(name='EquipmentTypeTest')
+        Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)
 
 
 class TaskTests(TestCase):
@@ -345,8 +364,8 @@ class TaskTests(TestCase):
         team2.save()
         tasks = team.task_set.all()
         tasks2 = team2.task_set.all()
-        serializer = TaskSerializer(tasks, many=True)
-        serializer2 = TaskSerializer(tasks2, many=True)
+        serializer = TaskListingSerializer(tasks, many=True)
+        serializer2 = TaskListingSerializer(tasks2, many=True)
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get(f"/api/maintenancemanagement/usertasklist/{user.pk}", format='json')
@@ -431,7 +450,8 @@ class TaskTests(TestCase):
         )
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
-        self.assertEqual(response.data['files'], [pk_file])
+        files = File.objects.filter(pk=pk_file)
+        self.assertEqual(response.data['files'], FileSerializer(files, many=True).data)
 
     def test_US8_I2_taskdetail_get_with_file_withouts_perm(self):
         """
@@ -532,7 +552,8 @@ class TaskTests(TestCase):
         )
         pk = response.data['id']
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
-        self.assertEqual(response.data['files'], [pk_1, pk_2])
+        files = File.objects.filter(pk__in=[pk_1, pk_2])
+        self.assertEqual(response.data['files'], FileSerializer(files, many=True).data)
 
     def test_US8_I2_taskdetail_get_with_files_without_perm(self):
         """
@@ -726,17 +747,12 @@ class TaskTests(TestCase):
             'name': template.name,
             'end_date': template.end_date,
             'description': template.description,
-            'duration': '2 00:00:00',
+            'duration': '2d',
             'is_template': template.is_template,
-            'equipment': template.equipment,
-            'files': list(template.files.all()),
-            'teams': list(template.teams.all().values_list('id', flat=True)),
-            'equipment_type':
-                {
-                    'id': template.equipment_type.id,
-                    'name': template.equipment_type.name,
-                    'fields_groups': list(template.equipment_type.fields_groups.all().values_list('id', flat=True)),
-                },
+            'equipment': None,
+            'files': FileSerializer(template.files.all(), many=True).data,
+            'teams': TeamSerializer(template.teams.all(), many=True).data,
+            'equipment_type': EquipmentTypeSerializer(template.equipment_type).data,
             'over': template.over,
             'trigger_conditions': [],
             'end_conditions': []

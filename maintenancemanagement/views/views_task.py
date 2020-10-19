@@ -1,13 +1,19 @@
 """This module defines the views corresponding to the tasks."""
 
+import re
+from datetime import timedelta
+
 from drf_yasg.utils import swagger_auto_schema
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import (
     EquipmentType,
     Field,
     FieldGroup,
+    FieldObject,
     FieldValue,
+    File,
     Task,
 )
 from maintenancemanagement.serializers import (
@@ -70,7 +76,6 @@ class TaskList(APIView):
         """Send the list of Task in the database."""
         if request.user.has_perm(VIEW_TASK):
             only_template = request.GET.get("template", None)
-            print(only_template)
             if only_template == "true":
                 tasks = Task.objects.filter(is_template=True)
             else:
@@ -171,7 +176,6 @@ class TaskDetail(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(VIEW_TASK) or participate_to_task(request.user, task):
             serializer = TaskDetailsSerializer(task)
-            print('le serailizer')
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -192,12 +196,88 @@ class TaskDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(CHANGE_TASK):
+            end_conditions = request.data.pop('end_conditions', None)
+            if end_conditions:
+                if end_conditions[0].get('file', None) is not None:
+                    end_file = File.objects.get(pk=end_conditions[0].get('file'))
+                    task.files.add(end_file)
+                    task.save()
+                    end_conditions[0].update({'value': end_file.file.path})
+                field_object = FieldObject.objects.get(pk=end_conditions[0].get('id'))
+                field_object_serializer = FieldObjectCreateSerializer(
+                    field_object, data=end_conditions[0], partial=True
+                )
+                if field_object_serializer.is_valid():
+                    fo = field_object_serializer.save()
+
             serializer = TaskSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                task = serializer.save()
+                self._check_if_over(task)
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def _check_if_over(self, task):
+        content_type_object = ContentType.objects.get_for_model(task)
+        end_fields_objects = FieldObject.objects.filter(
+            object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
+        )
+        over = True
+        for end_field_object in end_fields_objects:
+            if end_field_object.value is None:
+                over = False
+        if over is True:
+            self._trigger_recurrent_task_if_recurrent(task)
+        task.over = over
+        task.save()
+
+    def _parse_time(self, time_str):
+        regex = re.compile(r'((?P<days>\d+?)d )?((?P<hours>\d+?)h )?((?P<minutes>\d+?)m)?')
+        parts = regex.match(time_str)
+        if not parts:
+            return
+        parts = parts.groupdict()
+        time_params = {}
+        for (name, param) in parts.items():
+            if param:
+                time_params[name] = int(param)
+        return timedelta(**time_params)
+
+    def _trigger_recurrent_task_if_recurrent(
+        self,
+        task,
+    ):
+        content_type_object = ContentType.objects.get_for_model(task)
+        recurrent_object = FieldObject.objects.filter(
+            object_id=task.id,
+            content_type=content_type_object,
+            field__field_group__name='Trigger Conditions',
+            field__name="Duration"
+        )
+        if recurrent_object.count() == 1:
+            recurrent_object = recurrent_object[0]
+            end_fields_objects = FieldObject.objects.filter(
+                object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
+            )
+            trigger_fields_objects = FieldObject.objects.filter(
+                object_id=task.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
+            )
+            new_task = Task.objects.get(pk=task.pk)
+            new_task.pk = None
+            new_task.save()
+            new_task.end_date = task.end_date + self._parse_time(recurrent_object.value)
+            new_task.save()
+
+            for trigger in trigger_fields_objects:
+                FieldObject.objects.create(
+                    described_object=new_task,
+                    field=trigger.field,
+                    description=trigger.description,
+                    value=trigger.value
+                )
+            for end in end_fields_objects:
+                FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
 
     @swagger_auto_schema(
         operation_description='Delete the Task corresponding to the given key.',
