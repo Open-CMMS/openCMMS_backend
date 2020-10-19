@@ -39,6 +39,9 @@ def initialize_db():
     for permission in permissions_admin:
         admins.perms.add(permission)
 
+    admins._apply_()
+    admins.save()
+
     # Adding permissions to maintenance managers
 
     liste_manager_management = [
@@ -55,6 +58,9 @@ def initialize_db():
     for permission in permissions_managers_users:
         maintenance_managers.perms.add(permission)
 
+    maintenance_managers._apply_()
+    maintenance_managers.save()
+
     # Adding permissions to maintenance teams
     liste_team = [
         'Can view file',
@@ -70,6 +76,9 @@ def initialize_db():
 
     for permission in permissions_maintenance_team:
         maintenance_teams.perms.add(permission)
+
+    maintenance_teams._apply_()
+    maintenance_teams.save()
 
     user = UserProfile.objects.all()[0]
     admin = Team.objects.get(name="Administrators 1")
