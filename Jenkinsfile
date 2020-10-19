@@ -193,15 +193,12 @@ pipeline {
                     return GIT_BRANCH =~ "master"
                 }
             }
-            //steps("Deploy to distant server") {
-            //    sh '''
-            //        ssh root@192.168.101.9 'rm -rf /root/backend/*';
-            //        scp -r -p $WORKSPACE/* root@192.168.101.9:/root/backend/; 
-            //    '''
-            //}
-            steps("Set up env"){
-                //sh "pipenv install -d"
-                sh "echo $GIT_BRANCH"
+            steps("Deploy to distant server") {
+                sh '''
+                    ssh root@192.168.101.9 'rm -rf /root/backend/*';
+                    scp -r -p $WORKSPACE/* root@192.168.101.9:/root/backend/;
+                    ssh root@192.168.101.9 systemctl restart gunicorn.service 
+                '''
             }
         }
     }

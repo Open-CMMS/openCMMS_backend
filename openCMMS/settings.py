@@ -27,7 +27,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'k&-js5nc7p%#$pk_bj+3fqd0($w5!6^#dy+a+b&p6($3r$a-%k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.getenv('ENVIRONMENT') == 'PROD':
+    DEBUG = False
+else:
+    DEBUG = True
 
 ################################################################
 ######################### GLOBAL CONF ##########################
@@ -46,7 +49,7 @@ ALLOWED_HOSTS = [
 if os.getenv('ENVIRONMENT') == 'DEV':
     BASE_URL = 'https://dev.lxc.pic.brasserie-du-slalom.fr/'
 elif os.getenv('ENVIRONMENT') == 'PROD':
-    BASE_URL = 'https://prod.lxc.pic.brasserie-du-slalom.fr/'
+    BASE_URL = 'https://application.lxc.pic.brasserie-du-slalom.fr/'
 
 BASE_URL = 'http://localhost:4200/'
 # Application definition
@@ -128,6 +131,16 @@ if 'test' in sys.argv or 'pytest' in sys.argv[0] or os.getenv('ENVIRONMENT') == 
         'USER': 'django',
         'PASSWORD': 'django',
         'HOST': 'localhost',
+        'PORT': '',
+    }
+
+if os.getenv('ENVIRONMENT') == 'PROD':
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'django',
+        'USER': 'django',
+        'PASSWORD': 'django',
+        'HOST': '192.168.101.10',
         'PORT': '',
     }
 
