@@ -1,0 +1,56 @@
+{% load extra_tags inlinecss %}
+
+{% inlinecss 'notification_mail.css' %}
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <h1>Notifications Open-CMMS</h1>
+        <h2>Bonjour, veuillez prendre connaisance des taĉhes ci-dessous qui vous sont assignées</h2>
+        {% def_element tasks|extract:0 as late_tasks%}
+        {% def_element tasks|extract:1 as today_tasks%}
+        {% def_element tasks|extract:2 as coming_tasks%}
+        <div class="tasks" id="late_tasks">
+            <h3>Tâches en retard</h3>
+            <ul>
+            {% for task in late_tasks %}
+                <li>
+                    <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a> 
+                    {% if task.descritpion %}
+                        : {{task.descritpion}}
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="tasks" id="today_tasks">
+            <h3>Tâches à réaliser aujourd'hui</h3>
+            <ul>
+            {% for task in today_tasks %}
+                <li>
+                    <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a>  
+                    {% if task.descritpion %}
+                        : {{task.descritpion}}
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="tasks" id="coming_tasks">
+            <h3>Tâches à réaliser dans la semaine</h3>
+            <ul>
+            {% for task in coming_tasks %}
+                <li>
+                    <a href="{{base_url}}tasks/{{task.id}}">{{task.name}}</a>  
+                    {% if task.descritpion %}
+                        : {{task.descritpion}}
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </body>
+</html>
+{% endinlinecss %}

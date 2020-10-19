@@ -1,0 +1,32 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+django = "==3.1.1"
+djangorestframework = "==3.11"
+gunicorn = "*"
+django-rest-swagger = "*"
+psycopg2-binary = "*"
+python-ldap = "*"
+django-auth-ldap = "*"
+djangorestframework-jwt = "*"
+drf_yasg = "*"
+apscheduler = "*"
+django_inlinecss = "*"
+
+
+[dev-packages]
+pytest-django = "*"
+coverage = "*"
+flake8 = "*"
+flake8-docstrings = "*"
+flake8-django = "*"
+pep8-naming = "*"
+black = "==18.6b4"
+isort = "*"
+yapf = "*"
+
+[requires]
+python_version = "3.7"
