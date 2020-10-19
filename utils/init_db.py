@@ -1,13 +1,21 @@
 """This script initiate the database with some default values."""
 from django.contrib.contenttypes.models import ContentType
-from maintenancemanagement.models import FieldGroup, Task
+from maintenancemanagement.models import Field, FieldGroup, Task
 from usersmanagement.models import Permission, Team, TeamType, UserProfile
 
 
-def main():
+def initialize_db():
     """Initiate the database."""
-    FieldGroup.objects.create(name="End Conditions", is_equipment=False)
-    FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
+    #Create the different type of Conditions
+    field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
+    Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
+
+    field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
+
+    Field.objects.create(name="Checkbox", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Description", field_group=field_gr_cri_fin)
+    Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
 
     # Creation of 3 TeamTypes
     admins = TeamType.objects.create(name="Administrators")

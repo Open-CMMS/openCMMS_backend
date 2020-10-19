@@ -376,7 +376,7 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
             if minutes != 0:
                 result += str(minutes) + 'm'
 
-            if result[-1] == ' ':
+            if result != "" and result[-1] == ' ':
                 result = result[:-1]
 
             return result
@@ -430,7 +430,7 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
             if minutes != 0:
                 result += str(minutes) + 'm'
 
-            if result[-1] == ' ':
+            if result != "" and result[-1] == ' ':
                 result = result[:-1]
             return result
         else:
@@ -497,7 +497,7 @@ class TaskListingSerializer(serializers.ModelSerializer):
             if minutes != 0:
                 result += str(minutes) + 'm'
 
-            if result[-1] == ' ':
+            if result != "" and result[-1] == ' ':
                 result = result[:-1]
 
             return result
