@@ -8,7 +8,6 @@ from drf_yasg.utils import swagger_auto_schema
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import (
-    EquipmentType,
     Field,
     FieldGroup,
     FieldObject,
@@ -208,7 +207,7 @@ class TaskDetail(APIView):
                     field_object, data=end_conditions[0], partial=True
                 )
                 if field_object_serializer.is_valid():
-                    fo = field_object_serializer.save()
+                    field_object_serializer.save()
 
             serializer = TaskSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():

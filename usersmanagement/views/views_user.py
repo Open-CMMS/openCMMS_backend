@@ -461,8 +461,8 @@ def init_database():
 
     # Creation of the 3 inital Teams
     Team.objects.create(name="Administrators 1", team_type=admins)
-    T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=mms)
-    T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=mts)
+    t_mm1 = Team.objects.create(name="Maintenance Manager 1", team_type=mms)
+    t_mt1 = Team.objects.create(name="Maintenance Team 1", team_type=mts)
 
     # Adding all permissions to admins
     permis = Permission.objects.all()
@@ -485,5 +485,5 @@ def init_database():
     mts.save()
 
     t_admin.save()
-    T_MM1.save()
-    T_MT1.save()
+    t_mm1.save()
+    t_mt1.save()

@@ -34,7 +34,7 @@ urlpatterns_task = [
     path('tasks/requirements', views_task.TaskRequirements.as_view(), name='task_requirements')
 ]
 
-urlpatterns_fieldValue = [
+urlpatterns_field_value = [
     path('fieldvalues_for_field/<int:pk>/', views_fieldValue.FieldValueForField.as_view(), name='fieldvalues-on-all'),
 ]
 
@@ -47,7 +47,7 @@ urlpatterns_file = [
     path('files/<int:pk>/', views_file.FileDetail.as_view(), name='file-detail')
 ]
 
-urlpatterns_fieldObject = [
+urlpatterns_field_object = [
     path('fieldobjects/', views_fieldObject.FieldObjectList.as_view(), name='fieldObject-list'),
     path('fieldobjects/<int:pk>/', views_fieldObject.FieldObjectDetail.as_view(), name='fieldObject-detail')
 ]
@@ -55,7 +55,7 @@ urlpatterns_fieldObject = [
 urlpatterns += urlpatterns_equipment
 urlpatterns += urlpatterns_equipmenttype
 urlpatterns += urlpatterns_task
-urlpatterns += urlpatterns_fieldValue
+urlpatterns += urlpatterns_field_value
 urlpatterns += urlpatterns_field
 urlpatterns += urlpatterns_file
-urlpatterns += urlpatterns_fieldObject
+urlpatterns += urlpatterns_field_object

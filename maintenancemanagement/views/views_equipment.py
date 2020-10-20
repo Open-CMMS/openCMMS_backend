@@ -189,31 +189,36 @@ class EquipmentDetail(APIView):
             equipment_serializer = EquipmentUpdateSerializer(equipment, data=request.data, partial=True)
             if equipment_serializer.is_valid():
                 if request.data.get('equipment_type', None) is not None:
-                    if equipment.equipment_type.pk == request.data.get('equipment_type'):
-                        error = self._validate_modification_fields(request, field_objects)
-                        if error:
-                            return error
-                        else:
-                            equipment = equipment_serializer.save()
-                            self._save_modification_fields(field_objects, equipment)
-                            equipment_details_serializer = EquipmentDetailsSerializer(equipment)
-                            return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
-                    else:
-                        error = self._validate_fields(request, field_objects)
-                        if error:
-                            return error
-                        else:
-                            content_type = ContentType.objects.get_for_model(equipment)
-                            FieldObject.objects.filter(object_id=equipment.pk, content_type=content_type).delete()
-                            equipment = equipment_serializer.save()
-                            self._save_fields(field_objects, equipment)
-                            equipment_details_serializer = EquipmentDetailsSerializer(equipment)
-                            return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
+                    return self._update_equipment_with_equipment_type(
+                        request, equipment, equipment_serializer, field_objects
+                    )
                 else:
                     equipment_serializer.save()
                     return Response(equipment_serializer.data, status=status.HTTP_200_OK)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def _update_equipment_with_equipment_type(self, request, equipment, equipment_serializer, field_objects):
+        if equipment.equipment_type.pk == request.data.get('equipment_type'):
+            error = self._validate_modification_fields(request, field_objects)
+            if error:
+                return error
+            else:
+                equipment = equipment_serializer.save()
+                self._save_modification_fields(field_objects, equipment)
+                equipment_details_serializer = EquipmentDetailsSerializer(equipment)
+                return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            error = self._validate_fields(request, field_objects)
+            if error:
+                return error
+            else:
+                content_type = ContentType.objects.get_for_model(equipment)
+                FieldObject.objects.filter(object_id=equipment.pk, content_type=content_type).delete()
+                equipment = equipment_serializer.save()
+                self._save_fields(field_objects, equipment)
+                equipment_details_serializer = EquipmentDetailsSerializer(equipment)
+                return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
 
     def _get_expected_fields(self, request):
         expected_fields_groups = EquipmentType.objects.get(id=request.data.get('equipment_type')).fields_groups.all()

@@ -6,7 +6,7 @@ from usersmanagement.models import Permission, Team, TeamType, UserProfile
 
 def initialize_db():
     """Initiate the database."""
-    #Create the different type of Conditions
+    # Create the different type of Conditions
     field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
     Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
 
