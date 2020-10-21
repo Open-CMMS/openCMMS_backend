@@ -288,11 +288,12 @@ if 'pytest' in sys.argv:
 ################################################################
 ############################# EMAIL ############################
 ################################################################
-if DEBUG is True:
+if os.getenv('ENVIRONMENT') == 'PROD' or os.getenv('ENVIRONMENT') == 'DEV' :
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = '/tmp/app-messages'
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
