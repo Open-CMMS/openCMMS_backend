@@ -29,11 +29,10 @@ from usersmanagement.models import Team, TeamType, UserProfile
 User = settings.AUTH_USER_MODEL
 
 
-@pytest.fixture(scope="session", autouse=True)
-def init_db(django_db_setup, django_db_blocker):
+@pytest.fixture(scope="class", autouse=True)
+def init_database(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
-        equip_type = EquipmentType.objects.get(name='EquipmentTypeTest')
-        Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)
+        init_db()
 
 
 class TaskTests(TestCase):

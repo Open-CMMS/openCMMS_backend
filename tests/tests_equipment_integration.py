@@ -1,19 +1,13 @@
 import pytest
+from init_db_tests import init_db
 
 from django.contrib.auth.models import Permission
 from django.test import TestCase, client
 from maintenancemanagement.models import (
-    Equipment,
-    EquipmentType,
-    Field,
-    FieldGroup,
-    FieldValue,
-    File,
-    Task,
+    Equipment, EquipmentType, Field, FieldGroup, FieldValue, File, Task,
 )
 from maintenancemanagement.serializers import (
-    EquipmentDetailsSerializer,
-    EquipmentSerializer,
+    EquipmentDetailsSerializer, EquipmentSerializer,
 )
 from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
@@ -23,36 +17,10 @@ from usersmanagement.models import UserProfile
 User = settings.AUTH_USER_MODEL
 
 
-@pytest.fixture(scope="session", autouse=True)
-def init_db(django_db_setup, django_db_blocker):
+@pytest.fixture(scope="class", autouse=True)
+def init_database(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
-        field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
-
-        Field.objects.create(name="Date", field_group=field_gr_cri_dec)
-        Field.objects.create(name="Integer", field_group=field_gr_cri_dec)
-        Field.objects.create(name="Float", field_group=field_gr_cri_dec)
-        Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
-        field_recurrence_dec = Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
-
-        FieldValue.objects.create(value="Day", field=field_recurrence_dec)
-        FieldValue.objects.create(value="Week", field=field_recurrence_dec)
-        FieldValue.objects.create(value="Month", field=field_recurrence_dec)
-        FieldValue.objects.create(value="Year", field=field_recurrence_dec)
-
-        field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
-
-        Field.objects.create(name="Checkbox", field_group=field_gr_cri_fin)
-        Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
-        Field.objects.create(name="Description", field_group=field_gr_cri_fin)
-        Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
-
-        field_gr_test = FieldGroup.objects.create(name='FieldGroupTest')
-        Field.objects.create(name="FieldWithoutValueTest", field_group=field_gr_test)
-        field_with_value = Field.objects.create(name="FieldWithValueTest", field_group=field_gr_test)
-        FieldValue.objects.create(value="FieldValueTest", field=field_with_value)
-        equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
-        equip_type.fields_groups.add(field_gr_test)
-
+        init_db()
 
 class EquipmentTests(TestCase):
 
@@ -529,7 +497,7 @@ class EquipmentTests(TestCase):
 
     def test_US20_I1_equipmentlist_post_without_value_with_perm(self):
         """
-            Test if a user with perm can add an equipment with some bad fields 
+            Test if a user with perm can add an equipment with some bad fields
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm_file(user)
@@ -562,7 +530,7 @@ class EquipmentTests(TestCase):
 
     def test_US20_I1_equipmentlist_post_with_bad_field_value_with_perm(self):
         """
-            Test if a user with perm can add an equipment with some bad fields 
+            Test if a user with perm can add an equipment with some bad fields
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm_file(user)
