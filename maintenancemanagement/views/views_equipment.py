@@ -66,7 +66,7 @@ class EquipmentList(APIView):
         operation_description='Add an Equipment into the database.',
         query_serializer=EquipmentCreateSerializer(many=False),
         responses={
-            201: EquipmentSerializer(many=False),
+            201: EquipmentDetailsSerializer(many=False),
             400: "Bad request",
             401: "Unhauthorized",
         },
