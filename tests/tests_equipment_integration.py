@@ -35,14 +35,14 @@ class EquipmentTests(TestCase):
         v = EquipmentType.objects.create(name="Voiture")
         Equipment.objects.create(name="Peugeot Partner", equipment_type=v)
 
-        field_group = FieldGroup.objects.create(name="Embouteilleuse", is_equipment=True)
-        embouteilleuse = EquipmentType.objects.create(name="Embouteilleuse")
+        field_group = FieldGroup.objects.create(name="embouteilleuse", is_equipment=True)
+        embouteilleuse = EquipmentType.objects.create(name="embouteilleuse")
         embouteilleuse.fields_groups.set([field_group])
         Field.objects.create(name="Capacité", field_group=field_group)
         Field.objects.create(name="Pression Normale", field_group=field_group)
-        marque = Field.objects.create(name="Marque", field_group=field_group)
+        marque = Field.objects.create(name="marque", field_group=field_group)
         FieldValue.objects.create(value="Bosch", field=marque)
-        FieldValue.objects.create(value="GAI", field=marque)
+        FieldValue.objects.create(value="Gai", field=marque)
 
         field_group_temp = FieldGroup.objects.create(name="GroupeTest", is_equipment=False)
         Field.objects.create(name="Toto", field_group=field_group_temp)
@@ -448,7 +448,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "field":
                     [
                         {
@@ -459,8 +459,8 @@ class EquipmentTests(TestCase):
                             "field": Field.objects.get(name="Pression Normale").id,
                             "value": "5 bars"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai"
                         }
                     ]
             },
@@ -482,7 +482,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "field":
                     [
                         {
@@ -490,8 +490,8 @@ class EquipmentTests(TestCase):
                             "value": "60000",
                             "description": "Nb de bouteilles par h"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai"
                         }
                     ]
             },
@@ -513,7 +513,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "fields":
                     [
                         {
@@ -523,8 +523,8 @@ class EquipmentTests(TestCase):
                         }, {
                             "field": Field.objects.get(name="Pression Normale").id
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai"
                         }
                     ]
             },
@@ -546,7 +546,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "fields":
                     [
                         {
@@ -557,7 +557,7 @@ class EquipmentTests(TestCase):
                             "field": Field.objects.get(name="Pression Normale").id,
                             "value": "5 bars"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
+                            "field": Field.objects.get(name="marque").id,
                             "value": "WRONG_FIELD_VALUE"
                         }
                     ]
@@ -580,7 +580,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "field":
                     [
                         {
@@ -593,9 +593,9 @@ class EquipmentTests(TestCase):
                             "value": "5 bars",
                             "name": "Pression Normale"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI",
-                            "name": "Marque"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai",
+                            "name": "marque"
                         }, {
                             "field": Field.objects.get(name="Toto").id,
                             "value": "EXTRA_FIELD",
