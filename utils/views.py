@@ -78,4 +78,68 @@ class PluginList(APIView):
 
 
 class PluginDetail(APIView):
-    pass
+    """Retrieve, update or delete an equipment."""
+
+    @swagger_auto_schema(
+        operation_description='Send the plugin corresponding to the given key.',
+        query_serializer=None,
+        reponses={
+            200: PluginDetailsSerializer(many=False),
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
+    def get(self, request, pk):
+        """Send the plugin corresponding to the given key."""
+        try:
+            equipment = Plugin.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if request.user.has_perm("utils.view_plugin"):
+            serializer = PluginDetailsSerializer(equipment)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    @swagger_auto_schema(
+        operation_description='Delete the Plugin corresponding to the given key.',
+        query_serializer=None,
+        responses={
+            204: "No content",
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
+    def delete(self, request, pk):
+        """Delete the Plugin corresponding to the given key."""
+        try:
+            plugin = Plugin.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if request.user.has_perm("utils.delete_plugin"):
+            plugin.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    @swagger_auto_schema(
+        operation_description='Update the Plugin corresponding to the given key.',
+        query_serializer=PluginSerializer(many=False),
+        responses={
+            200: PluginDetailsSerializer(many=False),
+            400: "Bad request",
+            401: "Unhauthorized",
+            404: "Not found",
+        },
+    )
+    def put(self, request, pk):
+        """Update the Plugin corresponding to the given key."""
+        try:
+            plugin = Plugin.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if request.user.has_perm("utils.change_plugin"):
+            serializer = PluginDetailsSerializer(plugin, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
