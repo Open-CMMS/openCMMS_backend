@@ -1,6 +1,11 @@
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
+from maintenancemanagement.models import Equipment, FieldObject
+from maintenancemanagement.serializers import (
+    EquipmentSerializer,
+    FieldObjectSerializer,
+)
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -58,17 +63,17 @@ class PluginList(APIView):
     def post(self, request):
         """Add a Plugin into the database."""
         if request.user.has_perm('utils.add_plugin'):
-            # try:
-            #     field = FieldObject.objects.get(id=request.data.pop("field_object"))
-            #     equipment = Equipment.objects.get(id=request.data.pop("equipment"))
+            try:
+                FieldObject.objects.get(id=request.data.get("field_object"))
+                Equipment.objects.get(id=request.data.get("equipment"))
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             plugin_serializer = PluginCreateSerializer(data=request.data)
             if plugin_serializer.is_valid():
                 plugin = plugin_serializer.save()
                 plugin_details_serializer = PluginDetailsSerializer(plugin)
                 return Response(plugin_details_serializer.data, status=status.HTTP_201_CREATED)
             return Response(plugin_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # except ObjectDoesNotExist:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 

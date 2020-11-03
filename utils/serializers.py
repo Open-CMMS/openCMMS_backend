@@ -1,4 +1,5 @@
 """Serializers."""
+from maintenancemanagement.models import Equipment, FieldObject
 from maintenancemanagement.serializers import (
     EquipmentSerializer,
     FieldObjectSerializer,
@@ -12,36 +13,33 @@ class PluginSerializer(serializers.ModelSerializer):
     """Basic plugin serializer."""
 
     equipment = EquipmentSerializer()
-    field = FieldObjectSerializer()
+    field_object = FieldObjectSerializer()
 
     class Meta:
         """This class contains the serializer metadata."""
 
         model = Plugin
-        fields = ['file_name', 'ip_address', 'equipment', 'field', 'recurrence', 'activated']
+        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'activated']
 
 
 class PluginCreateSerializer(serializers.ModelSerializer):
     """Plugin create Serialize."""
 
-    equipment = EquipmentSerializer()
-    field = FieldObjectSerializer()
-
     class Meta:
         """This class contains the serializer metadata."""
 
         model = Plugin
-        fields = ['file_name', 'ip_address', 'equipment', 'field', 'recurrence', 'activated']
+        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'activated']
 
 
 class PluginDetailsSerializer(serializers.ModelSerializer):
     """Plugin details Serialize."""
 
     equipment = EquipmentSerializer()
-    field = FieldObjectSerializer()
+    field_object = FieldObjectSerializer()
 
     class Meta:
         """This class contains the serializer metadata."""
 
         model = Plugin
-        fields = ['file_name', 'ip_address', 'equipment', 'field', 'recurrence', 'activated']
+        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'activated']

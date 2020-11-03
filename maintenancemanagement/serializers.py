@@ -104,16 +104,6 @@ class FieldSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'field_group']
 
 
-class FieldObjectSerializer(serializers.ModelSerializer):
-    """Basic field object serializer."""
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
-
-
 class DescribedObjectRelatedField(serializers.RelatedField):
     """A custom field to use for the `described_object` \
         generic relationship."""
@@ -129,6 +119,18 @@ class DescribedObjectRelatedField(serializers.RelatedField):
     def to_internal_value(self, data):
         """Redefine the to_internal_value method."""
         return data
+
+
+class FieldObjectSerializer(serializers.ModelSerializer):
+    """Basic field object serializer."""
+
+    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
 
 
 #############################################################################

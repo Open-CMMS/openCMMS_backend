@@ -18,7 +18,7 @@ class Plugin(models.Model):
         blank=False,
         null=False
     )
-    field = models.ForeignKey(
+    field_object = models.ForeignKey(
         FieldObject,
         verbose_name="Linked field",
         help_text="The field for which you wish to update value",
