@@ -29,8 +29,8 @@ class Plugin(models.Model):
         null=False
     )
     recurrence = models.CharField(max_length=100, blank=False, null=False)
-    activated = models.BooleanField(default=True, blank=False, null=False)
+    is_activated = models.BooleanField(default=True, blank=False, null=False)
 
     def __str__(self):
         """Define string representation of a plugin."""
-        return str(self.equipment) + ' / ' + str(self.field)
+        return str(self.equipment) + ' / ' + str(self.field_object)
