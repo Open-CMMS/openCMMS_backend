@@ -2,14 +2,18 @@ import pytest
 from init_db_tests import init_db
 
 from django.contrib.auth.models import Permission
-from django.test import TestCase, client
+from django.test import TestCase
 from maintenancemanagement.models import (
-    Equipment, EquipmentType, Field, FieldGroup, FieldValue, File, Task,
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldGroup,
+    FieldValue,
 )
 from maintenancemanagement.serializers import (
-    EquipmentDetailsSerializer, EquipmentSerializer,
+    EquipmentDetailsSerializer,
+    EquipmentSerializer,
 )
-from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
@@ -17,12 +21,12 @@ from usersmanagement.models import UserProfile
 User = settings.AUTH_USER_MODEL
 
 
-@pytest.fixture(scope="class", autouse=True)
-def init_database(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        init_db()
-
 class EquipmentTests(TestCase):
+
+    @pytest.fixture(scope="class", autouse=True)
+    def init_database(django_db_setup, django_db_blocker):
+        with django_db_blocker.unblock():
+            init_db()
 
     def setUp(self):
         """

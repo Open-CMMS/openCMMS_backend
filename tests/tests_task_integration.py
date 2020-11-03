@@ -1,11 +1,11 @@
 from datetime import timedelta
 
 import pytest
+from init_db_tests import init_db
 
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    EquipmentType,
     Field,
     FieldGroup,
     FieldObject,
@@ -14,10 +14,8 @@ from maintenancemanagement.models import (
     Task,
 )
 from maintenancemanagement.serializers import (
-    EquipmentSerializer,
     EquipmentTypeSerializer,
     FileSerializer,
-    TaskDetailsSerializer,
     TaskListingSerializer,
     TaskSerializer,
     TeamSerializer,
@@ -29,13 +27,12 @@ from usersmanagement.models import Team, TeamType, UserProfile
 User = settings.AUTH_USER_MODEL
 
 
-@pytest.fixture(scope="class", autouse=True)
-def init_database(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        init_db()
-
-
 class TaskTests(TestCase):
+
+    @pytest.fixture(scope="class", autouse=True)
+    def init_database(django_db_setup, django_db_blocker):
+        with django_db_blocker.unblock():
+            init_db()
 
     def set_up_perm(self):
         """
