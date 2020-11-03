@@ -19,7 +19,7 @@ class PluginSerializer(serializers.ModelSerializer):
         """This class contains the serializer metadata."""
 
         model = Plugin
-        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'activated']
+        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
 
 
 class PluginCreateSerializer(serializers.ModelSerializer):
@@ -29,7 +29,7 @@ class PluginCreateSerializer(serializers.ModelSerializer):
         """This class contains the serializer metadata."""
 
         model = Plugin
-        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'activated']
+        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
 
 
 class PluginDetailsSerializer(serializers.ModelSerializer):
@@ -42,4 +42,4 @@ class PluginDetailsSerializer(serializers.ModelSerializer):
         """This class contains the serializer metadata."""
 
         model = Plugin
-        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'activated']
+        fields = ['id', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
