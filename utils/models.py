@@ -6,6 +6,7 @@ from maintenancemanagement.models import Equipment, FieldObject
 class Plugin(models.Model):
     """Define a plugin."""
 
+    name = models.CharField(max_length=100, default="", blank=False, null=False)
     file_name = models.CharField(max_length=100, blank=False, null=False)
     ip_address = models.CharField(max_length=100, blank=False, null=False)
     equipment = models.ForeignKey(
