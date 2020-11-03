@@ -66,6 +66,7 @@ class PluginTest(TestCase):
         response = client.post(
             '/api/plugins/', {
                 'file_name': 'python_file.py',
+                'name': 'plugin de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
@@ -88,6 +89,7 @@ class PluginTest(TestCase):
         response = client.post(
             '/api/plugins/', {
                 'file_name': 'script.py',
+                'name': 'plugin de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
@@ -117,8 +119,9 @@ class PluginTest(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.post(
-            'api/plugins/', {
+            '/api/plugins/', {
                 'file_name': 'script.py',
+                'name': 'plugin de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
@@ -126,6 +129,10 @@ class PluginTest(TestCase):
                 'fake field': 'useless data'
             }
         )
+        self.assertEqual(response.status_code, 201)
+        plugin = Plugin.objects.get(file_name='script.py')
+        serializer = PluginSerializer(plugin)
+        self.assertEqual(response.data, serializer.data)
 
     def test_US23_I3_get_plugin_detail_get_with_perm(self):
         """
