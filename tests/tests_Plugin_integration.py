@@ -31,6 +31,20 @@ class PluginTest(TestCase):
         perm_add = Permission.objects.get(codename="add_plugin")
         user.user_permissions.add(perm_add)
 
+    def add_change_perm(self, user):
+        """
+            Add change permission to user
+        """
+        perm_change = Permission.objects.get(codename="change_plugin")
+        user.user_permissions.set([perm_change])
+
+    def add_delete_perm(self, user):
+        """
+            Add delete permission to user
+        """
+        perm_delete = Permission.objects.get(codename="delete_plugin")
+        user.user_permissions.set([perm_delete])
+
     def test_US23_I1_get_pluginlist_get_with_perm(self):
         """
             Test if a user with perm receive the plugins' list
@@ -157,4 +171,72 @@ class PluginTest(TestCase):
         client.force_authenticate(user=user)
         plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
         response = client.get(f'/api/plugins/{plugin.id}/')
+        self.assertEqual(response.status_code, 401)
+
+    def test_US23_I4_put_plugin_detail_put_with_perm(self):
+        """
+            Test if a user with perm can update a plugin.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        response = client.put(
+            f'/api/plugins/{plugin.id}/', {
+                'file_name': 'fichier_test_plugin.py',
+                'name': 'plugin mis à jour',
+                'recurrence': '5d',
+                'ip_address': '192.168.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            }
+        )
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        serializer = PluginSerializer(plugin)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_US23_I4_put_plugin_detail_put_with_perm_and_missing_parms(self):
+        """
+            Test if a user with perm can update a plugin.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        response = client.put(
+            f'/api/plugins/{plugin.id}/', {
+                'name': 'plugin mis à jour 2',
+                'ip_address': '192.168.1.2',
+            }
+        )
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        serializer = PluginSerializer(plugin)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_US23_I5_delete_plugin_detail_delete_with_perm(self):
+        """
+            Test if a user with perm can delete a plugin
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_delete_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        response = client.delete(f'/api/plugins/{plugin.id}/')
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Plugin.objects.filter(id=plugin.id).exists())
+
+    def test_US23_I5_delete_plugin_detail_delete_without_perm(self):
+        """
+            Test if a user without perm can't delete a plugin
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        client = APIClient()
+        client.force_authenticate(user=user)
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        response = client.delete(f'/api/plugins/{plugin.id}/')
         self.assertEqual(response.status_code, 401)
