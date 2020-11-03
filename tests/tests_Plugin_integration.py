@@ -55,7 +55,7 @@ class PluginTest(TestCase):
         response = c.get("/api/plugins/")
         self.assertEqual(response.status_code, 401)
 
-    def test_US23_I2_get_pluginlist_post_with_perm(self):
+    def test_US23_I2_post_pluginlist_post_with_perm(self):
         """
             Test if a user with perm can add a plugin
         """
@@ -73,9 +73,81 @@ class PluginTest(TestCase):
             },
             format='json'
         )
+        plugin = Plugin.objects.get(file_name='python_file.py')
+        serializer = PluginSerializer(plugin)
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data, serializer.data)
 
-    def test_US23_I2_get_pluginlist_post_without_perm(self):
+    def test_US23_I2_post_pluginlist_post_without_perm(self):
         """
             Test if a user without perm can't add a plugin
         """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(
+            '/api/plugins/', {
+                'file_name': 'script.py',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_US23_I2_post_pluginlist_post_with_perm_and_missing_parms(self):
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(
+            '/api/plugins/', {
+                'file_name': 'script.py',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_US23_I2_post_pluginlist_post_with_perm_and_too_much_parms(self):
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(
+            'api/plugins/', {
+                'file_name': 'script.py',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'fake field': 'useless data'
+            }
+        )
+
+    def test_US23_I3_get_plugin_detail_get_with_perm(self):
+        """
+            Test if a user with perm can get a plugin.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_view_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        serializer = PluginSerializer(plugin)
+        response = client.get(f'/api/plugins/{plugin.id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_US23_I3_get_plugin_detail_get_without_perm(self):
+        """
+            Test if a user with perm can get a plugin.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        client = APIClient()
+        client.force_authenticate(user=user)
+        plugin = Plugin.objects.get(file_name="fichier_test_plugin.py")
+        response = client.get(f'/api/plugins/{plugin.id}/')
+        self.assertEqual(response.status_code, 401)
