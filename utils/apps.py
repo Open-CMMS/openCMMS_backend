@@ -8,4 +8,5 @@ class UtilsConfig(AppConfig):
         from utils.notifications import start
         start()
         from utils.plugin import main
-        main()
+
+        # main()
