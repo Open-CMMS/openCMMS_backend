@@ -1,5 +1,4 @@
 """Serializers."""
-from maintenancemanagement.models import Equipment, FieldObject
 from maintenancemanagement.serializers import (
     EquipmentSerializer,
     FieldObjectSerializer,

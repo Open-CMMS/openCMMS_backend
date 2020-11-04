@@ -1,3 +1,4 @@
+"""This files routes our utilities."""
 from django.urls import path
 from utils.views import PluginDetail, PluginList
 

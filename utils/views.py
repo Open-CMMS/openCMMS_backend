@@ -1,11 +1,8 @@
+"""This is our file to provide our endpoints for our utilities."""
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import Equipment, FieldObject
-from maintenancemanagement.serializers import (
-    EquipmentSerializer,
-    FieldObjectSerializer,
-)
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -31,7 +28,7 @@ class PluginList(APIView):
     - create a new plugin, send HTTP 201. \
         If the request is not valid, send HTTP 400.
     - If the user doesn't have the permissions, it will send HTTP 401.
-    - The request must contain the python file name of the plugin, the targeted \
+    - The request must contain the python file name of the plugin, the targeted
         IP address, the reccurence and the concerned equipment and field.
     """
 
