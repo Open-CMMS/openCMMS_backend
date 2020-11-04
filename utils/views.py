@@ -6,6 +6,7 @@ from maintenancemanagement.models import Equipment, FieldObject
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from utils.data_provider import add_job, scheduler
 from utils.models import DataProvider
 from utils.serializers import (
     DataProviderCreateSerializer,
@@ -68,6 +69,9 @@ class DataProviderList(APIView):
             dataprovider_serializer = DataProviderCreateSerializer(data=request.data)
             if dataprovider_serializer.is_valid():
                 dataprovider = dataprovider_serializer.save()
+                add_job(dataprovider)
+                if not dataprovider.is_activated:
+                    scheduler.pause_job(dataprovider.job_id)
                 dataprovider_details_serializer = DataProviderDetailsSerializer(dataprovider)
                 return Response(dataprovider_details_serializer.data, status=status.HTTP_201_CREATED)
             return Response(dataprovider_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -137,6 +141,10 @@ class DataProviderDetail(APIView):
             serializer = DataProviderDetailsSerializer(dataprovider, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
+                if dataprovider.is_activated:
+                    scheduler.resume_job(dataprovider.job_id)
+                else:
+                    scheduler.pause_job(dataprovider.job_id)
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

@@ -179,9 +179,21 @@ class DataProviderTest(TestCase):
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_change_perm(user)
+        self.add_add_perm(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        dataprovider = DataProvider.objects.get(file_name="fichier_test_dataprovider.py")
+        client.post(
+            '/api/dataproviders/', {
+                'file_name': 'python_file.py',
+                'name': 'dataprovider de test pour put',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            },
+            format='json'
+        )
+        dataprovider = DataProvider.objects.get(name='dataprovider de test pour put')
         response = client.put(
             f'/api/dataproviders/{dataprovider.id}/', {
                 'file_name': 'fichier_test_dataprovider.py',
@@ -192,7 +204,7 @@ class DataProviderTest(TestCase):
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
             }
         )
-        dataprovider = DataProvider.objects.get(file_name="fichier_test_dataprovider.py")
+        dataprovider = DataProvider.objects.get(name='dataprovider mis à jour')
         serializer = DataProviderSerializer(dataprovider)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, serializer.data)
@@ -203,16 +215,28 @@ class DataProviderTest(TestCase):
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_change_perm(user)
+        self.add_add_perm(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        dataprovider = DataProvider.objects.get(file_name="fichier_test_dataprovider.py")
+        client.post(
+            '/api/dataproviders/', {
+                'file_name': 'python_file.py',
+                'name': 'dataprovider de test pour put',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            },
+            format='json'
+        )
+        dataprovider = DataProvider.objects.get(name='dataprovider de test pour put')
         response = client.put(
             f'/api/dataproviders/{dataprovider.id}/', {
                 'name': 'dataprovider mis à jour 2',
                 'ip_address': '192.168.1.2',
             }
         )
-        dataprovider = DataProvider.objects.get(file_name="fichier_test_dataprovider.py")
+        dataprovider = DataProvider.objects.get(name='dataprovider mis à jour 2')
         serializer = DataProviderSerializer(dataprovider)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, serializer.data)
