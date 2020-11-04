@@ -12,6 +12,7 @@ from utils.serializers import (
     DataProviderCreateSerializer,
     DataProviderDetailsSerializer,
     DataProviderSerializer,
+    DataProviderUpdateSerializer,
 )
 
 
@@ -138,13 +139,14 @@ class DataProviderDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("utils.change_dataprovider"):
-            serializer = DataProviderDetailsSerializer(dataprovider, data=request.data, partial=True)
+            serializer = DataProviderUpdateSerializer(dataprovider, data=request.data, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                dataprovider = serializer.save()
                 if dataprovider.is_activated:
                     scheduler.resume_job(dataprovider.job_id)
                 else:
                     scheduler.pause_job(dataprovider.job_id)
-                return Response(serializer.data)
+                dataprovider_details_serializer = DataProviderDetailsSerializer(dataprovider)
+                return Response(dataprovider_details_serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
