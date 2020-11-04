@@ -232,7 +232,7 @@ class TaskDetail(APIView):
         task.save()
 
     def _parse_time(self, time_str):
-        regex = re.compile(r'((?P<days>\d+?)d )?((?P<hours>\d+?)h )?((?P<minutes>\d+?)m)?')
+        regex = re.compile(r'((?P<days>\d+?)d ?)?((?P<hours>\d+?)h ?)?((?P<minutes>\d+?)m ?)?')
         parts = regex.match(time_str)
         if not parts:
             return

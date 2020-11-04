@@ -1,21 +1,19 @@
 import pytest
+from init_db_tests import init_db
 
 from django.contrib.auth.models import Permission
-from django.test import TestCase, client
+from django.test import TestCase
 from maintenancemanagement.models import (
     Equipment,
     EquipmentType,
     Field,
     FieldGroup,
     FieldValue,
-    File,
-    Task,
 )
 from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
     EquipmentSerializer,
 )
-from maintenancemanagement.views.views_task import init_database
 from openCMMS import settings
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
@@ -23,38 +21,12 @@ from usersmanagement.models import UserProfile
 User = settings.AUTH_USER_MODEL
 
 
-@pytest.fixture(scope="session", autouse=True)
-def init_db(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
-
-        Field.objects.create(name="Date", field_group=field_gr_cri_dec)
-        Field.objects.create(name="Integer", field_group=field_gr_cri_dec)
-        Field.objects.create(name="Float", field_group=field_gr_cri_dec)
-        Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
-        field_recurrence_dec = Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
-
-        FieldValue.objects.create(value="Day", field=field_recurrence_dec)
-        FieldValue.objects.create(value="Week", field=field_recurrence_dec)
-        FieldValue.objects.create(value="Month", field=field_recurrence_dec)
-        FieldValue.objects.create(value="Year", field=field_recurrence_dec)
-
-        field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
-
-        Field.objects.create(name="Checkbox", field_group=field_gr_cri_fin)
-        Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
-        Field.objects.create(name="Description", field_group=field_gr_cri_fin)
-        Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
-
-        field_gr_test = FieldGroup.objects.create(name='FieldGroupTest')
-        Field.objects.create(name="FieldWithoutValueTest", field_group=field_gr_test)
-        field_with_value = Field.objects.create(name="FieldWithValueTest", field_group=field_gr_test)
-        FieldValue.objects.create(value="FieldValueTest", field=field_with_value)
-        equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
-        equip_type.fields_groups.add(field_gr_test)
-
-
 class EquipmentTests(TestCase):
+
+    @pytest.fixture(scope="class", autouse=True)
+    def init_database(django_db_setup, django_db_blocker):
+        with django_db_blocker.unblock():
+            init_db()
 
     def setUp(self):
         """
@@ -63,14 +35,14 @@ class EquipmentTests(TestCase):
         v = EquipmentType.objects.create(name="Voiture")
         Equipment.objects.create(name="Peugeot Partner", equipment_type=v)
 
-        field_group = FieldGroup.objects.create(name="Embouteilleuse", is_equipment=True)
-        embouteilleuse = EquipmentType.objects.create(name="Embouteilleuse")
+        field_group = FieldGroup.objects.create(name="embouteilleuse", is_equipment=True)
+        embouteilleuse = EquipmentType.objects.create(name="embouteilleuse")
         embouteilleuse.fields_groups.set([field_group])
         Field.objects.create(name="Capacité", field_group=field_group)
         Field.objects.create(name="Pression Normale", field_group=field_group)
-        marque = Field.objects.create(name="Marque", field_group=field_group)
+        marque = Field.objects.create(name="marque", field_group=field_group)
         FieldValue.objects.create(value="Bosch", field=marque)
-        FieldValue.objects.create(value="GAI", field=marque)
+        FieldValue.objects.create(value="Gai", field=marque)
 
         field_group_temp = FieldGroup.objects.create(name="GroupeTest", is_equipment=False)
         Field.objects.create(name="Toto", field_group=field_group_temp)
@@ -476,7 +448,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "field":
                     [
                         {
@@ -487,8 +459,8 @@ class EquipmentTests(TestCase):
                             "field": Field.objects.get(name="Pression Normale").id,
                             "value": "5 bars"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai"
                         }
                     ]
             },
@@ -510,7 +482,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "field":
                     [
                         {
@@ -518,8 +490,8 @@ class EquipmentTests(TestCase):
                             "value": "60000",
                             "description": "Nb de bouteilles par h"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai"
                         }
                     ]
             },
@@ -529,7 +501,7 @@ class EquipmentTests(TestCase):
 
     def test_US20_I1_equipmentlist_post_without_value_with_perm(self):
         """
-            Test if a user with perm can add an equipment with some bad fields 
+            Test if a user with perm can add an equipment with some bad fields
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm_file(user)
@@ -541,7 +513,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "fields":
                     [
                         {
@@ -551,8 +523,8 @@ class EquipmentTests(TestCase):
                         }, {
                             "field": Field.objects.get(name="Pression Normale").id
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai"
                         }
                     ]
             },
@@ -562,7 +534,7 @@ class EquipmentTests(TestCase):
 
     def test_US20_I1_equipmentlist_post_with_bad_field_value_with_perm(self):
         """
-            Test if a user with perm can add an equipment with some bad fields 
+            Test if a user with perm can add an equipment with some bad fields
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm_file(user)
@@ -574,7 +546,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "fields":
                     [
                         {
@@ -585,7 +557,7 @@ class EquipmentTests(TestCase):
                             "field": Field.objects.get(name="Pression Normale").id,
                             "value": "5 bars"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
+                            "field": Field.objects.get(name="marque").id,
                             "value": "WRONG_FIELD_VALUE"
                         }
                     ]
@@ -608,7 +580,7 @@ class EquipmentTests(TestCase):
                 "name":
                     "Embouteilleuse AXB1",
                 "equipment_type":
-                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                    EquipmentType.objects.get(name="embouteilleuse").id,
                 "field":
                     [
                         {
@@ -621,9 +593,9 @@ class EquipmentTests(TestCase):
                             "value": "5 bars",
                             "name": "Pression Normale"
                         }, {
-                            "field": Field.objects.get(name="Marque").id,
-                            "value": "GAI",
-                            "name": "Marque"
+                            "field": Field.objects.get(name="marque").id,
+                            "value": "Gai",
+                            "name": "marque"
                         }, {
                             "field": Field.objects.get(name="Toto").id,
                             "value": "EXTRA_FIELD",

@@ -1,0 +1,60 @@
+"""This is our script that execute all the get_data methods"""
+import importlib
+import re
+from datetime import timedelta
+
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from maintenancemanagement.models import FieldObject
+from openCMMS.settings import BASE_DIR
+from utils.models import DataProvider
+
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+
+def main():
+    dataproviders = DataProvider.objects.filter(is_activated=True)
+    for dataprovider in dataproviders:
+        add_job(dataprovider)
+
+
+def add_job(dataprovider):
+    recurrence = _parse_time(dataprovider.recurrence)
+    if recurrence:
+        hours = recurrence.seconds // 3600
+        minutes = (recurrence.seconds - hours * 3600) // 60
+        job = scheduler.add_job(
+            trigger_dataprovider,
+            'interval',
+            kwargs={"dataprovider": dataprovider},
+            days=recurrence.days,
+            hours=hours,
+            minutes=minutes
+        )
+        dataprovider.job_id = job.id
+        dataprovider.save()
+
+
+def trigger_dataprovider(dataprovider):
+    try:
+        module = importlib.import_module(f"utils.data_providers.{dataprovider.file_name[:-3]}")
+        field = FieldObject.objects.get(id=dataprovider.field_object)
+        field.value = module.get_data(dataprovider.ip_address)
+        field.save()
+    except:
+        pass
+        # A CODER
+
+
+def _parse_time(time_str):
+    regex = re.compile(r'((?P<days>\d+?)d ?)?((?P<hours>\d+?)h ?)?((?P<minutes>\d+?)m ?)?')
+    parts = regex.match(time_str)
+    if not parts:
+        return
+    parts = parts.groupdict()
+    time_params = {}
+    for (name, param) in parts.items():
+        if param:
+            time_params[name] = int(param)
+    return timedelta(**time_params)
