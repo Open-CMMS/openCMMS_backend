@@ -1,12 +1,12 @@
 """This files routes our utilities."""
 from django.urls import path
-from utils.views import PluginDetail, PluginList
+from utils.views import DataProviderDetail, DataProviderList
 
 urlpatterns = []
 
-urlpatterns_plugin = [
-    path('plugins/', PluginList.as_view(), name='plugin-list'),
-    path('plugins/<int:pk>/', PluginDetail.as_view(), name='plugin-detail'),
+urlpatterns_dataprovider = [
+    path('dataproviders/', DataProviderList.as_view(), name='dataprovider-list'),
+    path('dataproviders/<int:pk>/', DataProviderDetail.as_view(), name='dataprovider-detail'),
 ]
 
-urlpatterns += urlpatterns_plugin
+urlpatterns += urlpatterns_dataprovider

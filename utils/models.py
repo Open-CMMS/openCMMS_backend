@@ -3,8 +3,8 @@ from django.db import models
 from maintenancemanagement.models import Equipment, FieldObject
 
 
-class Plugin(models.Model):
-    """Define a plugin."""
+class DataProvider(models.Model):
+    """Define a dataprovider."""
 
     name = models.CharField(max_length=100, default="", blank=False, null=False)
     file_name = models.CharField(max_length=100, blank=False, null=False)
@@ -13,8 +13,8 @@ class Plugin(models.Model):
         Equipment,
         verbose_name="Linked equipment",
         help_text="The equipment for which you wish to get value",
-        related_name="plugin_set",
-        related_query_name="plugin",
+        related_name="dataprovider_set",
+        related_query_name="dataprovider",
         on_delete=models.CASCADE,
         blank=False,
         null=False
@@ -33,5 +33,5 @@ class Plugin(models.Model):
     is_activated = models.BooleanField(default=True, blank=False, null=False)
 
     def __str__(self):
-        """Define string representation of a plugin."""
+        """Define string representation of a dataprovider."""
         return str(self.equipment) + ' / ' + str(self.field_object)

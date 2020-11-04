@@ -6,16 +6,16 @@ from maintenancemanagement.models import Equipment, FieldObject
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from utils.models import Plugin
+from utils.models import DataProvider
 from utils.serializers import (
-    PluginCreateSerializer,
-    PluginDetailsSerializer,
-    PluginSerializer,
+    DataProviderCreateSerializer,
+    DataProviderDetailsSerializer,
+    DataProviderSerializer,
 )
 
 
-class PluginList(APIView):
-    r"""\n# List all plugins or create a new one.
+class DataProviderList(APIView):
+    r"""\n# List all dataproviders or create a new one.
 
     Parameter :
     request (HttpRequest) : the request coming from the front-end
@@ -23,82 +23,82 @@ class PluginList(APIView):
     Return :
     response (Response) : the response.
 
-    GET request : list all plugins and return the data
+    GET request : list all dataproviders and return the data
     POST request :
-    - create a new plugin, send HTTP 201. \
+    - create a new dataprovider, send HTTP 201. \
         If the request is not valid, send HTTP 400.
     - If the user doesn't have the permissions, it will send HTTP 401.
-    - The request must contain the python file name of the plugin, the targeted
+    - The request must contain the python file name of the dataprovider, the targeted
         IP address, the reccurence and the concerned equipment and field.
     """
 
     @swagger_auto_schema(
-        operation_description='Send the list of Plugin in the database.',
+        operation_description='Send the list of DataProvider in the database.',
         query_serializer=None,
         responses={
-            200: PluginSerializer(many=True),
+            200: DataProviderSerializer(many=True),
             401: "Unhauthorized",
         },
     )
     def get(self, request):
-        """Send the list of Plugin in the database."""
-        if request.user.has_perm("utils.view_plugin"):
-            plugins = Plugin.objects.all()
-            serializer = PluginSerializer(plugins, many=True)
+        """Send the list of DataProvider in the database."""
+        if request.user.has_perm("utils.view_dataprovider"):
+            dataproviders = DataProvider.objects.all()
+            serializer = DataProviderSerializer(dataproviders, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     @swagger_auto_schema(
-        operation_description='Add a Plugin into the database.',
-        query_serializer=PluginCreateSerializer(many=False),
+        operation_description='Add a DataProvider into the database.',
+        query_serializer=DataProviderCreateSerializer(many=False),
         responses={
-            201: PluginDetailsSerializer(many=False),
+            201: DataProviderDetailsSerializer(many=False),
             400: "Bad request",
             401: "Unhauthorized",
         },
     )
     def post(self, request):
-        """Add a Plugin into the database."""
-        if request.user.has_perm('utils.add_plugin'):
+        """Add a DataProvider into the database."""
+        if request.user.has_perm('utils.add_dataprovider'):
             try:
                 FieldObject.objects.get(id=request.data.get("field_object"))
                 Equipment.objects.get(id=request.data.get("equipment"))
             except ObjectDoesNotExist:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            plugin_serializer = PluginCreateSerializer(data=request.data)
-            if plugin_serializer.is_valid():
-                plugin = plugin_serializer.save()
-                plugin_details_serializer = PluginDetailsSerializer(plugin)
-                return Response(plugin_details_serializer.data, status=status.HTTP_201_CREATED)
-            return Response(plugin_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            dataprovider_serializer = DataProviderCreateSerializer(data=request.data)
+            if dataprovider_serializer.is_valid():
+                dataprovider = dataprovider_serializer.save()
+                dataprovider_details_serializer = DataProviderDetailsSerializer(dataprovider)
+                return Response(dataprovider_details_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(dataprovider_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-class PluginDetail(APIView):
+class DataProviderDetail(APIView):
     """Retrieve, update or delete an equipment."""
 
     @swagger_auto_schema(
-        operation_description='Send the plugin corresponding to the given key.',
+        operation_description='Send the dataprovider corresponding to the given key.',
         query_serializer=None,
         reponses={
-            200: PluginDetailsSerializer(many=False),
+            200: DataProviderDetailsSerializer(many=False),
             401: "Unhauthorized",
             404: "Not found",
         },
     )
     def get(self, request, pk):
-        """Send the plugin corresponding to the given key."""
+        """Send the dataprovider corresponding to the given key."""
         try:
-            equipment = Plugin.objects.get(pk=pk)
+            equipment = DataProvider.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("utils.view_plugin"):
-            serializer = PluginDetailsSerializer(equipment)
+        if request.user.has_perm("utils.view_dataprovider"):
+            serializer = DataProviderDetailsSerializer(equipment)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     @swagger_auto_schema(
-        operation_description='Delete the Plugin corresponding to the given key.',
+        operation_description='Delete the DataProvider corresponding to the given key.',
         query_serializer=None,
         responses={
             204: "No content",
@@ -107,34 +107,34 @@ class PluginDetail(APIView):
         },
     )
     def delete(self, request, pk):
-        """Delete the Plugin corresponding to the given key."""
+        """Delete the DataProvider corresponding to the given key."""
         try:
-            plugin = Plugin.objects.get(pk=pk)
+            dataprovider = DataProvider.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("utils.delete_plugin"):
-            plugin.delete()
+        if request.user.has_perm("utils.delete_dataprovider"):
+            dataprovider.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     @swagger_auto_schema(
-        operation_description='Update the Plugin corresponding to the given key.',
-        query_serializer=PluginSerializer(many=False),
+        operation_description='Update the DataProvider corresponding to the given key.',
+        query_serializer=DataProviderSerializer(many=False),
         responses={
-            200: PluginDetailsSerializer(many=False),
+            200: DataProviderDetailsSerializer(many=False),
             400: "Bad request",
             401: "Unhauthorized",
             404: "Not found",
         },
     )
     def put(self, request, pk):
-        """Update the Plugin corresponding to the given key."""
+        """Update the DataProvider corresponding to the given key."""
         try:
-            plugin = Plugin.objects.get(pk=pk)
+            dataprovider = DataProvider.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("utils.change_plugin"):
-            serializer = PluginDetailsSerializer(plugin, data=request.data, partial=True)
+        if request.user.has_perm("utils.change_dataprovider"):
+            serializer = DataProviderDetailsSerializer(dataprovider, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)

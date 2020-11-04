@@ -5,34 +5,11 @@ from maintenancemanagement.serializers import (
 )
 from rest_framework import serializers
 
-from .models import Plugin
+from .models import DataProvider
 
 
-class PluginSerializer(serializers.ModelSerializer):
-    """Basic plugin serializer."""
-
-    equipment = EquipmentSerializer()
-    field_object = FieldObjectSerializer()
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = Plugin
-        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
-
-
-class PluginCreateSerializer(serializers.ModelSerializer):
-    """Plugin create Serialize."""
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = Plugin
-        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
-
-
-class PluginDetailsSerializer(serializers.ModelSerializer):
-    """Plugin details Serialize."""
+class DataProviderSerializer(serializers.ModelSerializer):
+    """Basic dataprovider serializer."""
 
     equipment = EquipmentSerializer()
     field_object = FieldObjectSerializer()
@@ -40,5 +17,28 @@ class PluginDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         """This class contains the serializer metadata."""
 
-        model = Plugin
+        model = DataProvider
+        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
+
+
+class DataProviderCreateSerializer(serializers.ModelSerializer):
+    """DataProvider create Serialize."""
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = DataProvider
+        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
+
+
+class DataProviderDetailsSerializer(serializers.ModelSerializer):
+    """DataProvider details Serialize."""
+
+    equipment = EquipmentSerializer()
+    field_object = FieldObjectSerializer()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = DataProvider
         fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']

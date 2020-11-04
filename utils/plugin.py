@@ -6,27 +6,27 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from maintenancemanagement.models import FieldObject
 from openCMMS.settings import BASE_DIR
-from utils.models import Plugin
+from utils.models import DataProvider
 
 scheduler = BackgroundScheduler()
 scheduler.start()
 
 
 def main():
-    plugins = Plugin.objects.filter(is_activated=True)
-    for plugin in plugins:
-        recurrence = recurrence_to_cron(plugin.recurrence)
+    dataproviders = DataProvider.objects.filter(is_activated=True)
+    for dataprovider in dataproviders:
+        recurrence = recurrence_to_cron(dataprovider.recurrence)
         scheduler.add_job(
-            func=trigger_plugin,
+            func=trigger_dataprovider,
             trigger='cron',
-            kwargs={"plugin": plugin},
+            kwargs={"dataprovider": dataprovider},
         )
 
 
-def trigger_plugin(plugin):
-    module = importlib.import_module(f"utils.data_providers.{plugin.file_name[:-3]}")
-    field = FieldObject.objects.get(id=plugin.field_object)
-    field.value = module.get_data(plugin.ip_address)
+def trigger_dataprovider(dataprovider):
+    module = importlib.import_module(f"utils.data_providers.{dataprovider.file_name[:-3]}")
+    field = FieldObject.objects.get(id=dataprovider.field_object)
+    field.value = module.get_data(dataprovider.ip_address)
     field.save()
 
 

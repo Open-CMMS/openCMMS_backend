@@ -7,7 +7,7 @@ from maintenancemanagement.models import (
     FieldValue,
     Task,
 )
-from utils.models import Plugin
+from utils.models import DataProvider
 
 
 def init_db():
@@ -50,8 +50,8 @@ def init_db():
     pression_object = FieldObject.objects.create(described_object=embouteilleuse_axb1, field=pression, value="1.012")
     FieldObject.objects.create(described_object=embouteilleuse_axb1, field=nb_bouteilles, value="50000")
     FieldObject.objects.create(described_object=embouteilleuse_axb1, field=marque, field_value=gai)
-    Plugin.objects.create(
-        file_name="fichier_test_plugin.py",
+    DataProvider.objects.create(
+        file_name="fichier_test_dataprovider.py",
         ip_address="127.0.0.1",
         equipment=embouteilleuse_axb1,
         field_object=pression_object,
