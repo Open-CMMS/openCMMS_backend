@@ -39,8 +39,9 @@ class DataProviderList(APIView):
     - create a new dataprovider, send HTTP 201. \
         If the request is not valid, send HTTP 400.
     - If the user doesn't have the permissions, it will send HTTP 401.
-    - The request must contain the python file name of the dataprovider, the targeted
-        IP address, the reccurence and the concerned equipment and field.
+    - The request must contain the python file name of the dataprovider,\
+         the targeted IP address, the reccurence and the concerned \
+             equipment and field.
     """
 
     @swagger_auto_schema(

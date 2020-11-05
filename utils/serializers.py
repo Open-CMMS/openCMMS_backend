@@ -1,13 +1,10 @@
 """Serializers."""
-from maintenancemanagement.models import Equipment
 from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
     EquipmentSerializer,
     FieldObjectSerializer,
 )
 from rest_framework import serializers
-from rest_framework.fields import CharField
-from rest_framework.serializers import Serializer
 
 from .models import DataProvider
 
@@ -59,5 +56,7 @@ class DataProviderDetailsSerializer(serializers.ModelSerializer):
 
 
 class DataProviderRequirmentsSerializer(serializers.Serializer):
+    """DataProvider requirements Serialize."""
+
     equipments = EquipmentDetailsSerializer(many=True)
     data_providers = DataProviderDetailsSerializer(many=True)
