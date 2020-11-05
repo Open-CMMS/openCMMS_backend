@@ -59,6 +59,5 @@ class DataProviderDetailsSerializer(serializers.ModelSerializer):
 
 
 class DataProviderRequirmentsSerializer(serializers.Serializer):
-    python_files = serializers.CharField(max_length=100)
     equipments = EquipmentDetailsSerializer(many=True)
     data_providers = DataProviderDetailsSerializer(many=True)

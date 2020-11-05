@@ -75,6 +75,6 @@ def test_dataprovider_configuration(file_name, ip_address):
     except ModuleNotFoundError:
         raise DataProviderException("Python file not found, please enter 'name_of_your_file.py'")
     except AttributeError:
-        raise DataProviderException("Python file is not well formated, please follow the exemple")
+        raise DataProviderException('Python file is not well formated, please follow the exemple')
     except GetDataException:
-        raise DataProviderException("IP not found or python file not valid")
+        raise DataProviderException('IP not found or python file not working')

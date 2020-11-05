@@ -63,18 +63,14 @@ class DataProviderTest(TestCase):
             python_files.pop(python_files.index('__pycache__'))
         equipments = Equipment.objects.all()
         data_providers = DataProvider.objects.all()
-        serializer = DataProviderRequirmentsSerializer(
-            {
-                'python_files': python_files,
-                'equipments': equipments,
-                'data_providers': data_providers
-            }
-        )
+        serializer = DataProviderRequirmentsSerializer({'equipments': equipments, 'data_providers': data_providers})
+        dict_res = serializer.data.copy()
+        dict_res['python_files'] = python_files
         c = APIClient()
         c.force_authenticate(user=user)
         response = c.get("/api/dataproviders/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(serializer.data, response.json())
+        self.assertEqual(dict_res, response.json())
 
     def test_US23_I1_dataproviderlist_get_without_perm(self):
         """
@@ -260,7 +256,7 @@ class DataProviderTest(TestCase):
 
     def test_US23_I5_dataproviderdetail_delete_with_perm(self):
         """
-            Test if a user with perm can delete a dataprovider
+            Test if a user with perm can delete a dataprovider.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_delete_perm(user)
@@ -273,7 +269,7 @@ class DataProviderTest(TestCase):
 
     def test_US23_I5_dataproviderdetail_delete_without_perm(self):
         """
-            Test if a user without perm can't delete a dataprovider
+            Test if a user without perm can't delete a dataprovider.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         client = APIClient()
@@ -282,7 +278,111 @@ class DataProviderTest(TestCase):
         response = client.delete(f'/api/dataproviders/{dataprovider.id}/')
         self.assertEqual(response.status_code, 401)
 
-    def test_US23_I6_testdataprovider_post(self):
+    def test_US23_I6_testdataprovider_post_with_perm(self):
         """
-            Test if a user without perm can't delete a dataprovider
+            Test if a user with perm can test a data provider.
         """
+        with open(os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers.py'), "w+") as file:
+            file.write('def get_data(ip_address):\n')
+            file.write('    return 2')
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(
+            f'/api/dataproviders/test/', {
+                'file_name': 'test_data_providers.py',
+                'name': 'dataprovider de test',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            }
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, 2)
+        os.remove(os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers.py'))
+
+    def test_US23_I6_testdataprovider_post_without_perm(self):
+        """
+             Test if a user without perm can't test a data provider.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(f'/api/dataproviders/test/')
+        self.assertEqual(response.status_code, 401)
+
+    def test_US23_I6_testdataprovider_post_with_perm_and_not_well_formated_file(self):
+        """
+            Test if a user with perm can test a data provider with a not well formted file.
+        """
+        with open(os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers_error.py'), "w+") as file:
+            file.write('def wrong_get_data(ip_address):\n')
+            file.write('    return 2')
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(
+            f'/api/dataproviders/test/', {
+                'file_name': 'test_data_providers_error.py',
+                'name': 'dataprovider de test',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            }
+        )
+        self.assertEqual(response.status_code, 501)
+        self.assertEqual(response.data, 'Python file is not well formated, please follow the exemple')
+        os.remove(os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers_error.py'))
+
+    def test_US23_I6_testdataprovider_post_with_perm_but_not_file(self):
+        """
+            Test if a user with perm can test a data provider with a not well formted file.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(
+            f'/api/dataproviders/test/', {
+                'file_name': 'toto.py',
+                'name': 'dataprovider de test',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            }
+        )
+        self.assertEqual(response.status_code, 501)
+        self.assertEqual(response.data, "Python file not found, please enter 'name_of_your_file.py'")
+
+    def test_US23_I6_testdataprovider_post_with_perm_and_not_working_get_data(self):
+        """
+            Test if a user with perm can test a data provider with a not working get_data function.
+        """
+        with open(
+            os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers_error_in_getdata.py'), "w+"
+        ) as file:
+            file.write('from utils.data_provider import GetDataException\n')
+            file.write('def get_data(ip_address):\n')
+            file.write('    raise GetDataException()')
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_add_perm(user)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.post(
+            f'/api/dataproviders/test/', {
+                'file_name': 'test_data_providers_error_in_getdata.py',
+                'name': 'dataprovider de test',
+                'recurrence': '10d',
+                'ip_address': '127.0.0.1',
+                'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+            }
+        )
+        self.assertEqual(response.status_code, 501)
+        self.assertEqual(response.data, 'IP not found or python file not working')
+        os.remove(os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers_error_in_getdata.py'))

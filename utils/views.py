@@ -62,12 +62,13 @@ class DataProviderList(APIView):
             equipments = Equipment.objects.all()
             serializer = DataProviderRequirmentsSerializer(
                 {
-                    'python_files': python_files,
                     'equipments': equipments,
                     'data_providers': data_providers
                 }
             )
-            return Response(serializer.data)
+            dict_res = serializer.data.copy()
+            dict_res['python_files'] = python_files
+            return Response(dict_res)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     @swagger_auto_schema(
@@ -188,12 +189,12 @@ class TestDataProvider(APIView):
     def post(self, request):
         """Test of data provider's configuration."""
         if request.user.has_perm("utils.change_dataprovider") or request.user.has_perm("utils.add_dataprovider"):
-            serializer = DataProviderSerializer(request.data)
+            serializer = DataProviderCreateSerializer(data=request.data)
             if not serializer.is_valid():
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             try:
                 value = test_dataprovider_configuration(request.data['file_name'], request.data['ip_address'])
                 return Response(value, status=status.HTTP_200_OK)
             except DataProviderException as e:
-                return Response(e.message, status=status.HTTP_501_NOT_IMPLEMENTED)
+                return Response(str(e), status=status.HTTP_501_NOT_IMPLEMENTED)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
