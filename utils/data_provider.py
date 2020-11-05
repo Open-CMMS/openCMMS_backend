@@ -13,6 +13,14 @@ scheduler = BackgroundScheduler()
 scheduler.start()
 
 
+class GetDataException(Exception):
+    pass
+
+
+class DataProviderException(Exception):
+    pass
+
+
 def main():
     dataproviders = DataProvider.objects.filter(is_activated=True)
     for dataprovider in dataproviders:
@@ -58,3 +66,15 @@ def _parse_time(time_str):
         if param:
             time_params[name] = int(param)
     return timedelta(**time_params)
+
+
+def test_dataprovider_configuration(file_name, ip_address):
+    try:
+        module = importlib.import_module(f"utils.data_providers.{file_name[:-3]}")
+        return module.get_data(ip_address)
+    except ModuleNotFoundError:
+        raise DataProviderException("Python file not found, please enter 'name_of_your_file.py'")
+    except AttributeError:
+        raise DataProviderException("Python file is not well formated, please follow the exemple")
+    except GetDataException:
+        raise DataProviderException("IP not found or python file not valid")
