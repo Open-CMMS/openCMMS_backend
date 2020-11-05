@@ -4,6 +4,7 @@ import re
 from datetime import timedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.base import STATE_RUNNING
 
 from maintenancemanagement.models import FieldObject
 from utils.models import DataProvider
@@ -24,7 +25,7 @@ class DataProviderException(Exception):
     pass
 
 
-def main():
+def start():
     """Initialise all data provider jobs when django starts."""
     dataproviders = DataProvider.objects.filter(is_activated=True)
     for dataprovider in dataproviders:
