@@ -5,6 +5,7 @@ class UtilsConfig(AppConfig):
     name = 'utils'
 
     def ready(self):
+        print(sys.argv)
         if 'pytest' not in sys.argv:
             from utils import notifications
             notifications.start()
