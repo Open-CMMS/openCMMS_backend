@@ -7,5 +7,5 @@ class UtilsConfig(AppConfig):
     def ready(self):
         from utils import notifications
         notifications.start()
-        # from utils import data_provider
-        # data_provider.start()
+        from utils import data_provider
+        data_provider.start()
