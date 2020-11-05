@@ -27,13 +27,13 @@ class DataProviderException(Exception):
 def start():
     """Initialise all data provider jobs when django starts."""
     dataproviders = DataProvider.objects.filter(is_activated=True)
-    # for dataprovider in dataproviders:
-    #     try:
-    #         test_dataprovider_configuration(dataprovider.file_name, dataprovider.ip_address)
-    #         add_job(dataprovider)
-    #     except:
-    #         # A CODER
-    #         pass
+    for dataprovider in dataproviders:
+        try:
+            #test_dataprovider_configuration(dataprovider.file_name, dataprovider.ip_address)
+            add_job(dataprovider)
+        except:
+            # A CODER
+            pass
 
 
 def add_job(dataprovider):
