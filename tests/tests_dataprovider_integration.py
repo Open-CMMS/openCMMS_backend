@@ -97,7 +97,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             },
             format='json'
         )
@@ -120,7 +121,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             },
             format='json'
         )
@@ -153,7 +155,8 @@ class DataProviderTest(TestCase):
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
-                'fake field': 'useless data'
+                'fake field': 'useless data',
+                'is_activated': True
             }
         )
         self.assertEqual(response.status_code, 201)
@@ -202,7 +205,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             },
             format='json'
         )
@@ -214,7 +218,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '5d',
                 'ip_address': '192.168.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             }
         )
         dataprovider = DataProvider.objects.get(name='dataprovider mis à jour')
@@ -238,7 +243,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             },
             format='json'
         )
@@ -296,7 +302,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             }
         )
         self.assertEqual(response.status_code, 200)
@@ -331,7 +338,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             }
         )
         self.assertEqual(response.status_code, 501)
@@ -353,7 +361,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             }
         )
         self.assertEqual(response.status_code, 501)
@@ -380,7 +389,8 @@ class DataProviderTest(TestCase):
                 'recurrence': '1d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
-                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
+                'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
+                'is_activated': True
             }
         )
         self.assertEqual(response.status_code, 501)

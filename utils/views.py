@@ -179,7 +179,7 @@ class TestDataProvider(APIView):
 
     @swagger_auto_schema(
         operation_description="Test of data provider's configuration.",
-        query_serializer=DataProviderSerializer(many=False),
+        query_serializer=DataProviderUpdateSerializer(many=False),
         responses={
             200: 'OK',
             400: "Bad request",
