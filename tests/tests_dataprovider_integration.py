@@ -377,7 +377,7 @@ class DataProviderTest(TestCase):
             f'/api/dataproviders/test/', {
                 'file_name': 'temp_test_data_providers_error_in_getdata.py',
                 'name': 'dataprovider de test',
-                'recurrence': '10d',
+                'recurrence': '1d',
                 'ip_address': '127.0.0.1',
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id
