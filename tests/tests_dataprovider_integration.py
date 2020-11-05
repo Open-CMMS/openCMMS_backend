@@ -282,7 +282,7 @@ class DataProviderTest(TestCase):
         """
             Test if a user with perm can test a data provider.
         """
-        with open(os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers.py'), "w+") as file:
+        with open(os.path.join(BASE_DIR, 'utils/data_providers/file_test_data_providers.py'), "w+") as file:
             file.write('def get_data(ip_address):\n')
             file.write('    return 2')
         user = UserProfile.objects.create(username="user", password="p4ssword")
@@ -291,7 +291,7 @@ class DataProviderTest(TestCase):
         client.force_authenticate(user=user)
         response = client.post(
             f'/api/dataproviders/test/', {
-                'file_name': 'test_data_providers.py',
+                'file_name': 'file_test_data_providers.py',
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
@@ -301,7 +301,7 @@ class DataProviderTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, 2)
-        os.remove(os.path.join(BASE_DIR, 'utils/data_providers/test_data_providers.py'))
+        os.remove(os.path.join(BASE_DIR, 'utils/data_providers/file_test_data_providers.py'))
 
     # def test_US23_I6_testdataprovider_post_without_perm(self):
     #     """
