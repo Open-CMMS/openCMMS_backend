@@ -4,7 +4,6 @@ import re
 from datetime import timedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.schedulers.base import STATE_RUNNING
 
 from maintenancemanagement.models import FieldObject
 from utils.models import DataProvider
