@@ -5,8 +5,7 @@ class UtilsConfig(AppConfig):
     name = 'utils'
 
     def ready(self):
-        from utils.notifications import start
-        start()
-        from utils.data_provider import start
-
-        # start()
+        from utils import notifications
+        notifications.start()
+        from utils import data_provider
+        data_provider.start()
