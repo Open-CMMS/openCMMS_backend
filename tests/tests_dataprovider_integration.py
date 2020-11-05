@@ -73,8 +73,7 @@ class DataProviderTest(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         response = c.get("/api/dataproviders/")
-        print(response.data)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(serializer.data, response.json())
 
     def test_US23_I1_dataproviderlist_get_without_perm(self):
