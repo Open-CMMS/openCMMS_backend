@@ -11,7 +11,7 @@ from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
 from utils.models import DataProvider
 from utils.serializers import (
-    DataProviderRequirmentsSerializer,
+    DataProviderRequirementsSerializer,
     DataProviderSerializer,
 )
 
@@ -63,7 +63,7 @@ class DataProviderTest(TestCase):
             python_files.pop(python_files.index('__pycache__'))
         equipments = Equipment.objects.all()
         data_providers = DataProvider.objects.all()
-        serializer = DataProviderRequirmentsSerializer({'equipments': equipments, 'data_providers': data_providers})
+        serializer = DataProviderRequirementsSerializer({'equipments': equipments, 'data_providers': data_providers})
         dict_res = serializer.data.copy()
         dict_res['python_files'] = python_files
         c = APIClient()
@@ -335,7 +335,7 @@ class DataProviderTest(TestCase):
             }
         )
         self.assertEqual(response.status_code, 501)
-        self.assertEqual(response.data, 'Python file is not well formated, please follow the exemple')
+        self.assertEqual(response.data, 'Python file is not well formated, please follow the example')
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error.py'))
 
     def test_US23_I6_testdataprovider_post_with_perm_but_not_file(self):

@@ -55,7 +55,7 @@ class DataProviderDetailsSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
 
 
-class DataProviderRequirmentsSerializer(serializers.Serializer):
+class DataProviderRequirementsSerializer(serializers.Serializer):
     """DataProvider requirements Serialize."""
 
     equipments = EquipmentDetailsSerializer(many=True)

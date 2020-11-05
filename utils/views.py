@@ -19,7 +19,7 @@ from utils.models import DataProvider
 from utils.serializers import (
     DataProviderCreateSerializer,
     DataProviderDetailsSerializer,
-    DataProviderRequirmentsSerializer,
+    DataProviderRequirementsSerializer,
     DataProviderSerializer,
     DataProviderUpdateSerializer,
 )
@@ -48,7 +48,7 @@ class DataProviderList(APIView):
         operation_description='Send the list of DataProvider in the database.',
         query_serializer=None,
         responses={
-            200: DataProviderRequirmentsSerializer(many=False),
+            200: DataProviderRequirementsSerializer(many=False),
             401: "Unhauthorized",
         },
     )
@@ -61,7 +61,7 @@ class DataProviderList(APIView):
                 python_files.pop(python_files.index('__pycache__'))
             data_providers = DataProvider.objects.all()
             equipments = Equipment.objects.all()
-            serializer = DataProviderRequirmentsSerializer(
+            serializer = DataProviderRequirementsSerializer(
                 {
                     'equipments': equipments,
                     'data_providers': data_providers
