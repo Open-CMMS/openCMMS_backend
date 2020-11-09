@@ -1,5 +1,6 @@
 """Serializers."""
 from maintenancemanagement.serializers import (
+    EquipmentDetailsSerializer,
     EquipmentSerializer,
     FieldObjectSerializer,
 )
@@ -52,3 +53,10 @@ class DataProviderDetailsSerializer(serializers.ModelSerializer):
 
         model = DataProvider
         fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
+
+
+class DataProviderRequirementsSerializer(serializers.Serializer):
+    """DataProvider requirements Serialize."""
+
+    equipments = EquipmentDetailsSerializer(many=True)
+    data_providers = DataProviderDetailsSerializer(many=True)

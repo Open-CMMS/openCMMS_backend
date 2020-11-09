@@ -1,4 +1,4 @@
-"""This is our script that execute all the get_data methods"""
+"""This is our script that execute all the get_data methods."""
 import importlib
 import re
 from datetime import timedelta
@@ -6,26 +6,44 @@ from datetime import timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from maintenancemanagement.models import FieldObject
-from openCMMS.settings import BASE_DIR
 from utils.models import DataProvider
 
 scheduler = BackgroundScheduler()
 scheduler.start()
 
 
-def main():
+class GetDataException(Exception):
+    """Exception corresponding to get_data method."""
+
+    pass
+
+
+class DataProviderException(Exception):
+    """Exception corresponding to a DataProvider error."""
+
+    pass
+
+
+def start():
+    """Initialise all data provider jobs when django starts."""
     dataproviders = DataProvider.objects.filter(is_activated=True)
     for dataprovider in dataproviders:
-        add_job(dataprovider)
+        try:
+            test_dataprovider_configuration(dataprovider.file_name, dataprovider.ip_address)
+            add_job(dataprovider)
+        except:
+            pass
+            # A CODER
 
 
 def add_job(dataprovider):
+    """Add a job for the given data provider."""
     recurrence = _parse_time(dataprovider.recurrence)
     if recurrence:
         hours = recurrence.seconds // 3600
         minutes = (recurrence.seconds - hours * 3600) // 60
         job = scheduler.add_job(
-            trigger_dataprovider,
+            _trigger_dataprovider,
             'interval',
             kwargs={"dataprovider": dataprovider},
             days=recurrence.days,
@@ -36,7 +54,8 @@ def add_job(dataprovider):
         dataprovider.save()
 
 
-def trigger_dataprovider(dataprovider):
+def _trigger_dataprovider(dataprovider):
+    """Update the indicated field from a data provider."""
     try:
         module = importlib.import_module(f"utils.data_providers.{dataprovider.file_name[:-3]}")
         field = FieldObject.objects.get(id=dataprovider.field_object)
@@ -58,3 +77,16 @@ def _parse_time(time_str):
         if param:
             time_params[name] = int(param)
     return timedelta(**time_params)
+
+
+def test_dataprovider_configuration(file_name, ip_address):
+    """Trigger the get_data method and return the result or an error."""
+    try:
+        module = importlib.import_module(f"utils.data_providers.{file_name[:-3]}")
+        return module.get_data(ip_address)
+    except ModuleNotFoundError:
+        raise DataProviderException("Python file not found, please enter 'name_of_your_file.py'")
+    except AttributeError:
+        raise DataProviderException('Python file is not well formated, please follow the example')
+    except GetDataException:
+        raise DataProviderException('IP not found or python file not working')

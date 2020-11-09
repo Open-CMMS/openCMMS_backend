@@ -50,8 +50,10 @@ if os.getenv('ENVIRONMENT') == 'DEV':
     BASE_URL = 'https://dev.lxc.pic.brasserie-du-slalom.fr/'
 elif os.getenv('ENVIRONMENT') == 'PROD':
     BASE_URL = 'https://application.lxc.pic.brasserie-du-slalom.fr/'
+else :
+    BASE_URL = 'http://127.0.0.1:8000/'
 
-BASE_URL = 'http://localhost:4200/'
+# BASE_URL = 'http://localhost:4200/'
 # Application definition
 
 INSTALLED_APPS = [
