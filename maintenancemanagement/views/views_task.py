@@ -19,6 +19,7 @@ from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
     TaskCreateSerializer,
+    TaskUpdateSerializer,
     TaskDetailsSerializer,
     TaskListingSerializer,
     TaskSerializer,
@@ -209,11 +210,14 @@ class TaskDetail(APIView):
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()
 
-            serializer = TaskSerializer(task, data=request.data, partial=True)
+            if 'duration' in request.data.keys() :
+                request.data.update({'duration' : self._parse_time(request.data['duration'])})
+            serializer = TaskUpdateSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
                 task = serializer.save()
                 self._check_if_over(task)
-                return Response(serializer.data)
+                serializer_details = TaskDetailsSerializer(task)
+                return Response(serializer_details.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 

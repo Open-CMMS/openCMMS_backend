@@ -491,6 +491,17 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class TaskUpdateSerializer(serializers.ModelSerializer):
+    """Task creatre serializer."""
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Task
+        exclude = []
+
+
+
 class TaskListingSerializer(serializers.ModelSerializer):
     """Task listing serializer."""
 
