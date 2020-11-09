@@ -1,12 +1,16 @@
-from django.apps import AppConfig
 import sys
+
+from django.apps import AppConfig
+
 
 class UtilsConfig(AppConfig):
     name = 'utils'
 
     def ready(self):
-        if 'pytest' not in sys.argv[0]:
+        try:
             from utils import notifications
             notifications.start()
             from utils import data_provider
             data_provider.start()
+        except:
+            pass
