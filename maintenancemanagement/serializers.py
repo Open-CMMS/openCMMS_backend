@@ -125,12 +125,13 @@ class FieldObjectSerializer(serializers.ModelSerializer):
     """Basic field object serializer."""
 
     described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+    name = serializers.CharField(source='field.name')
 
     class Meta:
         """This class contains the serializer metadata."""
 
         model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
+        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description', 'name']
 
 
 #############################################################################
