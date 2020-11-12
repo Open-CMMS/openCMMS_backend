@@ -95,8 +95,6 @@ class DataProviderList(APIView):
             if dataprovider_serializer.is_valid():
                 dataprovider = dataprovider_serializer.save()
                 add_job(dataprovider)
-                if not dataprovider.is_activated:
-                    scheduler.pause_job(dataprovider.job_id)
                 dataprovider_details_serializer = DataProviderDetailsSerializer(dataprovider)
                 return Response(dataprovider_details_serializer.data, status=status.HTTP_201_CREATED)
             return Response(dataprovider_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -166,10 +164,13 @@ class DataProviderDetail(APIView):
             serializer = DataProviderUpdateSerializer(dataprovider, data=request.data, partial=True)
             if serializer.is_valid():
                 dataprovider = serializer.save()
-                if dataprovider.is_activated:
-                    scheduler.resume_job(dataprovider.job_id)
-                else:
-                    scheduler.pause_job(dataprovider.job_id)
+                try:
+                    if dataprovider.is_activated:
+                        scheduler.resume_job(dataprovider.job_id)
+                    else:
+                        scheduler.pause_job(dataprovider.job_id)
+                except:
+                    pass
                 dataprovider_details_serializer = DataProviderDetailsSerializer(dataprovider)
                 return Response(dataprovider_details_serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
