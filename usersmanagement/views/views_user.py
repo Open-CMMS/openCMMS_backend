@@ -435,29 +435,32 @@ class UserResetPassword(APIView):
 
     def get(self, request):
         email = request.GET.get('email', "")
+        username = request.GET.get('username', "")
+        user1 = UserProfile.objects.filter(email=email)
+        user2 = UserProfile.objects.filter(username=username)
+        user = user1 | user2
+        if user.count() == 0 :
+            return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
+        token = token_hex(16)
+        user.set_password(token)
+        user.save()
+        if (settings.DEBUG is True):
+            url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
+                &username={user.username}"
+        else:
+            url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
+                &username={user.username}"
+        email = EmailMessage()
+        email.subject = "Reset Your Password"
+        email.body = "You asked to reset your password, to do so please follow this link : " + url
+        email.to = [user.email]
         try :
-            user = UserProfile.objects.get(email=email)
-            token = token_hex(16)
-            user.set_password(token)
-            user.save()
-            if (settings.DEBUG is True):
-                url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-                    &username={user.username}"
-            else:
-                url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-                    &username={user.username}"
-            email = EmailMessage()
-            email.subject = "Reset Your Password"
-            email.body = "You asked to reset your password, to do so please follow this link : " + url
-            email.to = [user.email]
-            try :
-                email.send()
-            except Exception as ex :
-                print(ex)
-                return Response("Error while sending email", status=status.HTTP_400_BAD_REQUEST)
-            return Response("Email sent !", status=status.HTTP_200_OK)
-        except UserProfile.DoesNotExist :
-            return Response("An error occured, please try again later", status=status.HTTP_400_BAD_REQUEST)
+            email.send()
+        except Exception as ex :
+            print(ex)
+            return Response("Error while sending email", status=status.HTTP_400_BAD_REQUEST)
+        return Response("Email sent !", status=status.HTTP_200_OK)
+            
 
 
 class CheckToken(APIView):
