@@ -1,4 +1,5 @@
 """This is our file to provide our endpoints for our utilities."""
+import logging
 import os
 
 from drf_yasg.utils import swagger_auto_schema
@@ -20,9 +21,10 @@ from utils.serializers import (
     DataProviderCreateSerializer,
     DataProviderDetailsSerializer,
     DataProviderRequirementsSerializer,
-    DataProviderSerializer,
     DataProviderUpdateSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class DataProviderList(APIView):

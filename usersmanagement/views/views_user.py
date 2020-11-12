@@ -1,5 +1,6 @@
 """This module defines the views corresponding to users."""
 
+import logging
 from secrets import token_hex
 
 from drf_yasg.utils import swagger_auto_schema
@@ -18,6 +19,8 @@ from usersmanagement.serializers import (
     UserProfileSerializer,
 )
 from utils.init_db import initialize_db
+
+logger = logging.getLogger(__name__)
 
 User = settings.AUTH_USER_MODEL
 
@@ -47,7 +50,6 @@ class UserList(APIView):
     """
 
     @swagger_auto_schema(
-        query_serializer=UserProfileSerializer,
         operation_description="Send the list of user in database.",
         responses={
             200: "Send back the list.",

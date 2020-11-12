@@ -1,5 +1,7 @@
 """This module defines the views corresponding to the equipments."""
 
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.contrib.contenttypes.models import ContentType
@@ -24,6 +26,8 @@ from maintenancemanagement.serializers import (
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 
 
 class EquipmentList(APIView):
