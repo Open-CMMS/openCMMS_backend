@@ -109,6 +109,10 @@ class EquipmentType(models.Model):
         """Define string representation of an equipment type."""
         return self.name
 
+    def __repr__(self):
+        """Define formal representation of an equipment type."""
+        return "<EquipmentType: {id} {name}>".format(id=self.id, name=self.name)
+
 
 class Equipment(models.Model):
     """Define an equipment."""
@@ -130,6 +134,10 @@ class Equipment(models.Model):
     def __str__(self):
         """Define string representation of an equipment."""
         return self.name
+
+    def __repr__(self):
+        """Define formal representation of an equipment."""
+        return "<Equipment: {id} {name}>".format(id=self.id, name=self.name)
 
 
 class Task(models.Model):
@@ -180,3 +188,7 @@ class Task(models.Model):
     def __str__(self):
         """Define string representation of a task."""
         return self.name
+
+    def __repr__(self):
+        """Define formal representation of a task."""
+        return "<Task: {id} {name}>".format(id=self.id, name=self.name)

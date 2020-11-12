@@ -90,6 +90,9 @@ class EquipmentTypeList(APIView):
                 equipment_type_serializer = EquipmentTypeCreateSerializer(data=data)
                 if equipment_type_serializer.is_valid():
                     equipment_type = equipment_type_serializer.save()
+                    logger.info(
+                        "{user} CREATED EquipmentType with {params}".format(user=request.user, params=request.data)
+                    )
                     equipment_type_details = EquipmentTypeDetailsSerializer(equipment_type)
                     return Response(equipment_type_details.data, status=status.HTTP_201_CREATED)
                 return Response(equipment_type_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -118,6 +121,7 @@ class EquipmentTypeList(APIView):
             field_serializer = FieldCreateSerializer(data=field)
             if field_serializer.is_valid():
                 field_instance = field_serializer.save()
+                logger.info("{user} CREATED Field with {params}".format(user=request.user, params=field))
                 if field_values:
                     for field_value in field_values:
                         field_value_data = {"value": field_value}
@@ -125,6 +129,11 @@ class EquipmentTypeList(APIView):
                         field_value_serializer = FieldValueCreateSerializer(data=field_value_data)
                         if field_value_serializer.is_valid():
                             field_value_serializer.save()
+                            logger.info(
+                                "{user} CREATED FieldValue with {params}".format(
+                                    user=request.user, params=field_value
+                                )
+                            )
         return field_group
 
 
@@ -191,6 +200,11 @@ class EquipmentTypeDetail(APIView):
         if request.user.has_perm("maintenancemanagement.change_equipmenttype"):
             serializer = EquipmentTypeSerializer(equipment_type, data=request.data, partial=True)
             if serializer.is_valid():
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(equipment_type), params=request.data
+                    )
+                )
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -212,6 +226,7 @@ class EquipmentTypeDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_equipmenttype"):
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(equipment_type)))
             equipment_type.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

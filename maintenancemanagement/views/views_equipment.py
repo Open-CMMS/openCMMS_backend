@@ -86,7 +86,10 @@ class EquipmentList(APIView):
                     return error
                 else:
                     equipment = equipment_serializer.save()
-                    self._save_fields(fields, equipment)
+                    logger.info(
+                        "{user} CREATED Equipment with {params}".format(user=request.user, params=request.data)
+                    )
+                    self._save_fields(request, fields, equipment)
                     equipment_details_serializer = EquipmentDetailsSerializer(equipment)
                     return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -116,7 +119,7 @@ class EquipmentList(APIView):
         if expected_fields:
             return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
 
-    def _save_fields(self, fields, equipment):
+    def _save_fields(self, request, fields, equipment):
         if fields:
             for field in fields:
                 if field.get('field', None) is None:
@@ -125,6 +128,7 @@ class EquipmentList(APIView):
                 field_object_serializer = FieldObjectCreateSerializer(data=field)
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()
+                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=field))
 
 
 class EquipmentDetail(APIView):
@@ -197,6 +201,11 @@ class EquipmentDetail(APIView):
                         request, equipment, equipment_serializer, field_objects
                     )
                 else:
+                    logger.info(
+                        "{user} UPDATED {object} with {params}".format(
+                            user=request.user, object=repr(equipment), params=request.data
+                        )
+                    )
                     equipment_serializer.save()
                     return Response(equipment_serializer.data, status=status.HTTP_200_OK)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -208,8 +217,13 @@ class EquipmentDetail(APIView):
             if error:
                 return error
             else:
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(equipment), params=request.data
+                    )
+                )
                 equipment = equipment_serializer.save()
-                self._save_modification_fields(field_objects, equipment)
+                self._save_modification_fields(request, field_objects, equipment)
                 equipment_details_serializer = EquipmentDetailsSerializer(equipment)
                 return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -219,8 +233,13 @@ class EquipmentDetail(APIView):
             else:
                 content_type = ContentType.objects.get_for_model(equipment)
                 FieldObject.objects.filter(object_id=equipment.pk, content_type=content_type).delete()
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(equipment), params=request.data
+                    )
+                )
                 equipment = equipment_serializer.save()
-                self._save_fields(field_objects, equipment)
+                self._save_fields(request, field_objects, equipment)
                 equipment_details_serializer = EquipmentDetailsSerializer(equipment)
                 return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -248,7 +267,7 @@ class EquipmentDetail(APIView):
         if expected_fields:
             return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
 
-    def _save_fields(self, fields, equipment):
+    def _save_fields(self, request, fields, equipment):
         if fields:
             for field in fields:
                 if field.get('field', None) is None:
@@ -257,6 +276,7 @@ class EquipmentDetail(APIView):
                 field_object_serializer = FieldObjectCreateSerializer(data=field)
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()
+                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=field))
 
     def _validate_modification_fields(self, request, field_objects):
         if field_objects:
@@ -274,7 +294,7 @@ class EquipmentDetail(APIView):
                 elif field_object.get('value', None) is None:
                     return Response(field_object.get('name') + " cant be null !", status=status.HTTP_400_BAD_REQUEST)
 
-    def _save_modification_fields(self, field_objects, equipment):
+    def _save_modification_fields(self, request, field_objects, equipment):
         if field_objects:
             for field_object_data in field_objects:
                 field_object = FieldObject.objects.get(pk=field_object_data.get('id'))
@@ -286,6 +306,11 @@ class EquipmentDetail(APIView):
                     field_object, data=field_object_data, partial=True
                 )
                 if field_object_serializer.is_valid():
+                    logger.info(
+                        "{user} UPDATED {object} with {params}".format(
+                            user=request.user, object=repr(field_object), params=field_object_data
+                        )
+                    )
                     field_object_serializer.save()
 
     @swagger_auto_schema(
@@ -304,6 +329,7 @@ class EquipmentDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_equipment"):
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(equipment)))
             equipment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
