@@ -1,5 +1,7 @@
 """This module defines the views corresponding to team types."""
 
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
@@ -12,6 +14,8 @@ from usersmanagement.serializers import (
     TeamTypeDetailsSerializer,
     TeamTypeSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 User = settings.AUTH_USER_MODEL
 

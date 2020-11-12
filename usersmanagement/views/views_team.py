@@ -1,4 +1,6 @@
 """This module defines the views corresponding to teams."""
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -7,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.serializers import TeamDetailsSerializer, TeamSerializer
+
+logger = logging.getLogger(__name__)
 
 CHANGE_TEAM = "usersmanagement.change_team"
 

@@ -1,5 +1,7 @@
 """This module defines the views corresponding to the field objects."""
 
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -8,6 +10,8 @@ from maintenancemanagement.serializers import FieldObjectSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 
 
 class FieldObjectList(APIView):

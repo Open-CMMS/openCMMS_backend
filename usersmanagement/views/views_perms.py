@@ -1,4 +1,6 @@
 """This module defines the views corresponding to permissions."""
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.contrib.auth.models import Permission
@@ -7,6 +9,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from usersmanagement.serializers import PermissionSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class PermsList(APIView):

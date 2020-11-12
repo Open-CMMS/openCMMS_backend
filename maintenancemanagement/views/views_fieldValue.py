@@ -1,5 +1,7 @@
 """This module defines the views corresponding to the field values."""
 
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from maintenancemanagement.models import Field, FieldValue
@@ -7,6 +9,8 @@ from maintenancemanagement.serializers import FieldValueSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 
 
 class FieldValueForField(APIView):
