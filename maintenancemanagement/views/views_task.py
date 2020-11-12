@@ -1,5 +1,6 @@
 """This module defines the views corresponding to the tasks."""
 
+import logging
 import re
 from datetime import timedelta
 
@@ -19,11 +20,11 @@ from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
     TaskCreateSerializer,
-    TaskUpdateSerializer,
     TaskDetailsSerializer,
     TaskListingSerializer,
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
+    TaskUpdateSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -31,6 +32,7 @@ from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.views.views_team import belongs_to_team
 
+logger = logging.getLogger(__name__)
 VIEW_TASK = "maintenancemanagement.view_task"
 CHANGE_TASK = "maintenancemanagement.change_task"
 ADD_TASK = "maintenancemanagement.add_task"
@@ -210,8 +212,8 @@ class TaskDetail(APIView):
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()
 
-            if 'duration' in request.data.keys() :
-                request.data.update({'duration' : self._parse_time(request.data['duration'])})
+            if 'duration' in request.data.keys():
+                request.data.update({'duration': self._parse_time(request.data['duration'])})
             serializer = TaskUpdateSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
                 task = serializer.save()

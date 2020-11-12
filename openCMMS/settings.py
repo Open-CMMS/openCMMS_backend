@@ -50,7 +50,7 @@ if os.getenv('ENVIRONMENT') == 'DEV':
     BASE_URL = 'https://dev.lxc.pic.brasserie-du-slalom.fr/'
 elif os.getenv('ENVIRONMENT') == 'PROD':
     BASE_URL = 'https://application.lxc.pic.brasserie-du-slalom.fr/'
-else :
+else:
     BASE_URL = 'http://127.0.0.1:8000/'
 
 # BASE_URL = 'http://localhost:4200/'
@@ -290,7 +290,7 @@ if 'pytest' in sys.argv:
 ################################################################
 ############################# EMAIL ############################
 ################################################################
-if os.getenv('ENVIRONMENT') == 'PROD' or os.getenv('ENVIRONMENT') == 'DEV' :
+if os.getenv('ENVIRONMENT') == 'PROD' or os.getenv('ENVIRONMENT') == 'DEV':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
@@ -302,3 +302,108 @@ EMAIL_USE_TLS = False
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'No-Reply <no-reply@pic.brasserie-du-slalom.fr>'
+
+################################################################
+############################ LOGGING ###########################
+################################################################
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters':
+        {
+            'verbose_http':
+                {
+                    'format':
+                        '{levelname} {asctime} {process:d} {thread:d} "{request.user} did {request.method} on {request.path} with {request.POST} and got {status_code}"',
+                    'style':
+                        '{',
+                },
+            'verbose_sql':
+                {
+                    'format': '{levelname} {asctime} {process:d} {thread:d} {message} {sql} {params}',
+                    'style': '{',
+                },
+            'verbose_base':
+                {
+                    'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                    'style': '{',
+                },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            },
+        },
+    'handlers':
+        {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'level': 'DEBUG',
+                'formatter': 'simple'
+            },
+            'file_http':
+                {
+                    'class': 'logging.FileHandler',
+                    'filename': os.path.join(BASE_DIR, 'log/', 'requests.log'),
+                    'level': 'DEBUG',
+                    'formatter': 'verbose_http'
+                },
+            'file_sql':
+                {
+                    'class': 'logging.FileHandler',
+                    'filename': os.path.join(BASE_DIR, 'log/', 'sql.log'),
+                    'level': 'INFO',
+                    'formatter': 'verbose_sql'
+                },
+            'file_utils':
+                {
+                    'class': 'logging.FileHandler',
+                    'filename': os.path.join(BASE_DIR, 'utils/log/', 'infos.log'),
+                    'level': 'INFO',
+                    'formatter': 'verbose_base'
+                },
+            'file_users':
+                {
+                    'class': 'logging.FileHandler',
+                    'filename': os.path.join(BASE_DIR, 'usersmanagement/log/', 'infos.log'),
+                    'level': 'INFO',
+                    'formatter': 'verbose_base'
+                },
+            'file_maintenance':
+                {
+                    'class': 'logging.FileHandler',
+                    'filename': os.path.join(BASE_DIR, 'maintenancemanagement/log/', 'infos.log'),
+                    'level': 'INFO',
+                    'formatter': 'verbose_base'
+                },
+            'mail_error': {
+                'class': 'django.utils.log.AdminEmailHandler',
+                'level': 'ERROR',
+            }
+        },
+    'loggers':
+        {
+            'django.request': {
+                'handlers': ['file_http'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+            'django.db.backends': {
+                'handlers': ['file_sql'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'utils': {
+                'handlers': ['file_utils', 'console', 'mail_error'],
+                'level': 'INFO',
+            },
+            'usersmanagement': {
+                'handlers': ['file_users', 'console', 'mail_error'],
+                'level': 'INFO'
+            },
+            'maintenancemanagement': {
+                'handlers': ['file_maintenance', 'console', 'mail_error'],
+                'level': 'INFO'
+            }
+        }
+}
