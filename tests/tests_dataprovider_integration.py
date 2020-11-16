@@ -220,7 +220,8 @@ class DataProviderTest(TestCase):
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
-            }
+            },
+            format='json'
         )
         dataprovider = DataProvider.objects.get(name='dataprovider mis à jour')
         serializer = DataProviderSerializer(dataprovider)
@@ -253,7 +254,8 @@ class DataProviderTest(TestCase):
             f'/api/dataproviders/{dataprovider.id}/', {
                 'name': 'dataprovider mis à jour 2',
                 'ip_address': '192.168.1.2',
-            }
+            },
+            format='json'
         )
         dataprovider = DataProvider.objects.get(name='dataprovider mis à jour 2')
         serializer = DataProviderSerializer(dataprovider)
@@ -304,7 +306,8 @@ class DataProviderTest(TestCase):
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
-            }
+            },
+            format='json'
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, 2)
@@ -317,7 +320,7 @@ class DataProviderTest(TestCase):
         user = UserProfile.objects.create(username="user", password="p4ssword")
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post(f'/api/dataproviders/test/')
+        response = client.post(f'/api/dataproviders/test/', format='json')
         self.assertEqual(response.status_code, 401)
 
     def test_US23_I6_testdataprovider_post_with_perm_and_not_well_formated_file(self):
@@ -340,7 +343,8 @@ class DataProviderTest(TestCase):
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
-            }
+            },
+            format='json'
         )
         self.assertEqual(response.status_code, 501)
         self.assertEqual(response.data, 'Python file is not well formated, please follow the example')
@@ -363,7 +367,8 @@ class DataProviderTest(TestCase):
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
-            }
+            },
+            format='json'
         )
         self.assertEqual(response.status_code, 501)
         self.assertEqual(response.data, "Python file not found, please enter 'name_of_your_file.py'")
@@ -391,7 +396,8 @@ class DataProviderTest(TestCase):
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
-            }
+            },
+            format='json'
         )
         self.assertEqual(response.status_code, 501)
         self.assertEqual(response.data, 'IP not found or python file not working')
