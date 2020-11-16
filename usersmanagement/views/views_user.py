@@ -85,6 +85,7 @@ class UserList(APIView):
                 else:
                     serializer.save()
                     send_mail_to_setup_password(serializer.data)
+                logger.info("{user} CREATED User with {params}".format(user=request.user, params=request.data))
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -158,6 +159,11 @@ class UserDetail(APIView):
         if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
             serializer = UserProfileSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(user), params=request.data
+                    )
+                )
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -182,6 +188,7 @@ class UserDetail(APIView):
         if request.user.has_perm("usersmanagement.delete_userprofile"):
             # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer
             #  le dernier Administrateur
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(user)))
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:

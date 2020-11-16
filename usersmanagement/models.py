@@ -28,6 +28,10 @@ class UserProfile(AbstractUser):
         if not self.is_active:
             self.is_active = True
 
+    def __repr__(self):
+        """Define formal representation of a user."""
+        return "<User: {id} {name}>".format(id=self.id, name=self.username)
+
 
 class TeamType(models.Model):
     """
@@ -49,6 +53,10 @@ class TeamType(models.Model):
     def __str__(self):
         """Return the name of the teamtype."""
         return self.name
+
+    def __repr__(self):
+        """Define formal representation of a team type."""
+        return "<TeamType: {id} {name}>".format(id=self.id, name=self.name)
 
     def _apply_(self):
         teams_with_this_teamtype = self.team_set.all()
@@ -80,3 +88,7 @@ class Team(Group):
         self.team_type = new_team_type
         self.save()
         new_team_type._apply_()
+
+    def __repr__(self):
+        """Define formal representation of a team."""
+        return "<Team: {id} {name}>".format(id=self.id, name=self.team_type)
