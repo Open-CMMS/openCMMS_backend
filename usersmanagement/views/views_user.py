@@ -440,7 +440,7 @@ class UserResetPassword(APIView):
         username = request.GET.get('username', "")
         user1 = UserProfile.objects.filter(email=email)
         user2 = UserProfile.objects.filter(username=username)
-        user = user1 | user2
+        user = (user1 | user2)[0]
         if user.count() == 0 :
             return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
         token = token_hex(16)
