@@ -225,7 +225,7 @@ class EquipmentDetail(APIView):
                 equipment = equipment_serializer.save()
                 self._save_modification_fields(request, field_objects, equipment)
                 equipment_details_serializer = EquipmentDetailsSerializer(equipment)
-                return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(equipment_details_serializer.data, status=status.HTTP_200_OK)
         else:
             error = self._validate_fields(request, field_objects)
             if error:
@@ -281,18 +281,24 @@ class EquipmentDetail(APIView):
     def _validate_modification_fields(self, request, field_objects):
         if field_objects:
             for field_object in field_objects:
-                field = Field.objects.get(pk=field_object.get('field'))
-                if field.value_set is not None and field_object.get('field_value', None) is not None:
-                    if field_object.get('field_value').get('value', None) not in field.value_set.values_list(
-                        'value', flat=True
-                    ):
+                try:
+                    field = Field.objects.get(pk=field_object.get('field'))
+                    if field.value_set is not None and field_object.get('field_value', None) is not None:
+                        if field_object.get('field_value').get('value', None) not in field.value_set.values_list(
+                            'value', flat=True
+                        ):
+                            return Response(
+                                field_object.get('field_value', None).get('value', None) + " is not a valid value",
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                    elif field_object.get('value', None) is None:
                         return Response(
-                            field_object.get('field_value', None).get('value', None),
-                            " is not a valid value",
-                            status=status.HTTP_400_BAD_REQUEST
+                            field_object.get('name') + " cant be null !", status=status.HTTP_400_BAD_REQUEST
                         )
-                elif field_object.get('value', None) is None:
-                    return Response(field_object.get('name') + " cant be null !", status=status.HTTP_400_BAD_REQUEST)
+                except ObjectDoesNotExist:
+                    return Response(
+                        "Field " + field_object.get('field') + " doesn't exist", status=status.HTTP_400_BAD_REQUEST
+                    )
 
     def _save_modification_fields(self, request, field_objects, equipment):
         if field_objects:
