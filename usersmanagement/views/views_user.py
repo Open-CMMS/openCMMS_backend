@@ -449,10 +449,10 @@ class UserResetPassword(APIView):
         user.save()
         if (settings.DEBUG is True):
             url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-                &username={user.username}"
+&username={user.username}"
         else:
             url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-                &username={user.username}"
+&username={user.username}"
         email = EmailMessage()
         email.subject = "Reset Your Password"
         email.body = "You asked to reset your password, to do so please follow this link : " + url
