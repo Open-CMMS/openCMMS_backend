@@ -18,3 +18,6 @@ Pipfile.lock
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+
+# Settings file
+openCMMS/pic_settings.py
