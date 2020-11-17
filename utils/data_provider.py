@@ -2,7 +2,6 @@
 import importlib
 import logging
 import re
-from datetime import timedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -39,6 +38,7 @@ def start():
             dataprovider.is_activated = False
             dataprovider.save()
             scheduler.pause_job(dataprovider.job_id)
+            logger.warning('The job {} did not start. {}', dataprovider.name, e)
 
 
 def add_job(dataprovider):
