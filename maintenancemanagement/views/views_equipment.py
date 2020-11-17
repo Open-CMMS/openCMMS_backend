@@ -302,6 +302,7 @@ class EquipmentDetail(APIView):
         if field_objects:
             for field_object in field_objects:
                 try:
+                    FieldObject.objects.get(pk=field_object.get('id'))
                     field = Field.objects.get(pk=field_object.get('field'))
                     if field.value_set is not None and field_object.get('field_value', None) is not None:
                         if field_object.get('field_value').get('value', None) not in field.value_set.values_list(
@@ -317,7 +318,8 @@ class EquipmentDetail(APIView):
                         )
                 except ObjectDoesNotExist:
                     return Response(
-                        "Field " + field_object.get('field') + " doesn't exist", status=status.HTTP_400_BAD_REQUEST
+                        "Field " + str(field_object.get('field')) + " doesn't exist",
+                        status=status.HTTP_400_BAD_REQUEST
                     )
 
     def _save_modification_fields(self, request, field_objects, equipment):
