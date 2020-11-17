@@ -6,7 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from maintenancemanagement.models import EquipmentType, FieldGroup, FieldObject
+from maintenancemanagement.models import EquipmentType, FieldGroup, Field, FieldValue
 from maintenancemanagement.serializers import (
     EquipmentTypeCreateSerializer,
     EquipmentTypeDetailsSerializer,
@@ -198,17 +198,15 @@ class EquipmentTypeDetail(APIView):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
+
     def _update_field_values(self, field_objects):
         for field_object in field_objects:
-            field = FieldObject.objects.get(pk=field_object.pk).field
-            new_values = field_object.value
-            print('nv : ', new_values)
-            old_values = field.value_set.all().values_list('name', flat=True)
-            print('ov :', old_values)
+            field = Field.objects.get(pk=field_object.get('id'))
+            new_values = field_object.get('value')
+            old_values = field.value_set.all().values_list('value', flat=True)
             for value in new_values:
                 if value not in old_values:
-                    print('la valeur : ', value, ' nest pas dans ', old_values)
+                    FieldValue.objects.create(value=value, field=field)
 
     @swagger_auto_schema(
         operation_description='Delete the EquipmentType corresponding to the given key.',
