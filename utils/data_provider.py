@@ -60,6 +60,7 @@ def add_job(dataprovider):
 
 def _trigger_dataprovider(dataprovider):
     """Update the indicated field from a data provider."""
+    module = ""
     try:
         module = importlib.import_module(f"utils.data_providers.{dataprovider.file_name[:-3]}")
         field = FieldObject.objects.get(id=dataprovider.field_object)
