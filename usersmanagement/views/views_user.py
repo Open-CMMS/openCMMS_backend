@@ -441,7 +441,7 @@ class UserResetPassword(APIView):
     """The APIView class to reset a password."""
 
     def get(self, request):
-        """The method to implementing the password reset."""
+        """Reset the password."""
         email = request.GET.get('email', "")
         username = request.GET.get('username', "")
         user1 = UserProfile.objects.filter(email=email)
