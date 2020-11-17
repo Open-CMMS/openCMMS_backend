@@ -173,7 +173,7 @@ class EquipmentTests(TestCase):
         self.add_view_perm(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        response = c.get("/api/maintenancemanagement/equipments/" + str(-1) + "/")
+        response = c.get("/api/maintenancemanagement/equipments/" + str(101548021) + "/")
         self.assertEqual(response.status_code, 404)
 
     def test_US4_I3_equipmentdetail_get_without_perm(self):
@@ -239,7 +239,7 @@ class EquipmentTests(TestCase):
         self.add_delete_perm(user)
         c = APIClient()
         c.force_authenticate(user=user)
-        response = c.delete("/api/maintenancemanagement/equipments/" + str(-1) + "/")
+        response = c.delete("/api/maintenancemanagement/equipments/" + str(101548021) + "/")
         self.assertEqual(response.status_code, 404)
 
     def test_US4_I5_equipmentdetail_delete_without_perm(self):
@@ -726,7 +726,8 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         response = c.put(
-            "/api/maintenancemanagement/equipments/" + str(-1) + "/", {"name": "Embouteilleuse AXB7"}, format='json'
+            "/api/maintenancemanagement/equipments/" + str(101548021) + "/", {"name": "Embouteilleuse AXB7"},
+            format='json'
         )
         self.assertEqual(response.status_code, 404)
 
