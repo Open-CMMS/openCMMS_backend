@@ -30,7 +30,7 @@ class UserProfile(AbstractUser):
 
     def __repr__(self):
         """Define formal representation of a user."""
-        return "<User: {id} {name}>".format(id=self.id, name=self.username)
+        return "<User: id={id}, username='{name}'>".format(id=self.id, name=self.username)
 
 
 class TeamType(models.Model):
@@ -56,7 +56,9 @@ class TeamType(models.Model):
 
     def __repr__(self):
         """Define formal representation of a team type."""
-        return "<TeamType: {id} {name}>".format(id=self.id, name=self.name)
+        return "<TeamType: id={id}, name='{name}', permissions={perms}>".format(
+            id=self.id, name=self.name, perms=self.perms
+        )
 
     def _apply_(self):
         teams_with_this_teamtype = self.team_set.all()
@@ -91,4 +93,4 @@ class Team(Group):
 
     def __repr__(self):
         """Define formal representation of a team."""
-        return "<Team: {id} {name}>".format(id=self.id, name=self.team_type)
+        return "<Team: id={id}, team_type='{name}'>".format(id=self.id, name=self.team_type)

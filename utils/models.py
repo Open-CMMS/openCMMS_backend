@@ -39,9 +39,10 @@ class DataProvider(models.Model):
 
     def __repr__(self):
         """Define the representation of a dataprovider."""
-        return '<DataProvider: ' + "'name': '{name}', 'filename': '{file_name}', 'equipment': '{equipment_name}', 'field_object': \
-'{field_object_field_name}', 'ip_address': '{ip_address}', 'recurrence': '{recurrence}', 'is_activated': \
-'{is_activated}', 'job_id': '{job_id}'".format(
+        return '<DataProvider: ' + "id={id}, name='{name}', filename='{file_name}', equipment=\
+'{equipment_name}', field_object='{field_object_field_name}', ip_address={ip_address}, recurrence=\
+{recurrence}, is_activated={is_activated}, job_id={job_id}".format(
+            id=self.id,
             name=self.name,
             file_name=self.file_name,
             equipment_name=self.equipment.name,
