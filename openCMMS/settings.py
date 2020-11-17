@@ -315,7 +315,8 @@ LOGGING = {
             'verbose_http':
                 {
                     'format':
-                        '{levelname} {asctime} {process:d} {thread:d} "{request.user} did {request.method} on {request.path} with {request.POST} and got {status_code}"',
+                        '{levelname} {asctime} {process:d} {thread:d} "{request.user} did {request.method} on\
+{request.path} with {request.POST} and got {status_code}"',
                     'style':
                         '{',
                 },
