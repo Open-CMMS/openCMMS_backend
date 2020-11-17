@@ -214,8 +214,6 @@ class EquipmentDetail(APIView):
     def _update_equipment_with_equipment_type(self, request, equipment, equipment_serializer, field_objects):
         if equipment.equipment_type.pk == request.data.get('equipment_type'):
             new_field_objects, existing_field_objects = self._split_field_objects(field_objects)
-            print("New fields : ", new_field_objects)
-            print("Existing fields : ", existing_field_objects)
             error = self._validate_modification_fields(request, existing_field_objects)
             if error:
                 return error
@@ -263,7 +261,6 @@ class EquipmentDetail(APIView):
             for new_field in new_fields:
                 validation_serializer = FieldObjectNewFieldValidationSerializer(data=new_field)
                 if not validation_serializer.is_valid():
-                    print("AHHHHHHHHHHH")
                     return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def _get_expected_fields(self, request):
