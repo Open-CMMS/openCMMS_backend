@@ -47,12 +47,12 @@ def initialize_db():
     liste_manager_management = [
         'equipment', 'equipmenttype', 'field', 'fieldgroup', 'fieldvalue', 'file', 'task', 'tasktemplate'
     ]
-    permissions_tasktemplate = Permission.objects.filter(codename__regex='|'.join(liste_manager_management)
-                                                        ).exclude(codename__endswith='profile')
+    perms_tasktemplate = Permission.objects.filter(codename__regex='|'.join(liste_manager_management))
+    perms_tasktemplate = perms_tasktemplate.exclude(codename__endswith='profile')
 
     liste_manager_user = ['Can change team', 'Can view user profile', 'Can view team', 'Can add team']
     permissions_managers_users = Permission.objects.filter(name__in=liste_manager_user)
-    for permission in permissions_tasktemplate:
+    for permission in perms_tasktemplate:
         maintenance_managers.perms.add(permission)
 
     for permission in permissions_managers_users:
