@@ -35,7 +35,7 @@ def start():
         try:
             test_dataprovider_configuration(dataprovider.file_name, dataprovider.ip_address)
         except Exception as e:
-            dataprovider.is_activated = False
+            dataprovider.is_activated = None
             dataprovider.save()
             scheduler.pause_job(dataprovider.job_id)
             logger.warning('The job {} did not start. {}', dataprovider.name, e)
@@ -67,16 +67,22 @@ def _trigger_dataprovider(dataprovider):
         field.value = module.get_data(dataprovider.ip_address)
         field.save()
     except ImportError:
+        dataprovider.is_activated = None
+        dataprovider.save()
         logger.error(
             "The dataProvider {filename} could not be imported.\n{}".format(
                 ImportError, filename=dataprovider.file_name
             )
         )
     except ObjectDoesNotExist:
+        dataprovider.is_activated = None
+        dataprovider.save()
         logger.error(
             "The field {field} was not found.\n{}".format(ObjectDoesNotExist, field=dataprovider.field_object)
         )
     except GetDataException:
+        dataprovider.is_activated = None
+        dataprovider.save()
         logger.error(
             "The execution of get_data of the module {module} run into an error.\n{}".format(
                 GetDataException, module=module
