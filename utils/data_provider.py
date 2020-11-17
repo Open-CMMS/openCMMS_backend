@@ -37,8 +37,7 @@ def start():
         except Exception as e:
             dataprovider.is_activated = None
             dataprovider.save()
-            scheduler.pause_job(dataprovider.job_id)
-            logger.warning('The job {} did not start. {}', dataprovider.name, e)
+            logger.warning("The data provider '{}' doesn't work : {}".format(dataprovider.name, e))
 
 
 def add_job(dataprovider):
@@ -69,7 +68,7 @@ def _trigger_dataprovider(dataprovider):
     except ImportError:
         dataprovider.is_activated = None
         dataprovider.save()
-        logger.error(
+        logger.warning(
             "The dataProvider {filename} could not be imported.\n{}".format(
                 ImportError, filename=dataprovider.file_name
             )
@@ -77,13 +76,13 @@ def _trigger_dataprovider(dataprovider):
     except ObjectDoesNotExist:
         dataprovider.is_activated = None
         dataprovider.save()
-        logger.error(
+        logger.warning(
             "The field {field} was not found.\n{}".format(ObjectDoesNotExist, field=dataprovider.field_object)
         )
     except GetDataException:
         dataprovider.is_activated = None
         dataprovider.save()
-        logger.error(
+        logger.warning(
             "The execution of get_data of the module {module} run into an error.\n{}".format(
                 GetDataException, module=module
             )
