@@ -29,7 +29,7 @@ def send_notifications():
                     html_message=template
                 )
             except Exception as e:
-                logger.warning("There was an exception while sending a mail.\n{}", e)
+                logger.error("There was an exception while sending a mail.\n{}", e)
 
 
 def get_notification_template(user):
@@ -75,6 +75,9 @@ def get_imminent_tasks(user):
 
 def start():
     r"""\n# Set up the cron job to send daily notifications."""
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(send_notifications, 'cron', day_of_week='mon-fri', hour='6', minute='30')
-    scheduler.start()
+    try:
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(send_notifications, 'cron', day_of_week='mon-fri', hour='6', minute='30')
+        scheduler.start()
+    except Exception as e:
+        logger.critical("The notifications scheduler did not start. {}", e)
