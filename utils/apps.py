@@ -1,9 +1,5 @@
 """This script describes our utils app."""
-import logging
-
 from django.apps import AppConfig
-
-logger = logging.getLogger(__name__)
 
 
 class UtilsConfig(AppConfig):
@@ -18,5 +14,5 @@ class UtilsConfig(AppConfig):
             notifications.start()
             from utils import data_provider
             data_provider.start()
-        except Exception as e:
-            logger.critical("The schedulers ran into a problem.{}", e)
+        except Exception:
+            pass
