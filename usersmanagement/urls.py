@@ -15,6 +15,7 @@ urlpatterns_users = [
     path('users/<int:pk>/get_user_permissions', views_user.GetUserPermissions.as_view(), name="get_user_permissions"),
     path('check_token', views_user.CheckToken.as_view(), name="check_token"),
     path('set_password', views_user.SetNewPassword.as_view(), name="set_password"),
+    path('forget_password', views_user.UserResetPassword.as_view(), name="forget_password"),
 ]
 
 urlpatterns_perms = [
