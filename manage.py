@@ -9,7 +9,6 @@ def main():
     if 'pic_settings.py' not in os.listdir(CONF_DIR):
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openCMMS.base_settings')
     else :
-        print('Jsuis rentré ici')
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openCMMS.pic_settings')
     try:
         from django.core.management import execute_from_command_line
