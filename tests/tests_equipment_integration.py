@@ -4,10 +4,16 @@ from init_db_tests import init_db
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    Equipment, EquipmentType, Field, FieldGroup, FieldObject, FieldValue,
+    Equipment,
+    EquipmentType,
+    Field,
+    FieldGroup,
+    FieldObject,
+    FieldValue,
 )
 from maintenancemanagement.serializers import (
-    EquipmentDetailsSerializer, EquipmentSerializer,
+    EquipmentDetailsSerializer,
+    EquipmentSerializer,
 )
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -816,27 +822,49 @@ class EquipmentTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    # def test_US21_I2_equipmentdetails_put_with_new_fields_with_perm(self):
-    #     """
-    #         Test if a user with perm can update an equipment with fields from equipment type
-    #     """
-    #     user = UserProfile.objects.create(username="user", password="p4ssword")
-    #     self.add_change_perm(user)
-    #     c = APIClient()
-    #     c.force_authenticate(user=user)
-    #     equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
-    #     response = c.put(
-    #         "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {
-    #             "name": "Embouteilleuse AXB1",
-    #             "equipment_type": EquipmentType.objects.get(name="Embouteilleuse").id,
-    #             "field": [{
-    #                 "field": Field.objects.get(name="FieldWithoutValueTest").id,
-    #                 "value": "42"
-    #             }]
-    #         },
-    #         format='json'
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-    #     equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
-    #     serializer = EquipmentDetailsSerializer(equipment)
-    #     self.assertEqual(serializer.data, response.json())
+    def test_US21_I2_equipmentdetails_put_with_new_fields_with_perm(self):
+        """
+            Test if a user with perm can update an equipment with fields from equipment type
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
+        pression = Field.objects.get(name="Pression")
+        marque = Field.objects.get(name="Marque")
+        response = c.put(
+            "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {
+                "name":
+                    "Embouteilleuse AXB7",
+                "equipment_type":
+                    EquipmentType.objects.get(name="Embouteilleuse").id,
+                "field":
+                    [
+                        {
+                            "id": FieldObject.objects.get(field=pression).id,
+                            "field": pression.id,
+                            "value": "3 bars"
+                        }, {
+                            "id": FieldObject.objects.get(field=marque).id,
+                            "field": marque.id,
+                            "field_value":
+                                {
+                                    "id": FieldValue.objects.get(value="BOSH").id,
+                                    "value": "BOSH",
+                                    "field": marque.id
+                                }
+                        }, {
+                            "name": "NewField",
+                            "value": "42",
+                            "description": "Il s'agit d'un nouveau Field"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, 200)
+        equipment = Equipment.objects.get(name="Embouteilleuse AXB7")
+        serializer = EquipmentDetailsSerializer(equipment)
+        self.assertEqual(serializer.data, response.json())

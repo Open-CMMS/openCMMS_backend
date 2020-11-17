@@ -213,19 +213,25 @@ class EquipmentDetail(APIView):
 
     def _update_equipment_with_equipment_type(self, request, equipment, equipment_serializer, field_objects):
         if equipment.equipment_type.pk == request.data.get('equipment_type'):
-            error = self._validate_modification_fields(request, field_objects)
+            new_field_objects, existing_field_objects = self._split_field_objects(field_objects)
+            print("New fields : ", new_field_objects)
+            print("Existing fields : ", existing_field_objects)
+            error = self._validate_modification_fields(request, existing_field_objects)
             if error:
                 return error
-            else:
-                logger.info(
-                    "{user} UPDATED {object} with {params}".format(
-                        user=request.user, object=repr(equipment), params=request.data
-                    )
+            error = self._validate_new_fields(request, new_field_objects)
+            if error:
+                return error
+            logger.info(
+                "{user} UPDATED {object} with {params}".format(
+                    user=request.user, object=repr(equipment), params=request.data
                 )
-                equipment = equipment_serializer.save()
-                self._save_modification_fields(request, field_objects, equipment)
-                equipment_details_serializer = EquipmentDetailsSerializer(equipment)
-                return Response(equipment_details_serializer.data, status=status.HTTP_200_OK)
+            )
+            equipment = equipment_serializer.save()
+            self._save_modification_fields(request, existing_field_objects, equipment)
+            self._save_fields(request, new_field_objects, equipment)
+            equipment_details_serializer = EquipmentDetailsSerializer(equipment)
+            return Response(equipment_details_serializer.data, status=status.HTTP_200_OK)
         else:
             error = self._validate_fields(request, field_objects)
             if error:
@@ -242,6 +248,23 @@ class EquipmentDetail(APIView):
                 self._save_fields(request, field_objects, equipment)
                 equipment_details_serializer = EquipmentDetailsSerializer(equipment)
                 return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
+
+    def _split_field_objects(self, field_objects):
+        new_field_objects, existing_field_objects = [], []
+        for field_object in field_objects:
+            if field_object.get('id') is not None:
+                existing_field_objects.append(field_object)
+            else:
+                new_field_objects.append(field_object)
+        return new_field_objects, existing_field_objects
+
+    def _validate_new_fields(self, request, new_fields):
+        if new_fields:
+            for new_field in new_fields:
+                validation_serializer = FieldObjectNewFieldValidationSerializer(data=new_field)
+                if not validation_serializer.is_valid():
+                    print("AHHHHHHHHHHH")
+                    return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def _get_expected_fields(self, request):
         expected_fields_groups = EquipmentType.objects.get(id=request.data.get('equipment_type')).fields_groups.all()
