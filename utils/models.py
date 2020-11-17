@@ -30,7 +30,7 @@ class DataProvider(models.Model):
         null=False
     )
     recurrence = models.CharField(max_length=100, blank=False, null=False)
-    is_activated = models.BooleanField(default=True, blank=False, null=False)
+    is_activated = models.BooleanField(default=True, blank=False, null=True)
     job_id = models.CharField(max_length=100, default='')
 
     def __str__(self):
