@@ -501,7 +501,6 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
         exclude = []
 
 
-
 class TaskListingSerializer(serializers.ModelSerializer):
     """Task listing serializer."""
 
