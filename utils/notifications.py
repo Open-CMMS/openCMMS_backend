@@ -1,5 +1,6 @@
 """This file allows to send email notifications."""
 
+import logging
 from datetime import date, timedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -11,6 +12,8 @@ from django.utils.html import strip_tags
 from maintenancemanagement.models import Task
 from usersmanagement.models import UserProfile
 
+logger = logging.getLogger(__name__)
+
 
 def send_notifications():
     r"""\n# Send notifications to users who have late or imminent tasks."""
@@ -18,9 +21,15 @@ def send_notifications():
         template = get_notification_template(user)
         if template:
             plain_message = strip_tags(template)
-            mail.send_mail(
-                'Notification Open-CMMS', plain_message, settings.EMAIL_HOST_USER, [user.email], html_message=template
-            )
+            try:
+                mail.send_mail(
+                    'Notification Open-CMMS',
+                    plain_message,
+                    settings.EMAIL_HOST_USER, [user.email],
+                    html_message=template
+                )
+            except Exception as e:
+                logger.warning("There was an exception while sending a mail.\n{}", e)
 
 
 def get_notification_template(user):

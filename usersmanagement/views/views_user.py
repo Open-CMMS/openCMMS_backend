@@ -10,6 +10,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
+from openCMMS.settings import BASE_URL
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -366,19 +367,16 @@ def send_mail_to_setup_password(data):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG is True):
-        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
-
-    else:
-        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-            &username={user.username}"
-
+    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been invited to join openCMMS. \nTo setup your password, please follow this link : " + url
+    email.body = f"You have been invited to join openCMMS. \nTo setup your password, please follow this link : {url}"
     email.to = [user.email]
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.warning("There was an exception while sending a mail.\n{}", e)
 
 
 def send_mail_to_setup_password_after_blocking(id):
@@ -391,19 +389,18 @@ def send_mail_to_setup_password_after_blocking(id):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG is True):
-        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
-    else:
-        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-            &username={user.username}"
-
+    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been blocked after 3 unsuccessful login. \nTo setup your new password,\
-         please follow this link : " + url
+    email.body = f"You have been blocked after 3 unsuccessful login.\
+To setup your new password, please follow this link : {url}"
+
     email.to = [user.email]
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.warning("There was an exception while sending a mail.\n{}", e)
 
 
 class SetNewPassword(APIView):

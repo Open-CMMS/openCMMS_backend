@@ -1,15 +1,19 @@
 """This is our script that execute all the get_data methods."""
 import importlib
+import logging
 import re
 from datetime import timedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import FieldObject
 from utils.models import DataProvider
 
 scheduler = BackgroundScheduler()
 scheduler.start()
+
+logger = logging.getLogger(__name__)
 
 
 class GetDataException(Exception):
@@ -64,9 +68,22 @@ def _trigger_dataprovider(dataprovider):
         field = FieldObject.objects.get(id=dataprovider.field_object)
         field.value = module.get_data(dataprovider.ip_address)
         field.save()
-    except:
-        pass
-        # A CODER
+    except ImportError:
+        logger.error(
+            "The dataProvider {filename} could not be imported.\n{}".format(
+                ImportError, filename=dataprovider.file_name
+            )
+        )
+    except ObjectDoesNotExist:
+        logger.error(
+            "The field {field} was not found.\n{}".format(ObjectDoesNotExist, field=dataprovider.field_object)
+        )
+    except GetDataException:
+        logger.error(
+            "The execution of get_data of the module {module} run into an error.\n{}".format(
+                GetDataException, module=module
+            )
+        )
 
 
 def _parse_time(time_str):
