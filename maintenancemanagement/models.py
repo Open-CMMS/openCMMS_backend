@@ -97,7 +97,8 @@ class FieldObject(models.Model):
 
     def __repr__(self):
         """Define the representation of FieldObject."""
-        return "<FieldObject: id={id}, field={field}, field_value={field_value}, value={value}, description={description}>".format(
+        return "<FieldObject: id={id}, field={field}, field_value={field_value}, value={value},\
+description={description}>".format(
             id=self.id, field=self.field, field_value=self.value, value=self.value, description=self.description
         )
 
