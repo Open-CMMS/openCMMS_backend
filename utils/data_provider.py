@@ -2,7 +2,6 @@
 import importlib
 import logging
 import re
-from datetime import timedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -39,21 +38,20 @@ def start():
             dataprovider.is_activated = False
             dataprovider.save()
             scheduler.pause_job(dataprovider.job_id)
+            logger.warning('The job {} did not start. {}', dataprovider.name, e)
 
 
 def add_job(dataprovider):
     """Add a job for the given data provider."""
     recurrence = _parse_time(dataprovider.recurrence)
     if recurrence:
-        hours = recurrence.seconds // 3600
-        minutes = (recurrence.seconds - hours * 3600) // 60
         job = scheduler.add_job(
             _trigger_dataprovider,
             'interval',
             kwargs={"dataprovider": dataprovider},
-            days=recurrence.days,
-            hours=hours,
-            minutes=minutes
+            days=recurrence["days"],
+            hours=recurrence["hours"],
+            minutes=recurrence["minutes"]
         )
         dataprovider.job_id = job.id
         dataprovider.save()
@@ -89,14 +87,13 @@ def _trigger_dataprovider(dataprovider):
 def _parse_time(time_str):
     regex = re.compile(r'((?P<days>\d+?)d ?)?((?P<hours>\d+?)h ?)?((?P<minutes>\d+?)m ?)?')
     parts = regex.match(time_str)
-    if not parts:
-        return
-    parts = parts.groupdict()
-    time_params = {}
-    for (name, param) in parts.items():
-        if param:
-            time_params[name] = int(param)
-    return timedelta(**time_params)
+    res = {}
+    for (key, value) in parts.groupdict().items():
+        if value:
+            res[key] = int(value)
+        else:
+            res[key] = 0
+    return res
 
 
 def test_dataprovider_configuration(file_name, ip_address):

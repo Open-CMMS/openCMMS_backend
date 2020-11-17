@@ -157,7 +157,8 @@ class DataProviderTest(TestCase):
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'fake field': 'useless data',
                 'is_activated': True
-            }
+            },
+            format='json'
         )
         self.assertEqual(response.status_code, 201)
         dataprovider = DataProvider.objects.get(file_name='script.py')

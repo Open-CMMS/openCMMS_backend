@@ -71,7 +71,6 @@ class DataProviderList(APIView):
             )
             dict_res = serializer.data.copy()
             dict_res['python_files'] = python_files
-            # logger.info('The user {user} did {method} on '.format(user=request.META.REMOTE_HOST, method=request.method))
             return Response(dict_res)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -144,7 +143,7 @@ class DataProviderDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("utils.delete_dataprovider"):
-            logger.info("DELETED DataProvider {dataprovider}".format(dataprovider=dataprovider))
+            logger.info("DELETED DataProvider {dataprovider}".format(dataprovider=repr(dataprovider)))
             dataprovider.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -170,7 +169,7 @@ class DataProviderDetail(APIView):
             if serializer.is_valid():
                 logger.info(
                     "UPDATED DataProvider {dataprovider} with {data}".format(
-                        dataprovider=dataprovider, data=request.data
+                        dataprovider=repr(dataprovider), data=request.data
                     )
                 )
                 dataprovider = serializer.save()
