@@ -6,7 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from maintenancemanagement.models import EquipmentType, FieldGroup, Field, FieldValue
+from maintenancemanagement.models import EquipmentType, FieldGroup
 from maintenancemanagement.serializers import (
     EquipmentTypeCreateSerializer,
     EquipmentTypeDetailsSerializer,
@@ -198,9 +198,6 @@ class EquipmentTypeDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.change_equipmenttype"):
-            field_objects = request.data.get("field", None)
-            if field_objects is not None :
-                self._update_field_values(field_objects)
             serializer = EquipmentTypeSerializer(equipment_type, data=request.data, partial=True)
             if serializer.is_valid():
                 logger.info(
@@ -212,15 +209,6 @@ class EquipmentTypeDetail(APIView):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-    def _update_field_values(self, field_objects):
-        for field_object in field_objects:
-            field = Field.objects.get(pk=field_object.get('id'))
-            new_values = field_object.get('value')
-            old_values = field.value_set.all().values_list('value', flat=True)
-            for value in new_values:
-                if value not in old_values:
-                    FieldValue.objects.create(value=value, field=field)
 
     @swagger_auto_schema(
         operation_description='Delete the EquipmentType corresponding to the given key.',

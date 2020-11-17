@@ -125,13 +125,12 @@ class FieldObjectSerializer(serializers.ModelSerializer):
     """Basic field object serializer."""
 
     described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
-    name = serializers.CharField(source='field.name')
 
     class Meta:
         """This class contains the serializer metadata."""
 
         model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description', 'name']
+        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
 
 
 #############################################################################
@@ -663,40 +662,6 @@ class EquipmentRequirementsSerializer(serializers.ModelSerializer):
         for fields_group in fields_groups:
             fields.extend(fields_group.field_set.all())
         return FieldRequirementsSerializer(fields, many=True).data
-
-
-class EquipmentFieldDataProviderSerializer(serializers.ModelSerializer):
-    """Equipment field serializer."""
-
-    name = serializers.CharField(source='field.name')
-    field_value = FieldValueSerializer()
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = FieldObject
-        fields = ['id', 'field', 'name', 'value', 'field_value', 'description']
-
-
-class EquipmentDetailsDataProviderSerializer(serializers.ModelSerializer):
-    """Equipment details serializer."""
-
-    equipment_type = EquipmentTypeSerializer()
-    files = FileSerializer(many=True)
-    field = serializers.SerializerMethodField()
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = Equipment
-        fields = ['id', 'name', 'equipment_type', 'files', 'field']
-
-    def get_field(self, obj):
-        """Get the explicit field associated with the \
-            Equipement as obj."""
-        content_type_object = ContentType.objects.get_for_model(obj)
-        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
-        return EquipmentFieldDataProviderSerializer(fields, many=True).data
 
 
 #############################################################################

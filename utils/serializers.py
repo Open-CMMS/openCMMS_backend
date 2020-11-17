@@ -1,6 +1,6 @@
 """Serializers."""
 from maintenancemanagement.serializers import (
-    EquipmentDetailsDataProviderSerializer,
+    EquipmentDetailsSerializer,
     EquipmentSerializer,
     FieldObjectSerializer,
 )
@@ -58,5 +58,5 @@ class DataProviderDetailsSerializer(serializers.ModelSerializer):
 class DataProviderRequirementsSerializer(serializers.Serializer):
     """DataProvider requirements Serialize."""
 
-    equipments = EquipmentDetailsDataProviderSerializer(many=True)
+    equipments = EquipmentDetailsSerializer(many=True)
     data_providers = DataProviderDetailsSerializer(many=True)

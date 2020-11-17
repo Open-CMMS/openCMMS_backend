@@ -178,9 +178,9 @@ class TaskDetail(APIView):
 
     @swagger_auto_schema(
         operation_description='Update the Task corresponding to the given key.',
-        query_serializer=TaskUpdateSerializer(many=False),
+        query_serializer=TaskSerializer(many=False),
         responses={
-            200: TaskDetailsSerializer(many=False),
+            200: TaskSerializer(many=False),
             400: "Bad request",
             401: "Unhauthorized",
             404: "Not found",
