@@ -11,7 +11,8 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-if 'pic_settings.py' not in os.listdir():
+CONF_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'openCMMS')
+if 'pic_settings.py' not in os.listdir(CONF_DIR):
     print('je suis la')
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openCMMS.base_settings')
 else :
