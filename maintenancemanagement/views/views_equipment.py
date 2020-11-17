@@ -245,7 +245,7 @@ class EquipmentDetail(APIView):
                 equipment = equipment_serializer.save()
                 self._save_fields(request, field_objects, equipment)
                 equipment_details_serializer = EquipmentDetailsSerializer(equipment)
-                return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(equipment_details_serializer.data, status=status.HTTP_200_OK)
 
     def _split_field_objects(self, field_objects):
         new_field_objects, existing_field_objects = [], []
