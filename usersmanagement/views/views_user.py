@@ -271,7 +271,7 @@ class SignIn(APIView):
         """docstring."""
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            response = {
+            data = {
                 'success': 'True',
                 'status code': status.HTTP_200_OK,
                 'message': 'User logged in successfully',
@@ -279,16 +279,18 @@ class SignIn(APIView):
                 'user_id': serializer.data['user_id'],
                 'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
             }
+            response = {'data' : data}
             return Response(response, status=status.HTTP_200_OK)
         else:
             if str(serializer.errors.get('is_blocked')[0]) == 'True':
                 send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
-            response = {
+            error = {
                 'success': 'False',
                 'error': str(serializer.errors.get('error')[0]),
                 'is_blocked': str(serializer.errors.get('is_blocked')[0]),
             }
-            return Response(response, status=status.HTTP_404_NOT_FOUND)
+            response = {'error' : error}
+            return Response(response, status=status.HTTP_200_OK)  # Do not change this error code
 
 
 class SignOut(APIView):
