@@ -296,7 +296,7 @@ class SignIn(APIView):
                 'error': str(serializer.errors.get('error')[0]),
                 'is_blocked': str(serializer.errors.get('is_blocked')[0]),
             }
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
 
 
 class SignOut(APIView):

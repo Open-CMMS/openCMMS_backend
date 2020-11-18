@@ -1,0 +1,70 @@
+name: features
+
+on:
+  push:
+    branches: [ features/** ]
+  pull_request:
+    branches: [ features/** ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: django
+          POSTGRES_PASSWORD: django
+          POSTGRES_DB: django
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Pipenv
+      run: |
+        sudo apt-get update
+        sudo apt-get install libsasl2-dev python3-dev libldap2-dev libssl-dev libpq-dev
+        sudo pip install pipenv
+        pipenv install -d
+    - name: Run tests
+      run: |
+        rm -f reports/*.xml 
+        rm -f -r reports/coverage_html
+        pipenv run coverage run --include="./**/*.py" --omit="./**/temp_*.py" -m pytest tests/*.py --ds=openCMMS.test_settings --junitxml=reports/tests.xml
+        pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html 
+    - uses: actions/upload-artifact@v2
+      with:
+        name: test_coverage
+        path: reports/coverage_html 
+    - name: Run linter
+      run: |
+        pipenv run flake8 --exit-zero > ./reports/flake8.report
+    - uses: actions/upload-artifact@v2
+      with:
+        name: linter
+        path: reports/flake8.report
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1.4
+      if: always()
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        check_name: Test Results
+        comment_title: Test Statistics
+        hide_comments: all but latest
+        comment_on_pr: true
+        files: reports/tests.xml
+        report_individual_runs: true
+        deduplicate_classes_by_file_name: false
