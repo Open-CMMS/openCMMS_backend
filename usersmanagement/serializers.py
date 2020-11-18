@@ -82,7 +82,7 @@ class UserLoginSerializer(serializers.Serializer):
                 }
         else:
             user = UserProfile.objects.filter(username=username)
-            if user.count()==0:
+            if user.count() == 1:
                 user = user[0]
                 if user.is_active:
                     user.nb_tries += 1
