@@ -66,6 +66,8 @@ def _trigger_dataprovider(dataprovider):
         field = FieldObject.objects.get(id=dataprovider.field_object)
         field.value = module.get_data(dataprovider.ip_address)
         field.save()
+        dataprovider.is_activated = True
+        dataprovider.save()
     except ImportError:
         dataprovider.is_activated = None
         dataprovider.save()
