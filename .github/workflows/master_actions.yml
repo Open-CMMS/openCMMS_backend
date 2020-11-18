@@ -43,7 +43,7 @@ jobs:
       run: |
         rm -f reports/*.xml 
         rm -f -r reports/coverage_html
-        pipenv run coverage run --include="./**/*.py" --omit="./**/temp_*.py" -m pytest tests/*.py --ds=openCMMS.test_settings --junitxml=reports/tests.xml
+        pipenv run coverage run --include="./**/*.py" --omit="./**/temp_*.py" -m pytest tests/*.py --ds=openCMMS.base_settings --junitxml=reports/tests.xml
         pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html 
     - uses: actions/upload-artifact@v2
       with:
