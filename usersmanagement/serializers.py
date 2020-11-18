@@ -81,8 +81,9 @@ class UserLoginSerializer(serializers.Serializer):
                     'is_blocked': False,
                 }
         else:
-            user = UserProfile.objects.get(username=username)
-            if user is not None:
+            user = UserProfile.objects.filter(username=username)
+            if user.count()==0:
+                user = user[0]
                 if user.is_active:
                     user.nb_tries += 1
                     user.save()
@@ -92,7 +93,7 @@ class UserLoginSerializer(serializers.Serializer):
                         raise serializers.ValidationError(
                             {
                                 'is_blocked': (True),
-                                'error': ("Mot de passe incorrect 3 fois de suite. Vous êtes bloqués."),
+                                'error': ("Wrong password 3 times in a row. You are blocked."),
                                 'user_id': (user.pk),
                             }
                         )
@@ -100,7 +101,7 @@ class UserLoginSerializer(serializers.Serializer):
                         raise serializers.ValidationError(
                             {
                                 'is_blocked': (False),
-                                'error': ("Mot de passe incorrect"),
+                                'error': ("Incorrect password"),
                             }
                         )
                 else:
@@ -108,13 +109,13 @@ class UserLoginSerializer(serializers.Serializer):
                         {
                             'is_blocked': (True),
                             'user_id': (user.pk),
-                            'error': ("Vous vous êtes trompés trop de fois de mot de passe. Vous êtes bloqués."),
+                            'error': ("You have entered a wrong password too many times. You are blocked."),
                         }
                     )
 
             raise serializers.ValidationError({
                 'is_blocked': (False),
-                'error': ("Login incorrect"),
+                'error': ("Incorrect username"),
             })
 
 
