@@ -103,7 +103,8 @@ class TeamsTests(TestCase):
             "/api/usersmanagement/add_user_to_team", {
                 'username': 'jbi',
                 'team_name': 'Administrators 1'
-            }
+            },
+            format='json'
         )
 
         self.assertEqual(response.status_code, 401)
@@ -197,7 +198,14 @@ class TeamsTests(TestCase):
 
         tt = TeamType.objects.all()[0]
 
-        response = c.post("/api/usersmanagement/teams/", {"name": "test_team", "team_type": str(tt.id)})
+        response = c.post(
+            "/api/usersmanagement/teams/", {
+                "name": "test_team",
+                "team_type": str(tt.id),
+                'user_set': []
+            },
+            format='json'
+        )
         team = Team.objects.get(pk=response.data['id'])
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Team.objects.filter(name="test_team"))
@@ -214,7 +222,7 @@ class TeamsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_authenticate(user=joe)
 
-        response = c.post("/api/usersmanagement/teams/", {"name": "test_team"})
+        response = c.post("/api/usersmanagement/teams/", {"name": "test_team"}, format='json')
 
         self.assertEqual(response.status_code, 401)
 
@@ -314,7 +322,7 @@ class TeamsTests(TestCase):
 
         address = "/api/usersmanagement/teams/" + str(team.id)
 
-        response = c.put(address, {"name": "new_name"}, content_type="application/json")
+        response = c.put(address, {"name": "new_name"}, format="json")
 
         self.assertEqual(response.status_code, 401)
 

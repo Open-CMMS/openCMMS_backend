@@ -86,7 +86,10 @@ class EquipmentList(APIView):
                     return error
                 else:
                     equipment = equipment_serializer.save()
-                    self._save_fields(fields, equipment)
+                    logger.info(
+                        "{user} CREATED Equipment with {params}".format(user=request.user, params=request.data)
+                    )
+                    self._save_fields(request, fields, equipment)
                     equipment_details_serializer = EquipmentDetailsSerializer(equipment)
                     return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -116,7 +119,7 @@ class EquipmentList(APIView):
         if expected_fields:
             return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
 
-    def _save_fields(self, fields, equipment):
+    def _save_fields(self, request, fields, equipment):
         if fields:
             for field in fields:
                 if field.get('field', None) is None:
@@ -125,6 +128,7 @@ class EquipmentList(APIView):
                 field_object_serializer = FieldObjectCreateSerializer(data=field)
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()
+                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=field))
 
 
 class EquipmentDetail(APIView):
@@ -197,6 +201,11 @@ class EquipmentDetail(APIView):
                         request, equipment, equipment_serializer, field_objects
                     )
                 else:
+                    logger.info(
+                        "{user} UPDATED {object} with {params}".format(
+                            user=request.user, object=repr(equipment), params=request.data
+                        )
+                    )
                     equipment_serializer.save()
                     return Response(equipment_serializer.data, status=status.HTTP_200_OK)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -204,14 +213,23 @@ class EquipmentDetail(APIView):
 
     def _update_equipment_with_equipment_type(self, request, equipment, equipment_serializer, field_objects):
         if equipment.equipment_type.pk == request.data.get('equipment_type'):
-            error = self._validate_modification_fields(request, field_objects)
+            new_field_objects, existing_field_objects = self._split_field_objects(field_objects)
+            error = self._validate_modification_fields(request, existing_field_objects)
             if error:
                 return error
-            else:
-                equipment = equipment_serializer.save()
-                self._save_modification_fields(field_objects, equipment)
-                equipment_details_serializer = EquipmentDetailsSerializer(equipment)
-                return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
+            error = self._validate_new_fields(request, new_field_objects)
+            if error:
+                return error
+            logger.info(
+                "{user} UPDATED {object} with {params}".format(
+                    user=request.user, object=repr(equipment), params=request.data
+                )
+            )
+            equipment = equipment_serializer.save()
+            self._save_modification_fields(request, existing_field_objects, equipment)
+            self._save_fields(request, new_field_objects, equipment)
+            equipment_details_serializer = EquipmentDetailsSerializer(equipment)
+            return Response(equipment_details_serializer.data, status=status.HTTP_200_OK)
         else:
             error = self._validate_fields(request, field_objects)
             if error:
@@ -219,10 +237,31 @@ class EquipmentDetail(APIView):
             else:
                 content_type = ContentType.objects.get_for_model(equipment)
                 FieldObject.objects.filter(object_id=equipment.pk, content_type=content_type).delete()
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(equipment), params=request.data
+                    )
+                )
                 equipment = equipment_serializer.save()
-                self._save_fields(field_objects, equipment)
+                self._save_fields(request, field_objects, equipment)
                 equipment_details_serializer = EquipmentDetailsSerializer(equipment)
-                return Response(equipment_details_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(equipment_details_serializer.data, status=status.HTTP_200_OK)
+
+    def _split_field_objects(self, field_objects):
+        new_field_objects, existing_field_objects = [], []
+        for field_object in field_objects:
+            if field_object.get('id') is not None:
+                existing_field_objects.append(field_object)
+            else:
+                new_field_objects.append(field_object)
+        return new_field_objects, existing_field_objects
+
+    def _validate_new_fields(self, request, new_fields):
+        if new_fields:
+            for new_field in new_fields:
+                validation_serializer = FieldObjectNewFieldValidationSerializer(data=new_field)
+                if not validation_serializer.is_valid():
+                    return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def _get_expected_fields(self, request):
         expected_fields_groups = EquipmentType.objects.get(id=request.data.get('equipment_type')).fields_groups.all()
@@ -248,7 +287,7 @@ class EquipmentDetail(APIView):
         if expected_fields:
             return Response(str(expected_fields) + " not expected", status=status.HTTP_400_BAD_REQUEST)
 
-    def _save_fields(self, fields, equipment):
+    def _save_fields(self, request, fields, equipment):
         if fields:
             for field in fields:
                 if field.get('field', None) is None:
@@ -257,24 +296,33 @@ class EquipmentDetail(APIView):
                 field_object_serializer = FieldObjectCreateSerializer(data=field)
                 if field_object_serializer.is_valid():
                     field_object_serializer.save()
+                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=field))
 
     def _validate_modification_fields(self, request, field_objects):
         if field_objects:
             for field_object in field_objects:
-                field = Field.objects.get(pk=field_object.get('field'))
-                if field.value_set is not None and field_object.get('field_value', None) is not None:
-                    if field_object.get('field_value').get('value', None) not in field.value_set.values_list(
-                        'value', flat=True
-                    ):
+                try:
+                    FieldObject.objects.get(pk=field_object.get('id'))
+                    field = Field.objects.get(pk=field_object.get('field'))
+                    if field.value_set is not None and field_object.get('field_value', None) is not None:
+                        if field_object.get('field_value').get('value', None) not in field.value_set.values_list(
+                            'value', flat=True
+                        ):
+                            return Response(
+                                field_object.get('field_value', None).get('value', None) + " is not a valid value",
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                    elif field_object.get('value', None) is None:
                         return Response(
-                            field_object.get('field_value', None).get('value', None),
-                            " is not a valid value",
-                            status=status.HTTP_400_BAD_REQUEST
+                            field_object.get('name') + " cant be null !", status=status.HTTP_400_BAD_REQUEST
                         )
-                elif field_object.get('value', None) is None:
-                    return Response(field_object.get('name') + " cant be null !", status=status.HTTP_400_BAD_REQUEST)
+                except ObjectDoesNotExist:
+                    return Response(
+                        "Field " + str(field_object.get('field')) + " doesn't exist",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-    def _save_modification_fields(self, field_objects, equipment):
+    def _save_modification_fields(self, request, field_objects, equipment):
         if field_objects:
             for field_object_data in field_objects:
                 field_object = FieldObject.objects.get(pk=field_object_data.get('id'))
@@ -286,6 +334,11 @@ class EquipmentDetail(APIView):
                     field_object, data=field_object_data, partial=True
                 )
                 if field_object_serializer.is_valid():
+                    logger.info(
+                        "{user} UPDATED {object} with {params}".format(
+                            user=request.user, object=repr(field_object), params=field_object_data
+                        )
+                    )
                     field_object_serializer.save()
 
     @swagger_auto_schema(
@@ -304,6 +357,7 @@ class EquipmentDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_equipment"):
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(equipment)))
             equipment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

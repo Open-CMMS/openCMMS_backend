@@ -10,6 +10,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
+from openCMMS.settings import BASE_URL
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -85,6 +86,7 @@ class UserList(APIView):
                 else:
                     serializer.save()
                     send_mail_to_setup_password(serializer.data)
+                logger.info("{user} CREATED User with {params}".format(user=request.user, params=request.data))
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -158,6 +160,11 @@ class UserDetail(APIView):
         if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
             serializer = UserProfileSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(user), params=request.data
+                    )
+                )
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -182,6 +189,7 @@ class UserDetail(APIView):
         if request.user.has_perm("usersmanagement.delete_userprofile"):
             # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer
             #  le dernier Administrateur
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(user)))
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -361,19 +369,16 @@ def send_mail_to_setup_password(data):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG is True):
-        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
-
-    else:
-        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-            &username={user.username}"
-
+    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been invited to join openCMMS. \nTo setup your password, please follow this link : " + url
+    email.body = f"You have been invited to join openCMMS. \nTo setup your password, please follow this link : {url}"
     email.to = [user.email]
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.warning("There was an exception while sending a mail.\n{}", e)
 
 
 def send_mail_to_setup_password_after_blocking(id):
@@ -386,19 +391,18 @@ def send_mail_to_setup_password_after_blocking(id):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG is True):
-        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
-    else:
-        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-            &username={user.username}"
-
+    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been blocked after 3 unsuccessful login. \nTo setup your new password,\
-         please follow this link : " + url
+    email.body = f"You have been blocked after 3 unsuccessful login.\
+To setup your new password, please follow this link : {url}"
+
     email.to = [user.email]
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.warning("There was an exception while sending a mail.\n{}", e)
 
 
 class SetNewPassword(APIView):
@@ -436,36 +440,32 @@ class SetNewPassword(APIView):
 
 
 class UserResetPassword(APIView):
+    """The APIView class to reset a password."""
 
     def get(self, request):
+        """Reset the password."""
         email = request.GET.get('email', "")
         username = request.GET.get('username', "")
         user1 = UserProfile.objects.filter(email=email)
         user2 = UserProfile.objects.filter(username=username)
         user = user1 | user2
-        if user.count() == 0 :
+        if user.count() == 0:
             return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
         user = user[0]
         token = token_hex(16)
         user.set_password(token)
         user.save()
-        if (settings.DEBUG is True):
-            url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-&username={user.username}"
-        else:
-            url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-&username={user.username}"
+        url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
         email = EmailMessage()
         email.subject = "Reset Your Password"
         email.body = "You asked to reset your password, to do so please follow this link : " + url
         email.to = [user.email]
-        try :
+        try:
             email.send()
-        except Exception as ex :
-            print(ex)
+        except Exception as ex:
+            logger.warning("There was an exception while sending a mail.\n{}", ex)
             return Response("Error while sending email", status=status.HTTP_400_BAD_REQUEST)
         return Response("Email sent !", status=status.HTTP_200_OK)
-            
 
 
 class CheckToken(APIView):

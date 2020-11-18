@@ -71,6 +71,7 @@ class TeamTypesList(APIView):
             serializer = TeamTypeSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                logger.info("{user} CREATED TeamType with {params}".format(user=request.user, params=request.data))
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -138,6 +139,11 @@ class TeamTypesDetail(APIView):
         if request.user.has_perm("usersmanagement.change_teamtype"):
             serializer = TeamTypeSerializer(group_type, data=request.data)
             if serializer.is_valid():
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(group_type), params=request.data
+                    )
+                )
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -158,6 +164,7 @@ class TeamTypesDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.delete_teamtype"):
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(group_type)))
             group_type.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:

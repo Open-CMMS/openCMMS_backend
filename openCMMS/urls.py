@@ -22,11 +22,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-schema_view = get_schema_view(openapi.Info(
-    title='OPEN CMMS',
-    default_version='v2'
-),
-url=settings.BASE_URL)
+schema_view = get_schema_view(openapi.Info(title='OPEN CMMS', default_version='v2'), url=settings.BASE_URL)
 
 urlpatterns = [
     path('api/admin/', admin.site.urls),

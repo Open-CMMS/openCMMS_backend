@@ -93,6 +93,7 @@ class DataProviderList(APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             dataprovider_serializer = DataProviderCreateSerializer(data=request.data)
             if dataprovider_serializer.is_valid():
+                logger.info("CREATED DataProvider with {param}".format(param=request.data))
                 dataprovider = dataprovider_serializer.save()
                 add_job(dataprovider)
                 dataprovider_details_serializer = DataProviderDetailsSerializer(dataprovider)
@@ -140,6 +141,7 @@ class DataProviderDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("utils.delete_dataprovider"):
+            logger.info("DELETED DataProvider {dataprovider}".format(dataprovider=repr(dataprovider)))
             dataprovider.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -163,14 +165,16 @@ class DataProviderDetail(APIView):
         if request.user.has_perm("utils.change_dataprovider"):
             serializer = DataProviderUpdateSerializer(dataprovider, data=request.data, partial=True)
             if serializer.is_valid():
+                logger.info(
+                    "UPDATED DataProvider {dataprovider} with {data}".format(
+                        dataprovider=repr(dataprovider), data=request.data
+                    )
+                )
                 dataprovider = serializer.save()
-                try:
-                    if dataprovider.is_activated:
-                        scheduler.resume_job(dataprovider.job_id)
-                    else:
-                        scheduler.pause_job(dataprovider.job_id)
-                except:
-                    pass
+                if dataprovider.is_activated is False:
+                    scheduler.pause_job(dataprovider.job_id)
+                else:
+                    scheduler.resume_job(dataprovider.job_id)
                 dataprovider_details_serializer = DataProviderDetailsSerializer(dataprovider)
                 return Response(dataprovider_details_serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -198,6 +202,7 @@ class TestDataProvider(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             try:
                 value = test_dataprovider_configuration(request.data['file_name'], request.data['ip_address'])
+                logger.info("TESTED DataProvider with {data}".format(data=request.data))
                 return Response(value, status=status.HTTP_200_OK)
             except DataProviderException as e:
                 return Response(str(e), status=status.HTTP_501_NOT_IMPLEMENTED)
