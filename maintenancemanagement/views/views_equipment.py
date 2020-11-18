@@ -236,7 +236,10 @@ class EquipmentDetail(APIView):
                 return error
             else:
                 content_type = ContentType.objects.get_for_model(equipment)
-                FieldObject.objects.filter(object_id=equipment.pk, content_type=content_type).delete()
+                old_fields = FieldObject.objects.filter(object_id=equipment.pk, content_type=content_type)
+                for old_field in old_fields:
+                    logger.info("{user} DELETED {object}".format(user=request.user, object=repr(old_field)))
+                    old_field.delete()
                 logger.info(
                     "{user} UPDATED {object} with {params}".format(
                         user=request.user, object=repr(equipment), params=request.data

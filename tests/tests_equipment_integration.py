@@ -990,6 +990,9 @@ class EquipmentTests(TestCase):
         c = APIClient()
         c.force_authenticate(user=user)
         equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
+        pression_object = FieldObject.objects.get(field=Field.objects.get(name="Pression"))
+        capacite_object = FieldObject.objects.get(field=Field.objects.get(name="Nb bouteilles"))
+        marque_object = FieldObject.objects.get(field=Field.objects.get(name="Marque"))
         response = c.put(
             "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {
                 "name":
@@ -1014,6 +1017,9 @@ class EquipmentTests(TestCase):
         equipment = Equipment.objects.get(name="Embouteilleuse AXB7")
         serializer = EquipmentDetailsSerializer(equipment)
         self.assertEqual(serializer.data, response.json())
+        self.assertNotIn(pression_object, FieldObject.objects.filter(field=Field.objects.get(name="Pression")))
+        self.assertNotIn(capacite_object, FieldObject.objects.filter(field=Field.objects.get(name="Nb bouteilles")))
+        self.assertNotIn(marque_object, FieldObject.objects.filter(field=Field.objects.get(name="Marque")))
 
     def test_US21_I2_equipmentdetails_put_with_new_equipmenttype_and_new_fields_with_perm(self):
         """
