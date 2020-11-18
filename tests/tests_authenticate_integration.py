@@ -29,7 +29,7 @@ class AuthentificationTests(TestCase):
             'username=tom&password=truc',
             content_type='application/x-www-form-urlencoded'
         )
-        self.assertEqual(response.data["success"], 'True')
+        self.assertEqual(response.data.get("data").get("success"), 'True')
 
     def test_is_not_connected_with_incorrect_identifier(self):
         """
@@ -42,8 +42,8 @@ class AuthentificationTests(TestCase):
             'username=tom&password=machin',
             content_type='application/x-www-form-urlencoded'
         )
-        self.assertEqual(response.data["success"], 'False')
-        self.assertEqual(response.data["error"], 'Mot de passe incorrect')
+        self.assertEqual(response.data.get("error").get("success"), 'False')
+        self.assertEqual(response.data.get("error").get("error"), 'Mot de passe incorrect')
 
     def test_is_not_connected_nbtries_3(self):
         """
@@ -67,9 +67,9 @@ class AuthentificationTests(TestCase):
             'username=tom&password=machin',
             content_type='application/x-www-form-urlencoded'
         )
-        self.assertEqual(response.data["success"], 'False')
-        self.assertEqual(response.data["is_blocked"], 'True')
-        self.assertEqual(response.data["error"], "Mot de passe incorrect 3 fois de suite. Vous êtes bloqués.")
+        self.assertEqual(response.data.get("error").get("success"), 'False')
+        self.assertEqual(response.data.get("error").get("is_blocked"), 'True')
+        self.assertEqual(response.data.get("error").get("error"), "Mot de passe incorrect 3 fois de suite. Vous êtes bloqués.")
 
         user = UserProfile.objects.get(pk=user.pk)
         self.assertEqual(user.nb_tries, 3)
@@ -95,9 +95,9 @@ class AuthentificationTests(TestCase):
             'username=tom&password=machin',
             content_type='application/x-www-form-urlencoded'
         )
-        self.assertEqual(response.data["success"], 'False')
-        self.assertEqual(response.data["is_blocked"], 'True')
-        self.assertEqual(response.data["error"], "Mot de passe incorrect 3 fois de suite. Vous êtes bloqués.")
+        self.assertEqual(response.data.get("error").get("success"), 'False')
+        self.assertEqual(response.data.get("error").get("is_blocked"), 'True')
+        self.assertEqual(response.data.get("error").get("error"), "Mot de passe incorrect 3 fois de suite. Vous êtes bloqués.")
 
         user = UserProfile.objects.get(pk=user.pk)
         self.assertEqual(user.is_active, False)
@@ -124,9 +124,9 @@ class AuthentificationTests(TestCase):
             content_type='application/x-www-form-urlencoded'
         )
 
-        self.assertEqual(response.data["success"], 'False')
-        self.assertEqual(response.data["is_blocked"], 'True')
-        self.assertEqual(response.data["error"], "Mot de passe incorrect 3 fois de suite. Vous êtes bloqués.")
+        self.assertEqual(response.data.get("error").get("success"), 'False')
+        self.assertEqual(response.data.get("error").get("is_blocked"), 'True')
+        self.assertEqual(response.data.get("error").get("error"), "Mot de passe incorrect 3 fois de suite. Vous êtes bloqués.")
         user = UserProfile.objects.get(pk=user.pk)
         self.assertEqual(user.nb_tries, 3)
 
@@ -136,10 +136,10 @@ class AuthentificationTests(TestCase):
             content_type='application/x-www-form-urlencoded'
         )
 
-        self.assertEqual(response.data["success"], 'False')
-        self.assertEqual(response.data["is_blocked"], 'True')
+        self.assertEqual(response.data.get("error").get("success"), 'False')
+        self.assertEqual(response.data.get("error").get("is_blocked"), 'True')
         self.assertEqual(
-            response.data["error"], "Vous vous êtes trompés trop de fois de mot de passe. Vous êtes bloqués."
+            response.data.get("error").get("error"), "Vous vous êtes trompés trop de fois de mot de passe. Vous êtes bloqués."
         )
 
     def test_sign_out(self):
