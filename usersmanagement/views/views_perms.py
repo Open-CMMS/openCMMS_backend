@@ -37,8 +37,8 @@ class PermsList(APIView):
         GET request : list all permissions and return the data
         """
         if request.user.has_perm(ADD_TEAMTYPE):
-            not_important_contenttypes = ['auth', 'admin', 'contenttypes', 'files', 'sessions', 'activity']
-            not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup']
+            not_important_contenttypes = ['auth', 'admin', 'contenttypes', 'files', 'sessions', 'activity', 'entry']
+            not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup', 'group', 'permissions']
             perms = Permission.objects.all()
             perms.exclude(content_type__app_label__in=not_important_contenttypes)
             perms.exclude(content_type__model__in=not_important_models)
