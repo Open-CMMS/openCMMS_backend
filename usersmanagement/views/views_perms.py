@@ -12,6 +12,8 @@ from usersmanagement.serializers import PermissionSerializer
 
 logger = logging.getLogger(__name__)
 
+ADD_TEAMTYPE = "usersmanagement.add_teamtype"
+
 
 class PermsList(APIView):
     """Contains HTTP method GET used on /usermanagement/perms/."""
@@ -34,8 +36,12 @@ class PermsList(APIView):
 
         GET request : list all permissions and return the data
         """
-        if request.user.has_perm("auth.view_permission"):
+        if request.user.has_perm(ADD_TEAMTYPE):
+            not_important_contenttypes = ['auth', 'admin', 'contenttypes', 'files', 'sessions', 'activity']
+            not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup']
             perms = Permission.objects.all()
+            perms.exclude(content_type__app_label__in=not_important_contenttypes)
+            perms.exclude(content_type__model__in=not_important_models)
             serializer = PermissionSerializer(perms, many=True)
             return Response(serializer.data)
         else:
@@ -72,7 +78,7 @@ class PermDetail(APIView):
             perm = Permission.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("auth.view_permission"):
+        if request.user.has_perm(ADD_TEAMTYPE):
             serializer = PermissionSerializer(perm)
             return Response(serializer.data)
         else:

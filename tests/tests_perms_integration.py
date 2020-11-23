@@ -20,10 +20,7 @@ class permsTests(TestCase):
         """
         #Create permisions
         content_type = ContentType.objects.get_for_model(Team)
-        permission = Permission.objects.get(codename='add_permission')
-        permission2 = Permission.objects.get(codename='view_permission')
-        permission3 = Permission.objects.get(codename='delete_permission')
-        permission4 = Permission.objects.get(codename='change_permission')
+        permission = Permission.objects.get(codename='add_teamtype')
 
         #User creation
         tom = UserProfile.objects.create(
@@ -44,9 +41,6 @@ class permsTests(TestCase):
 
         tom.save()
         tom.user_permissions.add(permission)
-        tom.user_permissions.add(permission2)
-        tom.user_permissions.add(permission3)
-        tom.user_permissions.add(permission4)
         tom.save()
 
     def test_perms_list_get_authorized(self):

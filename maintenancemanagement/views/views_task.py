@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 VIEW_TASK = "maintenancemanagement.view_task"
 CHANGE_TASK = "maintenancemanagement.change_task"
 ADD_TASK = "maintenancemanagement.add_task"
+DELETE_TASK = "maintenancemanagement.delete_task"
 
 
 class TaskList(APIView):
@@ -90,7 +91,7 @@ class TaskList(APIView):
     )
     def post(self, request):
         """Add a Task into the database."""
-        if request.user.has_perm("maintenancemanagement.add_task"):
+        if request.user.has_perm(ADD_TASK):
             conditions = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
@@ -314,7 +315,7 @@ class TaskDetail(APIView):
             task = Task.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.delete_task"):
+        if request.user.has_perm(DELETE_TASK):
             logger.info("{user} DELETED {object}".format(user=request.user, object=repr(task)))
             task.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

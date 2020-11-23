@@ -52,11 +52,11 @@ class FileTests(TestCase):
         tmp_file.seek(0)
         return tmp_file
 
-    def test_can_acces_files_list_with_perm(self):
+    def test_can_acces_files_list_with_connected(self):
         """
             Test if a user with perm receive the data
         """
-        user = self.set_up_perm()
+        user = self.set_up_without_perm()
         file = File.objects.all()
         serializer = FileSerializer(file, many=True)
         client = APIClient()
@@ -64,42 +64,40 @@ class FileTests(TestCase):
         response = client.get('/api/maintenancemanagement/files/', format='json')
         self.assertEqual(response.data, serializer.data)
 
-    def test_can_acces_file_list_without_perm(self):
+    def test_can_acces_file_list_without_connected(self):
         """
             Test if a user without perm doesn't receive the data
         """
         user = self.set_up_without_perm()
         client = APIClient()
-        client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/files/', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_add_file_with_perm(self):
+    def test_add_file_with_connected(self):
         """
             Test if a user with perm can add a file.
         """
-        user = self.set_up_perm()
+        user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         self.assertEqual(response.status_code, 201)
 
-    def test_add_file_without_perm(self):
+    def test_add_file_without_connected(self):
         """
             Test if a user without perm can't add a file.
         """
         user = self.set_up_without_perm()
         client = APIClient()
-        client.force_authenticate(user=user)
         response = client.post('/api/maintenancemanagement/files/', format='multipart')
         self.assertEqual(response.status_code, 401)
 
-    def test_view_file_request_with_perm(self):
+    def test_view_file_details_with_connected(self):
         """
             Test if a user with perm can see a file.
         """
-        user = self.set_up_perm()
+        user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         data = {'file': self.temporary_file(), 'is_manual': 'False'}
@@ -110,7 +108,7 @@ class FileTests(TestCase):
         file = open(path)
         self.assertEqual(file.read(), "Coco veut un gateau")
 
-    def test_view_task_request_without_perm(self):
+    def test_view_file_details_without_connected(self):
         """
             Test if a user without perm can't see a file detail
         """
@@ -121,16 +119,16 @@ class FileTests(TestCase):
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         user.user_permissions.clear()
+        client = APIClient()
         user = UserProfile.objects.get(id=user.pk)
-        client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/files/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
 
-    def test_delete_file_with_perm(self):
+    def test_delete_file_with_connected(self):
         """
             Test if a user with perm can delete a file
         """
-        user = self.set_up_perm()
+        user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         data = {'file': self.temporary_file(), 'is_manual': 'False'}
@@ -139,19 +137,19 @@ class FileTests(TestCase):
         response = client.delete('/api/maintenancemanagement/files/' + str(pk) + '/')
         self.assertEqual(response.status_code, 204)
 
-    def test_delete_file_without_perm(self):
+    def test_delete_file_without_connected(self):
         """
             Test if a user without perm can delete a file
         """
-        user = self.set_up_perm()
+        user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         data = {'file': self.temporary_file(), 'is_manual': 'False'}
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         user.user_permissions.clear()
+        client = APIClient()
         user = UserProfile.objects.get(id=user.pk)
-        client.force_authenticate(user=user)
         response = client.delete('/api/maintenancemanagement/files/' + str(pk) + '/')
         self.assertEqual(response.status_code, 401)
 

@@ -19,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 User = settings.AUTH_USER_MODEL
 
+VIEW_TEAMTYPE = "usersmanagement.view_teamtype"
+ADD_TEAMTYPE = "usersmanagement.add_teamtype"
+CHANGE_TEAMTYPE = "usersmanagement.change_teamtype"
+DELETE_TEAMTYPE = "usersmanagement.delete_teamtype"
+
 
 class TeamTypesList(APIView):
     """# List all the team types or create a new one.
@@ -49,7 +54,7 @@ class TeamTypesList(APIView):
     )
     def get(self, request):
         """docstring."""
-        if request.user.has_perm("usersmanagement.view_teamtype"):
+        if request.user.has_perm(VIEW_TEAMTYPE):
             group_types = TeamType.objects.all()
             serializer = TeamTypeSerializer(group_types, many=True)
             return Response(serializer.data)
@@ -67,7 +72,7 @@ class TeamTypesList(APIView):
     )
     def post(self, request):
         """docstring."""
-        if request.user.has_perm('usersmanagement.add_teamtype'):
+        if request.user.has_perm(ADD_TEAMTYPE):
             serializer = TeamTypeSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -115,7 +120,7 @@ class TeamTypesDetail(APIView):
             group_type = TeamType.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("usersmanagement.view_teamtype"):
+        if request.user.has_perm(VIEW_TEAMTYPE):
             serializer = TeamTypeDetailsSerializer(group_type)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -136,7 +141,7 @@ class TeamTypesDetail(APIView):
             group_type = TeamType.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("usersmanagement.change_teamtype"):
+        if request.user.has_perm(CHANGE_TEAMTYPE):
             serializer = TeamTypeSerializer(group_type, data=request.data)
             if serializer.is_valid():
                 logger.info(
@@ -163,7 +168,7 @@ class TeamTypesDetail(APIView):
             group_type = TeamType.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("usersmanagement.delete_teamtype"):
+        if request.user.has_perm(DELETE_TEAMTYPE):
             logger.info("{user} DELETED {object}".format(user=request.user, object=repr(group_type)))
             group_type.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

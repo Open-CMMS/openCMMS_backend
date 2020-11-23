@@ -25,6 +25,11 @@ from rest_framework.views import APIView
 logger = logging.getLogger(__name__)
 User = settings.AUTH_USER_MODEL
 
+VIEW_EQUIPMENTTYPE = "maintenancemanagement.view_equipmenttype"
+ADD_EQUIPMENTTYPE = "maintenancemanagement.add_equipmenttype"
+CHANGE_EQUIPMENTTYPE = "maintenancemanagement.change_equipmenttype"
+DELETE_EQUIPMENTTYPE = "maintenancemanagement.delete_equipmenttype"
+
 
 class EquipmentTypeList(APIView):
     r"""
@@ -57,7 +62,7 @@ class EquipmentTypeList(APIView):
     )
     def get(self, request):
         """Send the list of EquipmentType in the database."""
-        if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
+        if request.user.has_perm(VIEW_EQUIPMENTTYPE):
             equipment_types = EquipmentType.objects.all()
             serializer = EquipmentTypeSerializer(equipment_types, many=True)
             return Response(serializer.data)
@@ -75,7 +80,7 @@ class EquipmentTypeList(APIView):
     )
     def post(self, request):
         """Add an EquipmentType into the database."""
-        if request.user.has_perm("maintenancemanagement.add_equipmenttype"):
+        if request.user.has_perm(ADD_EQUIPMENTTYPE):
             fields = request.data.pop('field', None)
             equipment_type_validation_serializer = EquipmentTypeValidationSerializer(data=request.data)
             if equipment_type_validation_serializer.is_valid():
@@ -176,7 +181,7 @@ class EquipmentTypeDetail(APIView):
             equipment_type = EquipmentType.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.view_equipmenttype"):
+        if request.user.has_perm(VIEW_EQUIPMENTTYPE):
             serializer = EquipmentTypeDetailsSerializer(equipment_type)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -197,7 +202,7 @@ class EquipmentTypeDetail(APIView):
             equipment_type = EquipmentType.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.change_equipmenttype"):
+        if request.user.has_perm(CHANGE_EQUIPMENTTYPE):
             field_objects = request.data.get("field", None)
             if field_objects is not None :
                 self._update_field_values(field_objects)
@@ -237,7 +242,7 @@ class EquipmentTypeDetail(APIView):
             equipment_type = EquipmentType.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.delete_equipmenttype"):
+        if request.user.has_perm(DELETE_EQUIPMENTTYPE):
             logger.info("{user} DELETED {object}".format(user=request.user, object=repr(equipment_type)))
             equipment_type.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
