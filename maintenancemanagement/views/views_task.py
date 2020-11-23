@@ -450,7 +450,8 @@ class UserTaskList(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if request.user.has_perm(VIEW_TASK) or request.user == user:
-            tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator())
+            tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(),
+                                        is_template=False)
             serializer = TaskListingSerializer(tasks, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
