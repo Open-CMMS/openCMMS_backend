@@ -6,7 +6,7 @@ from usersmanagement.models import Permission, Team, TeamType, UserProfile
 
 def initialize_db():
     """Initiate the database."""
-    #Create the different type of Conditions
+    # Create the different type of Conditions
     field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
     Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
 
@@ -39,21 +39,27 @@ def initialize_db():
     for permission in permissions_admin:
         admins.perms.add(permission)
 
+    admins._apply_()
+    admins.save()
+
     # Adding permissions to maintenance managers
 
     liste_manager_management = [
         'equipment', 'equipmenttype', 'field', 'fieldgroup', 'fieldvalue', 'file', 'task', 'tasktemplate'
     ]
-    permissions_tasktemplate = Permission.objects.filter(codename__regex='|'.join(liste_manager_management)
-                                                        ).exclude(codename__endswith='profile')
+    perms_tasktemplate = Permission.objects.filter(codename__regex='|'.join(liste_manager_management))
+    perms_tasktemplate = perms_tasktemplate.exclude(codename__endswith='profile')
 
     liste_manager_user = ['Can change team', 'Can view user profile', 'Can view team', 'Can add team']
     permissions_managers_users = Permission.objects.filter(name__in=liste_manager_user)
-    for permission in permissions_tasktemplate:
+    for permission in perms_tasktemplate:
         maintenance_managers.perms.add(permission)
 
     for permission in permissions_managers_users:
         maintenance_managers.perms.add(permission)
+
+    maintenance_managers._apply_()
+    maintenance_managers.save()
 
     # Adding permissions to maintenance teams
     liste_team = [
@@ -70,6 +76,9 @@ def initialize_db():
 
     for permission in permissions_maintenance_team:
         maintenance_teams.perms.add(permission)
+
+    maintenance_teams._apply_()
+    maintenance_teams.save()
 
     user = UserProfile.objects.all()[0]
     admin = Team.objects.get(name="Administrators 1")

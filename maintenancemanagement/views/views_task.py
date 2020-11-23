@@ -1,5 +1,6 @@
 """This module defines the views corresponding to the tasks."""
 
+import logging
 import re
 from datetime import timedelta
 
@@ -7,15 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from maintenancemanagement.models import (
-    EquipmentType,
-    Field,
-    FieldGroup,
-    FieldObject,
-    FieldValue,
-    File,
-    Task,
-)
+from maintenancemanagement.models import FieldObject, File, Task
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
@@ -24,6 +17,7 @@ from maintenancemanagement.serializers import (
     TaskListingSerializer,
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
+    TaskUpdateSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -31,6 +25,7 @@ from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.views.views_team import belongs_to_team
 
+logger = logging.getLogger(__name__)
 VIEW_TASK = "maintenancemanagement.view_task"
 CHANGE_TASK = "maintenancemanagement.change_task"
 ADD_TASK = "maintenancemanagement.add_task"
@@ -104,7 +99,8 @@ class TaskList(APIView):
                     if not validation_serializer.is_valid():
                         return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
-                self._save_conditions(conditions, task)
+                logger.info("{user} CREATED Task with {params}".format(user=request.user, params=request.data))
+                self._save_conditions(request, conditions, task)
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
             return Response(task_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -119,12 +115,13 @@ class TaskList(APIView):
             conditions.extend(end_conditions)
         return conditions
 
-    def _save_conditions(self, conditions, task):
+    def _save_conditions(self, request, conditions, task):
         for condition in conditions:
             condition.update({'described_object': task})
             condition_serializer = FieldObjectCreateSerializer(data=condition)
             if condition_serializer.is_valid():
                 condition_serializer.save()
+                logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=condition))
 
 
 class TaskDetail(APIView):
@@ -181,9 +178,9 @@ class TaskDetail(APIView):
 
     @swagger_auto_schema(
         operation_description='Update the Task corresponding to the given key.',
-        query_serializer=TaskSerializer(many=False),
+        query_serializer=TaskUpdateSerializer(many=False),
         responses={
-            200: TaskSerializer(many=False),
+            200: TaskDetailsSerializer(many=False),
             400: "Bad request",
             401: "Unhauthorized",
             404: "Not found",
@@ -201,6 +198,11 @@ class TaskDetail(APIView):
                 if end_conditions[0].get('file', None) is not None:
                     end_file = File.objects.get(pk=end_conditions[0].get('file'))
                     task.files.add(end_file)
+                    logger.info(
+                        "{user} UPDATED {object} with {params}".format(
+                            user=request.user, object=repr(task), params=request.data
+                        )
+                    )
                     task.save()
                     end_conditions[0].update({'value': end_file.file.path})
                 field_object = FieldObject.objects.get(pk=end_conditions[0].get('id'))
@@ -208,17 +210,30 @@ class TaskDetail(APIView):
                     field_object, data=end_conditions[0], partial=True
                 )
                 if field_object_serializer.is_valid():
-                    fo = field_object_serializer.save()
+                    logger.info(
+                        "{user} UPDATED {object} with {params}".format(
+                            user=request.user, object=repr(field_object), params=end_conditions[0]
+                        )
+                    )
+                    field_object_serializer.save()
 
-            serializer = TaskSerializer(task, data=request.data, partial=True)
+            if 'duration' in request.data.keys():
+                request.data.update({'duration': self._parse_time(request.data['duration'])})
+            serializer = TaskUpdateSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(task), params=request.data
+                    )
+                )
                 task = serializer.save()
-                self._check_if_over(task)
-                return Response(serializer.data)
+                self._check_if_over(request, task)
+                serializer_details = TaskDetailsSerializer(task)
+                return Response(serializer_details.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    def _check_if_over(self, task):
+    def _check_if_over(self, request, task):
         content_type_object = ContentType.objects.get_for_model(task)
         end_fields_objects = FieldObject.objects.filter(
             object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
@@ -228,12 +243,15 @@ class TaskDetail(APIView):
             if end_field_object.value is None:
                 over = False
         if over is True:
-            self._trigger_recurrent_task_if_recurrent(task)
+            self._trigger_recurrent_task_if_recurrent(request, task)
         task.over = over
+        logger.info(
+            "{user} UPDATED {object} with {params}".format(user=request.user, object=repr(task), params=request.data)
+        )
         task.save()
 
     def _parse_time(self, time_str):
-        regex = re.compile(r'((?P<days>\d+?)d )?((?P<hours>\d+?)h )?((?P<minutes>\d+?)m)?')
+        regex = re.compile(r'((?P<days>\d+?)d ?)?((?P<hours>\d+?)h ?)?((?P<minutes>\d+?)m ?)?')
         parts = regex.match(time_str)
         if not parts:
             return
@@ -246,6 +264,7 @@ class TaskDetail(APIView):
 
     def _trigger_recurrent_task_if_recurrent(
         self,
+        request,
         task,
     ):
         content_type_object = ContentType.objects.get_for_model(task)
@@ -268,6 +287,7 @@ class TaskDetail(APIView):
             new_task.save()
             new_task.end_date = task.end_date + self._parse_time(recurrent_object.value)
             new_task.save()
+            logger.info("{user} TRIGGER RECURRENT TASK ON {task}".format(user=request.user, task=new_task))
 
             for trigger in trigger_fields_objects:
                 FieldObject.objects.create(
@@ -295,6 +315,7 @@ class TaskDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("maintenancemanagement.delete_task"):
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(task)))
             task.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -352,6 +373,9 @@ class AddTeamToTask(APIView):
         if request.user.has_perm(CHANGE_TASK):
             task = Task.objects.get(pk=request.data["id_task"])
             team = Team.objects.get(pk=request.data["id_team"])
+            logger.info(
+                "{user} REMOVED {task} FROM {team}".format(user=request.user, task=repr(task), team=repr(team))
+            )
             task.teams.remove(team)
             return Response(status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -462,39 +486,3 @@ class TaskRequirements(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-
-@swagger_auto_schema(
-    operation_description='Initialize the database with basic groups and fields.',
-    query_serializer=None,
-    responses={},
-)
-def init_database():
-    """Initialize the database with basic groups and fields."""
-    field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
-
-    Field.objects.create(name="Date", field_group=field_gr_cri_dec)
-    Field.objects.create(name="Integer", field_group=field_gr_cri_dec)
-    Field.objects.create(name="Float", field_group=field_gr_cri_dec)
-    Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
-    field_recurrence_dec = Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
-
-    FieldValue.objects.create(value="Day", field=field_recurrence_dec)
-    FieldValue.objects.create(value="Week", field=field_recurrence_dec)
-    FieldValue.objects.create(value="Month", field=field_recurrence_dec)
-    FieldValue.objects.create(value="Year", field=field_recurrence_dec)
-
-    field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
-
-    Field.objects.create(name="Checkbox", field_group=field_gr_cri_fin)
-    Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
-    Field.objects.create(name="Description", field_group=field_gr_cri_fin)
-    Field.objects.create(name="Photo", field_group=field_gr_cri_fin)
-
-    # field_gr_test = FieldGroup.objects.create(name='FieldGroupTest')
-    # Field.objects.create(name="FieldWithoutValueTest", field_group=field_gr_test)
-    # field_with_value = Field.objects.create(name="FieldWithValueTest", field_group=field_gr_test)
-    # FieldValue.objects.create(value="FieldValueTest", field=field_with_value)
-    # equip_type = EquipmentType.objects.create(name='EquipmentTypeTest')
-    # equip_type.fields_groups.add(field_gr_test)
-    # Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)

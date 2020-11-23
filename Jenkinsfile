@@ -30,7 +30,7 @@ pipeline {
                 sh """
                     rm -f reports/*.xml 
                     rm -f -r reports/coverage_html
-                    pipenv run coverage run --include="./**/*.py" -m pytest tests/*.py  --junitxml=reports/tests.xml
+                    pipenv run coverage run --include="./**/*.py" --omit="./**/temp_*.py" -m pytest tests/*.py --junitxml=reports/tests.xml
                     pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
                     """
             }
@@ -70,7 +70,7 @@ pipeline {
                 sh """
                     rm -f reports/*.xml 
                     rm -f -r reports/coverage_html
-                    pipenv run coverage run --include=./**/*.py -m pytest tests/*.py  --junitxml=reports/tests.xml
+                    pipenv run coverage run --include="./**/*.py" --omit="./**/temp_*.py" -m pytest tests/*.py --junitxml=reports/tests.xml
                     pipenv run coverage xml -o reports/coverage.xml && pipenv run coverage html -d reports/coverage_html
                     """
             }
@@ -177,6 +177,7 @@ pipeline {
                 sh '''
                     ssh root@192.168.101.14 'rm -rf /root/backend/*';
                     scp -r -p $WORKSPACE/* root@192.168.101.14:/root/backend/;
+                    ssh root@192.168.101.14 'cp /root/pic_settings.py /root/backend/openCMMS/';
                     ssh root@192.168.101.14 systemctl restart gunicorn.service 
                 '''
             }
@@ -197,6 +198,7 @@ pipeline {
                 sh '''
                     ssh root@192.168.101.9 'rm -rf /root/backend/*';
                     scp -r -p $WORKSPACE/* root@192.168.101.9:/root/backend/;
+                    ssh root@192.168.101.9 'cp /root/pic_settings.py /root/backend/openCMMS/';
                     ssh root@192.168.101.9 systemctl restart gunicorn.service 
                 '''
             }

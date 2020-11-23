@@ -1,8 +1,5 @@
 """Serializers enable the link between front-end and back-end."""
 
-import re
-from datetime import timedelta
-
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
@@ -18,6 +15,9 @@ from .models import (
     File,
     Task,
 )
+
+TRIGGER_CONDITIONS = 'Trigger Conditions'
+END_CONDITIONS = 'End Conditions'
 
 #############################################################################
 ############################## BASE SERIALIZER ##############################
@@ -104,16 +104,6 @@ class FieldSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'field_group']
 
 
-class FieldObjectSerializer(serializers.ModelSerializer):
-    """Basic field object serializer."""
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
-
-
 class DescribedObjectRelatedField(serializers.RelatedField):
     """A custom field to use for the `described_object` \
         generic relationship."""
@@ -132,10 +122,16 @@ class DescribedObjectRelatedField(serializers.RelatedField):
 
 
 class FieldObjectSerializer(serializers.ModelSerializer):
+    """Basic field object serializer."""
+
+    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+    name = serializers.CharField(source='field.name')
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldObject
-        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description']
+        fields = ['id', 'described_object', 'field', 'field_value', 'value', 'description', 'name']
 
 
 #############################################################################
@@ -276,24 +272,31 @@ class FieldObjectUpdateSerializer(serializers.ModelSerializer):
 
 
 class FieldObjectNewFieldValidationSerializer(serializers.ModelSerializer):
+    """Field object validation serializer for new field."""
 
     name = serializers.CharField()
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldObject
         fields = ['name', 'value', 'description']
 
 
 class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
+    """Field object details serializer for task."""
 
     field_name = serializers.CharField(source='field.name')
     value = serializers.SerializerMethodField()
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldObject
         fields = ['id', 'field_name', 'value', 'description']
 
     def get_value(self, obj):
+        """Give the value of a field object."""
         if obj.field_value:
             return obj.field_value.value
         else:
@@ -331,6 +334,7 @@ class FieldValueCreateSerializer(serializers.ModelSerializer):
 
 
 class TaskDetailsSerializer(serializers.ModelSerializer):
+    """Task details serializer."""
 
     equipment_type = EquipmentTypeSerializer()
     teams = TeamSerializer(many=True)
@@ -341,6 +345,8 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
     duration = serializers.SerializerMethodField()
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Task
         fields = [
             'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over',
@@ -348,20 +354,23 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
         ]
 
     def get_trigger_conditions(self, obj):
+        """Return trigger conditions of the given task."""
         content_type_object = ContentType.objects.get_for_model(obj)
         trigger_fields_objects = FieldObject.objects.filter(
-            object_id=obj.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
+            object_id=obj.id, content_type=content_type_object, field__field_group__name=TRIGGER_CONDITIONS
         )
         return FieldObjectForTaskDetailsSerializer(trigger_fields_objects, many=True).data
 
     def get_end_conditions(self, obj):
+        """Return end conditions of the given task."""
         content_type_object = ContentType.objects.get_for_model(obj)
         end_fields_objects = FieldObject.objects.filter(
-            object_id=obj.id, content_type=content_type_object, field__field_group__name='End Conditions'
+            object_id=obj.id, content_type=content_type_object, field__field_group__name=END_CONDITIONS
         )
         return FieldObjectForTaskDetailsSerializer(end_fields_objects, many=True).data
 
     def get_duration(self, obj):
+        """Return duration of the given task."""
         duration = obj.duration
         if duration is not None:
             days = duration.days
@@ -385,6 +394,7 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
 
 
 class TemplateDetailsSerializer(serializers.ModelSerializer):
+    """Task template details serializer."""
 
     equipment_type = EquipmentTypeSerializer()
     teams = TeamSerializer(many=True)
@@ -395,6 +405,8 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
     files = FileSerializer(many=True)
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Task
         fields = [
             'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over',
@@ -402,20 +414,23 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
         ]
 
     def get_trigger_conditions(self, obj):
+        """Return trigger conditions of the given task template."""
         content_type_object = ContentType.objects.get_for_model(obj)
         trigger_fields = Field.objects.filter(
-            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='Trigger Conditions'
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name=TRIGGER_CONDITIONS
         )
         return FieldRequirementsSerializer(trigger_fields, many=True).data
 
     def get_end_conditions(self, obj):
+        """Return end conditions of the given task template."""
         content_type_object = ContentType.objects.get_for_model(obj)
         end_fields = Field.objects.filter(
-            object__object_id=obj.id, object__content_type=content_type_object, field_group__name='End Conditions'
+            object__object_id=obj.id, object__content_type=content_type_object, field_group__name=END_CONDITIONS
         )
         return FieldRequirementsSerializer(end_fields, many=True).data
 
     def get_duration(self, obj):
+        """Return duration of the given task template."""
         duration = obj.duration
         if duration is not None:
             days = duration.days
@@ -438,26 +453,32 @@ class TemplateDetailsSerializer(serializers.ModelSerializer):
 
 
 class TaskTemplateRequirementsSerializer(serializers.Serializer):
+    """Task template requirements serializer."""
 
     trigger_conditions = serializers.SerializerMethodField()
     end_conditions = serializers.SerializerMethodField()
     task_templates = serializers.SerializerMethodField()
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         fields = ['trigger_conditions', 'end_conditions', 'task_templates']
 
     def get_task_templates(self, obj):
+        """Give task template data."""
         templates = Task.objects.filter(is_template=True)
         serializer = TemplateDetailsSerializer(templates, many=True)
         return serializer.data
 
     def get_trigger_conditions(self, obj):
-        trigger_fields = FieldGroup.objects.get(name='Trigger Conditions').field_set.all()
+        """Return trigger conditions of the given task template."""
+        trigger_fields = FieldGroup.objects.get(name=TRIGGER_CONDITIONS).field_set.all()
         serializer = FieldRequirementsSerializer(trigger_fields, many=True)
         return serializer.data
 
     def get_end_conditions(self, obj):
-        end_fields = FieldGroup.objects.get(name='End Conditions').field_set.all()
+        """Return end conditions of the given task template."""
+        end_fields = FieldGroup.objects.get(name=END_CONDITIONS).field_set.all()
         return FieldRequirementsSerializer(end_fields, many=True).data
 
 
@@ -471,18 +492,32 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class TaskUpdateSerializer(serializers.ModelSerializer):
+    """Task creatre serializer."""
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Task
+        exclude = []
+
+
 class TaskListingSerializer(serializers.ModelSerializer):
+    """Task listing serializer."""
 
     teams = TeamSerializer(many=True)
     duration = serializers.SerializerMethodField()
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = Task
         fields = [
             'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over'
         ]
 
     def get_duration(self, obj):
+        """Return duration of the given task."""
         duration = obj.duration
         if duration is not None:
             days = duration.days
@@ -511,11 +546,14 @@ class TaskListingSerializer(serializers.ModelSerializer):
 
 
 class EquipmentFieldSerializer(serializers.ModelSerializer):
+    """Equipment field serializer."""
 
     field_name = serializers.CharField(source='field.name')
     field_value = FieldValueSerializer()
 
     class Meta:
+        """This class contains the serializer metadata."""
+
         model = FieldObject
         fields = ['id', 'field', 'field_name', 'value', 'field_value', 'description']
 
@@ -535,8 +573,7 @@ class EquipmentDetailsSerializer(serializers.ModelSerializer):
 
     def get_field(self, obj):
         """Get the explicit field associated with the \
-            Equipement as obj. """
-
+            Equipement as obj."""
         content_type_object = ContentType.objects.get_for_model(obj)
         fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
         return EquipmentFieldSerializer(fields, many=True).data
@@ -628,6 +665,40 @@ class EquipmentRequirementsSerializer(serializers.ModelSerializer):
         return FieldRequirementsSerializer(fields, many=True).data
 
 
+class EquipmentFieldDataProviderSerializer(serializers.ModelSerializer):
+    """Equipment field serializer."""
+
+    name = serializers.CharField(source='field.name')
+    field_value = FieldValueSerializer()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'field', 'name', 'value', 'field_value', 'description']
+
+
+class EquipmentDetailsDataProviderSerializer(serializers.ModelSerializer):
+    """Equipment details serializer."""
+
+    equipment_type = EquipmentTypeSerializer()
+    files = FileSerializer(many=True)
+    field = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            Equipement as obj."""
+        content_type_object = ContentType.objects.get_for_model(obj)
+        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
+        return EquipmentFieldDataProviderSerializer(fields, many=True).data
+
+
 #############################################################################
 ########################## EQUIPMENTTYPE SERIALIZER #########################
 #############################################################################
@@ -679,6 +750,8 @@ class EquipmentTypeCreateSerializer(serializers.ModelSerializer):
 
 
 class EquipmentTypeQuerySerializer(serializers.ModelSerializer):
+    """Equipment type query serializer."""
+
     field = serializers.DictField(required=False)
 
     class Meta:

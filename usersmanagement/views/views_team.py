@@ -1,4 +1,6 @@
 """This module defines the views corresponding to teams."""
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -7,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.serializers import TeamDetailsSerializer, TeamSerializer
+
+logger = logging.getLogger(__name__)
 
 CHANGE_TEAM = "usersmanagement.change_team"
 
@@ -68,6 +72,7 @@ class TeamList(APIView):
             serializer = TeamSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                logger.info("{user} CREATED Team with {params}".format(user=request.user, params=request.data))
                 team = Team.objects.get(pk=serializer.data['id'])
                 team.team_type._apply_()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -140,6 +145,11 @@ class TeamDetail(APIView):
         if request.user.has_perm(CHANGE_TEAM):
             serializer = TeamSerializer(team, data=request.data, partial=True)
             if serializer.is_valid():
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(team), params=request.data
+                    )
+                )
                 serializer.save()
                 team = Team.objects.get(pk=serializer.data['id'])
                 team.team_type._apply_()
@@ -174,6 +184,7 @@ class TeamDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("usersmanagement.delete_team"):
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(team)))
             team.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -224,6 +235,9 @@ class AddUserToTeam(APIView):
             user = UserProfile.objects.get(pk=request.data["id_user"])
             team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.add(user)
+            logger.info(
+                "{user} ADDED {member} to {team}".format(user=request.user, member=repr(user), team=repr(team))
+            )
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -254,6 +268,9 @@ class AddUserToTeam(APIView):
             user = UserProfile.objects.get(pk=request.data["id_user"])
             team = Team.objects.get(pk=request.data["id_team"])
             team.user_set.remove(user)
+            logger.info(
+                "{user} REMOVED {member} from {team}".format(user=request.user, member=repr(user), team=repr(team))
+            )
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)

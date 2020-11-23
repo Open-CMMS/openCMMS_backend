@@ -1,11 +1,11 @@
 from datetime import timedelta
 
 import pytest
+from init_db_tests import init_db
 
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    EquipmentType,
     Field,
     FieldGroup,
     FieldObject,
@@ -14,10 +14,8 @@ from maintenancemanagement.models import (
     Task,
 )
 from maintenancemanagement.serializers import (
-    EquipmentSerializer,
     EquipmentTypeSerializer,
     FileSerializer,
-    TaskDetailsSerializer,
     TaskListingSerializer,
     TaskSerializer,
     TeamSerializer,
@@ -29,14 +27,12 @@ from usersmanagement.models import Team, TeamType, UserProfile
 User = settings.AUTH_USER_MODEL
 
 
-@pytest.fixture(scope="session", autouse=True)
-def init_db(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        equip_type = EquipmentType.objects.get(name='EquipmentTypeTest')
-        Task.objects.create(name='TemplateTest', duration='2d', is_template=True, equipment_type=equip_type)
-
-
 class TaskTests(TestCase):
+
+    @pytest.fixture(scope="class", autouse=True)
+    def init_database(django_db_setup, django_db_blocker):
+        with django_db_blocker.unblock():
+            init_db()
 
     def set_up_perm(self):
         """
@@ -65,7 +61,7 @@ class TaskTests(TestCase):
         """
             Set up a user without permissions
         """
-        user = UserProfile.objects.create(username='tom')
+        user = UserProfile.objects.create(username='tomy')
         user.set_password('truc')
         user.first_name = 'Tom'
         user.save()
@@ -98,6 +94,18 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/', format='json')
+        self.assertEqual(response.data, serializer.data)
+
+    def test_US5_I1_tasklist_get_only_templates_with_perm(self):
+        """
+            Test if a user with perm receive the data
+        """
+        user = self.set_up_perm()
+        tasks = Task.objects.filter(is_template=True)
+        serializer = TaskListingSerializer(tasks, many=True)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/maintenancemanagement/tasks/', {"template": "true"}, format='json')
         self.assertEqual(response.data, serializer.data)
 
     def test_US5_I1_tasklist_get_without_perm(self):
@@ -161,6 +169,24 @@ class TaskTests(TestCase):
         response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.data['name'], 'verifier pneus')
 
+    def test_US5_I3_taskdetail_get_non_existing_task_with_perm(self):
+        """
+            Test if a user with perm can't see an unavailable task detail
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
+        pk = response1.data['id']
+        response = client.get('/api/maintenancemanagement/tasks/' + str(10506466) + '/')
+        self.assertEqual(response.status_code, 404)
+
     def test_US5_I3_taskdetail_get_without_perm(self):
         """
             Test if a user without perm can't see a task detail
@@ -203,6 +229,26 @@ class TaskTests(TestCase):
         self.assertEqual(response.data['name'], 'verifier roues')
         self.assertEqual(response.status_code, 200)
 
+    def test_US5_I4_taskdetail_put_non_existing_task_with_perm(self):
+        """
+            Test if a user with perm can't change an unavailable task
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'faut verfier les pneus de la voiture ta vu'
+            },
+            format='json'
+        )
+        pk = response1.data['id']
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(644687456) + '/', {'name': 'verifier roues'}, format='json'
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_US5_I4_taskdetail_put_without_perm(self):
         """
             Test if a user without perm can change a task
@@ -226,6 +272,64 @@ class TaskTests(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    def test_US5_I4_taskdetail_put_with_end_condition_with_perm(self):
+        """
+            Test if a user with perm can change a task
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+        checkbox = conditions.get(name="Checkbox")
+        entier = conditions.get(name="Integer")
+        response1 = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'faut verfier les pneus de la voiture ta vu',
+                'end_conditions':
+                    [
+                        {
+                            "field": checkbox.id,
+                            "value": "false",
+                            "description": "test_update_task_with_perm_with_end_conditions_1"
+                        },
+                        {
+                            "field": entier.id,
+                            "value": 0,
+                            "description": "test_update_task_with_perm_with_end_conditions_2"
+                        },
+                    ]
+            },
+            format='json'
+        )
+        pk = response1.data['id']
+        response = client.put(
+            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {
+                'name':
+                    'verifier roues',
+                'duration':
+                    '30d',
+                'end_conditions':
+                    [
+                        {
+                            "id": FieldObject.objects.get(field=checkbox).id,
+                            "value": "false",
+                            "description": "maj_checkbox"
+                        },
+                        {
+                            "field": FieldObject.objects.get(field=entier).id,
+                            "value": 10,
+                            "description": "maj_entier"
+                        },
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.data['name'], 'verifier roues')
+        self.assertEqual(response.status_code, 200)
+
     def test_US5_I5_taskdetail_delete_with_perm(self):
         """
             Test if a user with perm can delete a task
@@ -243,6 +347,16 @@ class TaskTests(TestCase):
         pk = response1.data['id']
         response = client.delete('/api/maintenancemanagement/tasks/' + str(pk) + '/')
         self.assertEqual(response.status_code, 204)
+
+    def test_US5_I5_taskdetail_delete_non_existing_task_with_perm(self):
+        """
+            Test if a user with perm can't delete an unavailable task
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.delete('/api/maintenancemanagement/tasks/' + str(6546546) + '/')
+        self.assertEqual(response.status_code, 404)
 
     def test_US5_I5_taskdetail_delete_without_perm(self):
         """
@@ -282,6 +396,25 @@ class TaskTests(TestCase):
             format="json"
         )
         self.assertEqual(response.status_code, 201)
+
+    def test_US6_I1_addteamtotask_post_without_perm(self):
+        """
+            Test if a user without permission can't add a team to a task.
+        """
+        user = self.set_up_perm()
+        user.user_permissions.clear()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        team = Team.objects.create(name="team")
+        task = Task.objects.create(name="tache")
+        response = client.post(
+            '/api/maintenancemanagement/addteamtotask', {
+                "id_team": f"{team.pk}",
+                "id_task": f"{task.pk}"
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_US6_I1_addteamtotask_put_with_perm(self):
         """
@@ -336,6 +469,16 @@ class TaskTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, serializer.data)
 
+    def test_US6_I3_teamtaskslist_get_non_existing_team_with_perm(self):
+        """
+            Test if a user with permission can't view non existing team's task
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get("/api/maintenancemanagement/teamtasklist/" + str(65465464), format='json')
+        self.assertEqual(response.status_code, 404)
+
     def test_US6_I3_teamtaskslist_get_without_perm(self):
         """
             Test if a user without permission can't view team's task
@@ -372,19 +515,29 @@ class TaskTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, serializer.data + serializer2.data)
 
+    def test_US6_I4_usertaskslist_get_non_existing_user_with_perm(self):
+        """
+            Tests if a user with permission can't access a non existing user's task list.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get(f"/api/maintenancemanagement/usertasklist/{6546874}", format='json')
+        self.assertEqual(response.status_code, 404)
+
     def test_US6_I4_usertaskslist_get_without_perm(self):
         """
             Test if a user without permissions can see his own tasks
         """
+        temp_user = self.set_up_perm()
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         team = Team.objects.create(name="team")
         team.user_set.add(user)
         team.save()
-        task = Task.objects.create(name="task")
-        response = client.get(f'/api/maintenancemanagement/usertasklist/{user.pk}', format='json')
-        self.assertEqual(response.status_code, 200)
+        response = client.get(f'/api/maintenancemanagement/usertasklist/{temp_user.pk}', format='json')
+        self.assertEqual(response.status_code, 401)
 
     def test_US8_I1_tasklist_post_with_file_with_perm(self):
         """

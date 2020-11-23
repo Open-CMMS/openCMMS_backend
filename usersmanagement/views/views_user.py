@@ -1,5 +1,6 @@
 """This module defines the views corresponding to users."""
 
+import logging
 from secrets import token_hex
 
 from drf_yasg.utils import swagger_auto_schema
@@ -9,6 +10,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
+from openCMMS.settings import BASE_URL
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,6 +20,8 @@ from usersmanagement.serializers import (
     UserProfileSerializer,
 )
 from utils.init_db import initialize_db
+
+logger = logging.getLogger(__name__)
 
 User = settings.AUTH_USER_MODEL
 
@@ -47,7 +51,6 @@ class UserList(APIView):
     """
 
     @swagger_auto_schema(
-        query_serializer=UserProfileSerializer,
         operation_description="Send the list of user in database.",
         responses={
             200: "Send back the list.",
@@ -83,6 +86,7 @@ class UserList(APIView):
                 else:
                     serializer.save()
                     send_mail_to_setup_password(serializer.data)
+                logger.info("{user} CREATED User with {params}".format(user=request.user, params=request.data))
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -156,6 +160,11 @@ class UserDetail(APIView):
         if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
             serializer = UserProfileSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
+                logger.info(
+                    "{user} UPDATED {object} with {params}".format(
+                        user=request.user, object=repr(user), params=request.data
+                    )
+                )
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -180,6 +189,7 @@ class UserDetail(APIView):
         if request.user.has_perm("usersmanagement.delete_userprofile"):
             # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer
             #  le dernier Administrateur
+            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(user)))
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -269,7 +279,7 @@ class SignIn(APIView):
         """docstring."""
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            response = {
+            data = {
                 'success': 'True',
                 'status code': status.HTTP_200_OK,
                 'message': 'User logged in successfully',
@@ -277,16 +287,18 @@ class SignIn(APIView):
                 'user_id': serializer.data['user_id'],
                 'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
             }
+            response = {'data' : data}
             return Response(response, status=status.HTTP_200_OK)
         else:
             if str(serializer.errors.get('is_blocked')[0]) == 'True':
                 send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
-            response = {
+            error = {
                 'success': 'False',
                 'error': str(serializer.errors.get('error')[0]),
                 'is_blocked': str(serializer.errors.get('is_blocked')[0]),
             }
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            response = {'error' : error}
+            return Response(response, status=status.HTTP_200_OK)  # Do not change this error code
 
 
 class SignOut(APIView):
@@ -357,19 +369,16 @@ def send_mail_to_setup_password(data):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG is True):
-        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
-
-    else:
-        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-            &username={user.username}"
-
+    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been invited to join openCMMS. \nTo setup your password, please follow this link : " + url
+    email.body = f"You have been invited to join openCMMS. \nTo setup your password, please follow this link : {url}"
     email.to = [user.email]
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.warning("There was an exception while sending a mail.\n{}", e)
 
 
 def send_mail_to_setup_password_after_blocking(id):
@@ -382,19 +391,18 @@ def send_mail_to_setup_password_after_blocking(id):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    if (settings.DEBUG is True):
-        url = f"https://dev.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}&username={user.username}"
-    else:
-        url = f"https://application.lxc.pic.brasserie-du-slalom.fr/reset-password?token={token}\
-            &username={user.username}"
-
+    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
-    email.body = "You have been blocked after 3 unsuccessful login. \nTo setup your new password,\
-         please follow this link : " + url
+    email.body = f"You have been blocked after 3 unsuccessful login.\
+To setup your new password, please follow this link : {url}"
+
     email.to = [user.email]
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.warning("There was an exception while sending a mail.\n{}", e)
 
 
 class SetNewPassword(APIView):
@@ -431,6 +439,35 @@ class SetNewPassword(APIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
+class UserResetPassword(APIView):
+    """The APIView class to reset a password."""
+
+    def get(self, request):
+        """Reset the password."""
+        email = request.GET.get('email', "")
+        username = request.GET.get('username', "")
+        user1 = UserProfile.objects.filter(email=email)
+        user2 = UserProfile.objects.filter(username=username)
+        user = user1 | user2
+        if user.count() == 0:
+            return Response("User not found", status=status.HTTP_400_BAD_REQUEST)
+        user = user[0]
+        token = token_hex(16)
+        user.set_password(token)
+        user.save()
+        url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
+        email = EmailMessage()
+        email.subject = "Reset Your Password"
+        email.body = "You asked to reset your password, to do so please follow this link : " + url
+        email.to = [user.email]
+        try:
+            email.send()
+        except Exception as ex:
+            logger.warning("There was an exception while sending a mail.\n{}", ex)
+            return Response("Error while sending email", status=status.HTTP_400_BAD_REQUEST)
+        return Response("Email sent !", status=status.HTTP_200_OK)
+
+
 class CheckToken(APIView):
     """# Check the token of the user.
 
@@ -461,8 +498,8 @@ def init_database():
 
     # Creation of the 3 inital Teams
     Team.objects.create(name="Administrators 1", team_type=admins)
-    T_MM1 = Team.objects.create(name="Maintenance Manager 1", team_type=mms)
-    T_MT1 = Team.objects.create(name="Maintenance Team 1", team_type=mts)
+    t_mm1 = Team.objects.create(name="Maintenance Manager 1", team_type=mms)
+    t_mt1 = Team.objects.create(name="Maintenance Team 1", team_type=mts)
 
     # Adding all permissions to admins
     permis = Permission.objects.all()
@@ -485,5 +522,5 @@ def init_database():
     mts.save()
 
     t_admin.save()
-    T_MM1.save()
-    T_MT1.save()
+    t_mm1.save()
+    t_mt1.save()

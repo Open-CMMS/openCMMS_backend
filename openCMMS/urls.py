@@ -22,15 +22,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-schema_view = get_schema_view(openapi.Info(
-    title='OPEN CMMS',
-    default_version='v1',
-))
+schema_view = get_schema_view(openapi.Info(title='OPEN CMMS', default_version='v2'), url=settings.BASE_URL)
 
 urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/usersmanagement/', include('usersmanagement.urls')),
     path('api/maintenancemanagement/', include('maintenancemanagement.urls')),
+    path('api/', include('utils.urls')),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui')
 ]
 

@@ -16,6 +16,10 @@ class File(models.Model):
         """Define string representation of a file."""
         return self.file.name
 
+    def __repr__(self):
+        """Define representation of a file."""
+        return self.file.name
+
 
 class FieldGroup(models.Model):
     """Define a field group."""
@@ -91,6 +95,13 @@ class FieldObject(models.Model):
         """Define string representation of a field object."""
         return str(self.id) + ' : ' + str(self.value) + str(self.field_value)
 
+    def __repr__(self):
+        """Define the representation of FieldObject."""
+        return "<FieldObject: id={id}, field={field}, field_value={field_value}, value={value},\
+description={description}>".format(
+            id=self.id, field=self.field, field_value=self.value, value=self.value, description=self.description
+        )
+
 
 class EquipmentType(models.Model):
     """Define an equipment type."""
@@ -108,6 +119,10 @@ class EquipmentType(models.Model):
     def __str__(self):
         """Define string representation of an equipment type."""
         return self.name
+
+    def __repr__(self):
+        """Define formal representation of an equipment type."""
+        return "<EquipmentType: id={id}, name={name}>".format(id=self.id, name=self.name)
 
 
 class Equipment(models.Model):
@@ -130,6 +145,12 @@ class Equipment(models.Model):
     def __str__(self):
         """Define string representation of an equipment."""
         return self.name
+
+    def __repr__(self):
+        """Define formal representation of an equipment."""
+        return "<Equipment: id={id}, name={name}, equipment_type={type}>".format(
+            id=self.id, name=self.name, type=self.equipment_type
+        )
 
 
 class Task(models.Model):
@@ -176,3 +197,23 @@ class Task(models.Model):
         blank=True,
     )
     over = models.BooleanField(default=False, null=True)
+
+    def __str__(self):
+        """Define string representation of a task."""
+        return self.name
+
+    def __repr__(self):
+        """Define formal representation of a task."""
+        return "<Task: id={id}, name='{name}', end_date={date}, duration={duration}, is_template={template}, \
+equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, over={over}>".format(
+            id=self.id,
+            name=self.name,
+            date=self.end_date,
+            duration=self.duration,
+            template=self.is_template,
+            equipment=self.equipment,
+            type=self.equipment_type,
+            teams=self.teams,
+            files=self.files,
+            over=self.over
+        )

@@ -1,5 +1,8 @@
 """This module defines the views corresponding to the files."""
 
+# Create your views here.
+import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,7 +12,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# Create your views here.
+logger = logging.getLogger(__name__)
 
 
 class FileList(APIView):
