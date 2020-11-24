@@ -38,10 +38,9 @@ class PermsList(APIView):
         """
         if request.user.has_perm(ADD_TEAMTYPE):
             not_important_contenttypes = ['auth', 'admin', 'contenttypes', 'files', 'sessions', 'activity', 'entry']
-            not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup', 'group', 'permissions']
-            perms = Permission.objects.all()
-            perms.exclude(content_type__app_label__in=not_important_contenttypes)
-            perms.exclude(content_type__model__in=not_important_models)
+            not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup', 'group', 'permissions', 'file']
+            perms = Permission.objects.exclude(content_type__app_label__in=not_important_contenttypes)
+            perms = perms.exclude(content_type__model__in=not_important_models)
             serializer = PermissionSerializer(perms, many=True)
             return Response(serializer.data)
         else:

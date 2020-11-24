@@ -178,6 +178,8 @@ pipeline {
                     ssh root@192.168.101.14 'rm -rf /root/backend/*';
                     scp -r -p $WORKSPACE/* root@192.168.101.14:/root/backend/;
                     ssh root@192.168.101.14 'cp /root/pic_settings.py /root/backend/openCMMS/';
+                    ssh root@192.168.101.14 'cp /root/file1.py /root/backend/utils/data_providers/';
+                    ssh root@192.168.101.14 'cp /root/file2.py /root/backend/utils/data_providers/';
                     ssh root@192.168.101.14 systemctl restart gunicorn.service 
                 '''
             }
@@ -199,6 +201,8 @@ pipeline {
                     ssh root@192.168.101.9 'rm -rf /root/backend/*';
                     scp -r -p $WORKSPACE/* root@192.168.101.9:/root/backend/;
                     ssh root@192.168.101.9 'cp /root/pic_settings.py /root/backend/openCMMS/';
+                    ssh root@192.168.101.9 'cp /root/file1.py /root/backend/utils/data_providers/';
+                    ssh root@192.168.101.9 'cp /root/file2.py /root/backend/utils/data_providers/';
                     ssh root@192.168.101.9 systemctl restart gunicorn.service 
                 '''
             }

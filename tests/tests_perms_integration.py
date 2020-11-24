@@ -49,7 +49,10 @@ class permsTests(TestCase):
         """
         self.set_up()
 
-        perms = Permission.objects.all()
+        not_important_contenttypes = ['auth', 'admin', 'contenttypes', 'files', 'sessions', 'activity', 'entry']
+        not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup', 'group', 'permissions', 'file']
+        perms = Permission.objects.exclude(content_type__app_label__in=not_important_contenttypes)
+        perms = perms.exclude(content_type__model__in=not_important_models)
         serializer = PermissionSerializer(perms, many=True)
 
         c = APIClient()
@@ -81,7 +84,7 @@ class permsTests(TestCase):
         """
         self.set_up()
 
-        perm = Permission.objects.get(codename="view_permission")
+        perm = Permission.objects.get(codename="view_team")
         serializer = PermissionSerializer(perm)
 
         c = APIClient()
@@ -106,7 +109,7 @@ class permsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_authenticate(user=joe)
 
-        perm = Permission.objects.get(codename="view_permission")
+        perm = Permission.objects.get(codename="view_team")
 
         address = "/api/usersmanagement/perms/" + str(perm.id) + "/"
 

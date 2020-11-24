@@ -78,9 +78,12 @@ class TeamList(APIView):
                 logger.info("{user} CREATED Team with {params}".format(user=request.user, params=request.data))
                 team = Team.objects.get(pk=serializer.data['id'])
                 team.team_type._apply_()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+                response = {"data" : serializer.data}
+                return Response(response, status=status.HTTP_200_OK)
+            response = {"error" : serializer.errors}
+            return Response(response, status=status.HTTP_200_OK)
+        response = {"error" : "You don't have this permission"}
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class TeamDetail(APIView):
