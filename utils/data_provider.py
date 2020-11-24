@@ -65,6 +65,7 @@ def _trigger_dataprovider(dataprovider):
         module = importlib.import_module(f"utils.data_providers.{dataprovider.file_name[:-3]}")
         field = FieldObject.objects.get(id=dataprovider.field_object.id)
         value = module.get_data(dataprovider.ip_address)
+        logger.info("FieldObject '{}' UPDATED with value : {}".format(repr(field), value))
         field.value = value
         field.save()
         dataprovider.is_activated = True
