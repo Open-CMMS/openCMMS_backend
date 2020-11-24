@@ -54,7 +54,7 @@ def add_job(dataprovider):
         )
         dataprovider.job_id = job.id
         dataprovider.save()
-        if not dataprovider.is_activated:
+        if dataprovider.is_activated is False:
             scheduler.pause_job(dataprovider.job_id)
 
 
@@ -64,9 +64,9 @@ def _trigger_dataprovider(dataprovider):
     try:
         module = importlib.import_module(f"utils.data_providers.{dataprovider.file_name[:-3]}")
         field = FieldObject.objects.get(id=dataprovider.field_object.id)
-        field.value = module.get_data(dataprovider.ip_address)
+        value = module.get_data(dataprovider.ip_address)
+        field.value = value
         field.save()
-        print(field.value)
         dataprovider.is_activated = True
         dataprovider.save()
     except ImportError:

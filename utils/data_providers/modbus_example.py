@@ -3,11 +3,17 @@ import socket
 from umodbus import conf
 from umodbus.client import tcp
 
+from utils.data_provider import GetDataException
+
 
 def get_data(ip_address):
-    conf.SIGNED_VALUES = False
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('localhost', 5002))
-    value = tcp.read_holding_registers(1, 0, 1)
-    sock.close()
-    return value
+    try:
+        conf.SIGNED_VALUES = False
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((ip_address, 5002))
+        message = tcp.read_holding_registers(slave_id=1, starting_address=0, quantity=1)
+        response = tcp.send_message(message, sock)
+        sock.close()
+        return response[0]
+    except ConnectionRefusedError:
+        raise GetDataException()
