@@ -96,6 +96,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -120,6 +121,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -153,6 +155,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'fake field': 'useless data',
@@ -205,6 +208,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test pour put',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -218,6 +222,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider mis à jour',
                 'recurrence': '5d',
                 'ip_address': '192.168.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -244,6 +249,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test pour put',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -292,7 +298,7 @@ class DataProviderTest(TestCase):
             Test if a user with perm can test a data provider.
         """
         with open(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers.py'), "w+") as file:
-            file.write('def get_data(ip_address):\n')
+            file.write('def get_data(ip_address, port):\n')
             file.write('    return 2')
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -304,6 +310,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -329,7 +336,7 @@ class DataProviderTest(TestCase):
             Test if a user with perm can test a data provider with a not well formted file.
         """
         with open(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error.py'), "w+") as file:
-            file.write('def wrong_get_data(ip_address):\n')
+            file.write('def wrong_get_data(ip_address, port):\n')
             file.write('    return 2')
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -341,6 +348,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -365,6 +373,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -382,7 +391,7 @@ class DataProviderTest(TestCase):
             os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error_in_getdata.py'), "w+"
         ) as file:
             file.write('from utils.data_provider import GetDataException\n')
-            file.write('def get_data(ip_address):\n')
+            file.write('def get_data(ip_address, port):\n')
             file.write('    raise GetDataException()')
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -394,6 +403,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
