@@ -29,6 +29,11 @@ from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
 
+ADD_EQUIPMENT = "maintenancemanagement.add_equipment"
+VIEW_EQUIPMENT = "maintenancemanagement.view_equipment"
+CHANGE_EQUIPMENT = "maintenancemanagement.change_equipment"
+DELETE_EQUIPMENT = "maintenancemanagement.delete_equipment"
+
 
 class EquipmentList(APIView):
     r"""\n# List all equipments or create a new one.
@@ -60,7 +65,7 @@ class EquipmentList(APIView):
     )
     def get(self, request):
         """Send the list of Equipment in the database."""
-        if request.user.has_perm("maintenancemanagement.view_equipment"):
+        if request.user.has_perm(VIEW_EQUIPMENT):
             equipments = Equipment.objects.all()
             serializer = EquipmentSerializer(equipments, many=True)
             return Response(serializer.data)
@@ -77,7 +82,7 @@ class EquipmentList(APIView):
     )
     def post(self, request):
         """Add an Equipment into the database."""
-        if request.user.has_perm("maintenancemanagement.add_equipment"):
+        if request.user.has_perm(ADD_EQUIPMENT):
             fields = request.data.pop('field', None)
             equipment_serializer = EquipmentCreateSerializer(data=request.data)
             if equipment_serializer.is_valid():
@@ -171,7 +176,7 @@ class EquipmentDetail(APIView):
             equipment = Equipment.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.view_equipment"):
+        if request.user.has_perm(VIEW_EQUIPMENT):
             serializer = EquipmentDetailsSerializer(equipment)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -192,7 +197,7 @@ class EquipmentDetail(APIView):
             equipment = Equipment.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.change_equipment"):
+        if request.user.has_perm(CHANGE_EQUIPMENT):
             field_objects = request.data.pop('field', None)
             equipment_serializer = EquipmentUpdateSerializer(equipment, data=request.data, partial=True)
             if equipment_serializer.is_valid():
@@ -359,7 +364,7 @@ class EquipmentDetail(APIView):
             equipment = Equipment.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.delete_equipment"):
+        if request.user.has_perm(DELETE_EQUIPMENT):
             logger.info("{user} DELETED {object}".format(user=request.user, object=repr(equipment)))
             equipment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -376,7 +381,7 @@ class EquipmentRequirements(APIView):
     def get(self, request):
         """Send the list of equipement types with their fields \
             and the values associated."""
-        if request.user.has_perm("maintenancemanagement.add_equipment"):
+        if request.user.has_perm(ADD_EQUIPMENT):
             equipment_types = EquipmentType.objects.all()
             serializer = EquipmentRequirementsSerializer(equipment_types, many=True)
             return Response(serializer.data)

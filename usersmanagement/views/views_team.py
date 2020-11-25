@@ -12,7 +12,10 @@ from usersmanagement.serializers import TeamDetailsSerializer, TeamSerializer
 
 logger = logging.getLogger(__name__)
 
+VIEW_TEAM = "usersmanagement.view_team"
 CHANGE_TEAM = "usersmanagement.change_team"
+ADD_TEAM = "usersmanagement.add_team"
+DELETE_TEAM = "usersmanagement.delete_team"
 
 
 class TeamList(APIView):
@@ -36,7 +39,7 @@ class TeamList(APIView):
 
         GET request : list all teams and return the data.
         """
-        if request.user.has_perm("usersmanagement.view_team"):
+        if request.user.has_perm(VIEW_TEAM):
             teams = Team.objects.all()
             serializer = TeamSerializer(teams, many=True)
             return Response(serializer.data)
@@ -68,16 +71,19 @@ class TeamList(APIView):
         team_type (the id of the team_type, int), can contain user_set (the\
         users' id list, []).
         """
-        if request.user.has_perm("usersmanagement.add_team"):
+        if request.user.has_perm(ADD_TEAM):
             serializer = TeamSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 logger.info("{user} CREATED Team with {params}".format(user=request.user, params=request.data))
                 team = Team.objects.get(pk=serializer.data['id'])
                 team.team_type._apply_()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+                response = {"data" : serializer.data}
+                return Response(response, status=status.HTTP_200_OK)
+            response = {"error" : serializer.errors}
+            return Response(response, status=status.HTTP_200_OK)
+        response = {"error" : "You don't have this permission"}
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class TeamDetail(APIView):
@@ -108,7 +114,7 @@ class TeamDetail(APIView):
             team = Team.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("usersmanagement.view_team"):
+        if request.user.has_perm(VIEW_TEAM):
             serializer = TeamDetailsSerializer(team)
             return Response(serializer.data)
         else:
@@ -183,7 +189,7 @@ class TeamDetail(APIView):
             team = Team.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("usersmanagement.delete_team"):
+        if request.user.has_perm(DELETE_TEAM):
             logger.info("{user} DELETED {object}".format(user=request.user, object=repr(team)))
             team.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

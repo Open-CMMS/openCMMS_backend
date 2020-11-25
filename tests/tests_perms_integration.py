@@ -20,10 +20,7 @@ class permsTests(TestCase):
         """
         #Create permisions
         content_type = ContentType.objects.get_for_model(Team)
-        permission = Permission.objects.get(codename='add_permission')
-        permission2 = Permission.objects.get(codename='view_permission')
-        permission3 = Permission.objects.get(codename='delete_permission')
-        permission4 = Permission.objects.get(codename='change_permission')
+        permission = Permission.objects.get(codename='add_teamtype')
 
         #User creation
         tom = UserProfile.objects.create(
@@ -44,9 +41,6 @@ class permsTests(TestCase):
 
         tom.save()
         tom.user_permissions.add(permission)
-        tom.user_permissions.add(permission2)
-        tom.user_permissions.add(permission3)
-        tom.user_permissions.add(permission4)
         tom.save()
 
     def test_perms_list_get_authorized(self):
@@ -55,7 +49,10 @@ class permsTests(TestCase):
         """
         self.set_up()
 
-        perms = Permission.objects.all()
+        not_important_contenttypes = ['auth', 'admin', 'contenttypes', 'files', 'sessions', 'activity', 'entry']
+        not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup', 'group', 'permissions', 'file']
+        perms = Permission.objects.exclude(content_type__app_label__in=not_important_contenttypes)
+        perms = perms.exclude(content_type__model__in=not_important_models)
         serializer = PermissionSerializer(perms, many=True)
 
         c = APIClient()
@@ -87,7 +84,7 @@ class permsTests(TestCase):
         """
         self.set_up()
 
-        perm = Permission.objects.get(codename="view_permission")
+        perm = Permission.objects.get(codename="view_team")
         serializer = PermissionSerializer(perm)
 
         c = APIClient()
@@ -112,7 +109,7 @@ class permsTests(TestCase):
         joe = UserProfile.objects.get(username="jd")
         c.force_authenticate(user=joe)
 
-        perm = Permission.objects.get(codename="view_permission")
+        perm = Permission.objects.get(codename="view_team")
 
         address = "/api/usersmanagement/perms/" + str(perm.id) + "/"
 

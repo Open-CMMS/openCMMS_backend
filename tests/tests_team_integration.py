@@ -206,8 +206,8 @@ class TeamsTests(TestCase):
             },
             format='json'
         )
-        team = Team.objects.get(pk=response.data['id'])
-        self.assertEqual(response.status_code, 201)
+        team = Team.objects.get(pk=response.data.get("data")['id'])
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(Team.objects.filter(name="test_team"))
         self.assertEqual(team.team_type, tt)
 
@@ -224,7 +224,7 @@ class TeamsTests(TestCase):
 
         response = c.post("/api/usersmanagement/teams/", {"name": "test_team"}, format='json')
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
 
     def test_US3_I4_teamdetail_get_with_perm(self):
         """

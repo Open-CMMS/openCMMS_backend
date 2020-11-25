@@ -28,7 +28,7 @@ class FileList(APIView):
     )
     def get(self, request):
         """Send the list of File in the database."""
-        if request.user.has_perm("maintenancemanagement.view_file"):
+        if request.user.is_authenticated :
             files = File.objects.all()
             serializer = FileSerializer(files, many=True)
             return Response(serializer.data)
@@ -45,7 +45,7 @@ class FileList(APIView):
     )
     def post(self, request):
         """Add a File into the database."""
-        if request.user.has_perm("maintenancemanagement.add_file"):
+        if request.user.is_authenticated :
             serializer = FileSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -72,7 +72,7 @@ class FileDetail(APIView):
             file = File.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.view_file"):
+        if request.user.is_authenticated :
             serializer = FileSerializer(file)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -92,7 +92,7 @@ class FileDetail(APIView):
             file = File.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("maintenancemanagement.delete_file"):
+        if request.user.is_authenticated :
             file.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

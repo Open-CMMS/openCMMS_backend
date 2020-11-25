@@ -10,7 +10,6 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
-from openCMMS.settings import BASE_URL
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -26,6 +25,9 @@ logger = logging.getLogger(__name__)
 User = settings.AUTH_USER_MODEL
 
 ADD_USERPROFILE = "usersmanagement.add_userprofile"
+VIEW_USERPROFILE = "usersmanagement.view_userprofile"
+CHANGE_USERPROFILE = "usersmanagement.change_userprofile"
+DELETE_USERPROFILE = "usersmanagement.delete_userprofile"
 
 
 class UserList(APIView):
@@ -59,7 +61,7 @@ class UserList(APIView):
     )
     def get(self, request):
         """docstrings."""
-        if request.user.has_perm(ADD_USERPROFILE):
+        if request.user.has_perm(VIEW_USERPROFILE):
             users = UserProfile.objects.all()
             serializer = UserProfileSerializer(users, many=True)
             return Response(serializer.data)
@@ -135,7 +137,7 @@ class UserDetail(APIView):
             user = UserProfile.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if (request.user == user) or (request.user.has_perm("usersmanagement.view_userprofile")):
+        if (request.user == user) or (request.user.has_perm(VIEW_USERPROFILE)):
             serializer = UserProfileSerializer(user)
             return Response(serializer.data)
         else:
@@ -157,7 +159,7 @@ class UserDetail(APIView):
             user = UserProfile.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if (request.user == user) or (request.user.has_perm("usersmanagement.change_userprofile")):
+        if (request.user == user) or (request.user.has_perm(CHANGE_USERPROFILE)):
             serializer = UserProfileSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 logger.info(
@@ -186,7 +188,7 @@ class UserDetail(APIView):
             user = UserProfile.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if request.user.has_perm("usersmanagement.delete_userprofile"):
+        if request.user.has_perm(DELETE_USERPROFILE):
             # Ici il faudra ajouter le fait qu'on ne puisse pas supprimer
             #  le dernier Administrateur
             logger.info("{user} DELETED {object}".format(user=request.user, object=repr(user)))
@@ -369,7 +371,7 @@ def send_mail_to_setup_password(data):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
+    url = f"{settings.BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
     email.body = f"You have been invited to join openCMMS. \nTo setup your password, please follow this link : {url}"
@@ -391,7 +393,7 @@ def send_mail_to_setup_password_after_blocking(id):
     token = token_hex(16)
     user.set_password(token)
     user.save()
-    url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
+    url = f"{settings.BASE_URL}reset-password?token={token}&username={user.username}"
     email = EmailMessage()
     email.subject = "Set Your Password"
     email.body = f"You have been blocked after 3 unsuccessful login.\
@@ -455,7 +457,7 @@ class UserResetPassword(APIView):
         token = token_hex(16)
         user.set_password(token)
         user.save()
-        url = f"{BASE_URL}reset-password?token={token}&username={user.username}"
+        url = f"{settings.BASE_URL}reset-password?token={token}&username={user.username}"
         email = EmailMessage()
         email.subject = "Reset Your Password"
         email.body = "You asked to reset your password, to do so please follow this link : " + url
