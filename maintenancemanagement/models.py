@@ -158,7 +158,7 @@ class Task(models.Model):
 
     name = models.CharField(max_length=100)
     end_date = models.DateField(null=True, blank=True)  # Correspond à la date butoire
-    description = models.TextField(max_length=2000, default="")
+    description = models.TextField(max_length=2000, default="", blank=True)
     duration = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
     equipment = models.ForeignKey(
