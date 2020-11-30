@@ -9,6 +9,7 @@ from maintenancemanagement.models import Equipment, Field, FieldObject
 from openCMMS.settings import BASE_DIR
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
+from utils.data_provider import add_job, scheduler
 from utils.models import DataProvider
 from utils.serializers import (
     DataProviderRequirementsSerializer,
@@ -272,9 +273,13 @@ class DataProviderTest(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         dataprovider = DataProvider.objects.get(file_name="fichier_test_dataprovider.py")
+        add_job(dataprovider)
+        n_jobs_before = scheduler.get_jobs()
         response = client.delete(f'/api/dataproviders/{dataprovider.id}/')
+        n_jobs_after = scheduler.get_jobs()
         self.assertEqual(response.status_code, 204)
         self.assertFalse(DataProvider.objects.filter(id=dataprovider.id).exists())
+        self.assertEqual(len(n_jobs_before), len(n_jobs_after) + 1)
 
     def test_US23_I5_dataproviderdetail_delete_without_perm(self):
         """

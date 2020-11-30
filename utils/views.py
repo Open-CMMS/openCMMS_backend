@@ -142,6 +142,8 @@ class DataProviderDetail(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("utils.delete_dataprovider"):
             logger.info("DELETED DataProvider {dataprovider}".format(dataprovider=repr(dataprovider)))
+            if dataprovider.job_id:
+                scheduler.remove_job(dataprovider.job_id)
             dataprovider.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
