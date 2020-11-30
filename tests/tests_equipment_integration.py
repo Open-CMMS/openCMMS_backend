@@ -261,7 +261,7 @@ class EquipmentTests(TestCase):
         self.add_add_perm(user)
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipments/requirements')
+        response = client.get('/api/maintenancemanagement/equipments/requirements/')
         equipment_type = EquipmentType.objects.get(name='EquipmentTypeTest')
         field_without_value = Field.objects.get(name='FieldWithoutValueTest')
         field_with_value = Field.objects.get(name='FieldWithValueTest')
@@ -293,7 +293,7 @@ class EquipmentTests(TestCase):
         user = UserProfile.objects.create(username="user", password="p4ssword")
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/equipments/requirements')
+        response = client.get('/api/maintenancemanagement/equipments/requirements/')
         self.assertEqual(response.status_code, 401)
 
     def test_US7_I1_equipmentlist_post_with_file_with_perm(self):
@@ -1085,3 +1085,164 @@ class EquipmentTests(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_US21_I3_removefieldfromequipment_delete_with_perm(self):
+        """
+            Test if a user with perm can delete an added field from an equipment.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
+        c.put(
+            "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {
+                "name": "Embouteilleuse AXB7",
+                "equipment_type": EquipmentType.objects.get(name="Embouteilleuse").id,
+                "field": [{
+                    "name": "New field",
+                    "value": "8"
+                }]
+            },
+            format='json'
+        )
+        field_object_id = FieldObject.objects.get(field=Field.objects.get(name="New field")).id
+        response = c.delete(
+            "/api/maintenancemanagement/removefieldfromequipment/", {
+                "equipment_id": equipment.id,
+                "fieldobject_id": field_object_id
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Field.objects.filter(name="New field").count(), 0)
+        self.assertEqual(FieldObject.objects.filter(id=field_object_id).count(), 0)
+
+    def test_US21_I3_removefieldfromequipment_delete_without_perm(self):
+        """
+            Test if a user without perm can't delete an added field from an equipment.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        c = APIClient()
+        c.force_authenticate(user=user)
+        response = c.delete(
+            "/api/maintenancemanagement/removefieldfromequipment/", {
+                "equipment_id": 1,
+                "fieldobject_id": 1
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_US21_I3_removefieldfromequipment_delete_with_perm_and_missing_equipment(self):
+        """
+            Test if a user with perm can't delete a field with wrong JSON.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
+        c.put(
+            "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {
+                "name": "Embouteilleuse AXB7",
+                "equipment_type": EquipmentType.objects.get(name="Embouteilleuse").id,
+                "field": [{
+                    "name": "New field",
+                    "value": "8"
+                }]
+            },
+            format='json'
+        )
+        field_object_id = FieldObject.objects.get(field=Field.objects.get(name="New field")).id
+        response = c.delete(
+            "/api/maintenancemanagement/removefieldfromequipment/", {"fieldobject_id": field_object_id}, format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Field.objects.filter(name="New field").count(), 1)
+        self.assertEqual(FieldObject.objects.filter(id=field_object_id).count(), 1)
+
+    def test_US21_I3_removefieldfromequipment_delete_with_perm_and_missing_fieldobject(self):
+        """
+            Test if a user with perm can't delete a field with wrong JSON.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
+        c.put(
+            "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {
+                "name": "Embouteilleuse AXB7",
+                "equipment_type": EquipmentType.objects.get(name="Embouteilleuse").id,
+                "field": [{
+                    "name": "New field",
+                    "value": "8"
+                }]
+            },
+            format='json'
+        )
+        field_object_id = FieldObject.objects.get(field=Field.objects.get(name="New field")).id
+        response = c.delete(
+            "/api/maintenancemanagement/removefieldfromequipment/", {
+                "equipment_id": equipment.id,
+            }, format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Field.objects.filter(name="New field").count(), 1)
+        self.assertEqual(FieldObject.objects.filter(id=field_object_id).count(), 1)
+
+    def test_US21_I3_removefieldfromequipment_delete_with_perm(self):
+        """
+            Test if a user with perm can delete an added field from an equipment.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
+        field_object_id = FieldObject.objects.get(field=Field.objects.get(name="Pression")).id
+        response = c.delete(
+            "/api/maintenancemanagement/removefieldfromequipment/", {
+                "equipment_id": equipment.id,
+                "fieldobject_id": field_object_id
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Field.objects.filter(name="Pression").count(), 1)
+        self.assertEqual(FieldObject.objects.filter(id=field_object_id).count(), 1)
+
+    def test_US21_I3_removefieldfromequipment_delete_with_perm(self):
+        """
+            Test if a user with perm can delete an added field from an equipment.
+        """
+        user = UserProfile.objects.create(username="user", password="p4ssword")
+        self.add_change_perm(user)
+        c = APIClient()
+        c.force_authenticate(user=user)
+        equipment = Equipment.objects.get(name="Embouteilleuse AXB1")
+        c.put(
+            "/api/maintenancemanagement/equipments/" + str(equipment.id) + "/", {
+                "name": "Embouteilleuse AXB7",
+                "equipment_type": EquipmentType.objects.get(name="Embouteilleuse").id,
+                "field": [{
+                    "name": "New field",
+                    "value": "8"
+                }]
+            },
+            format='json'
+        )
+        field_object_id = FieldObject.objects.get(field=Field.objects.get(name="New field")).id
+        eq_type = EquipmentType.objects.create(name="temp")
+        wrong_equipment = Equipment.objects.create(name="Wrong Eq", equipment_type=eq_type)
+        response = c.delete(
+            "/api/maintenancemanagement/removefieldfromequipment/", {
+                "equipment_id": wrong_equipment.id,
+                "fieldobject_id": field_object_id
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Field.objects.filter(name="New field").count(), 1)
+        self.assertEqual(FieldObject.objects.filter(id=field_object_id).count(), 1)

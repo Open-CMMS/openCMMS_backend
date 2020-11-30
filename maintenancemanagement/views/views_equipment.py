@@ -35,6 +35,16 @@ CHANGE_EQUIPMENT = "maintenancemanagement.change_equipment"
 DELETE_EQUIPMENT = "maintenancemanagement.delete_equipment"
 
 
+def _get_expected_fields(equipment_type_id):
+    expected_fields_groups = EquipmentType.objects.get(id=equipment_type_id).fields_groups.all()
+    expected_fields = []
+    if expected_fields_groups:
+        for expected_fields_group in expected_fields_groups.all():
+            for expected_field in Field.objects.filter(field_group=expected_fields_group):
+                expected_fields.append(expected_field.id)
+    return expected_fields
+
+
 class EquipmentList(APIView):
     r"""\n# List all equipments or create a new one.
 
@@ -100,17 +110,8 @@ class EquipmentList(APIView):
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    def _get_expected_fields(self, request):
-        expected_fields_groups = EquipmentType.objects.get(id=request.data.get('equipment_type')).fields_groups.all()
-        expected_fields = []
-        if expected_fields_groups:
-            for expected_fields_group in expected_fields_groups.all():
-                for expected_field in Field.objects.filter(field_group=expected_fields_group):
-                    expected_fields.append(expected_field.id)
-        return expected_fields
-
     def _validate_fields(self, request, fields):
-        expected_fields = self._get_expected_fields(request)
+        expected_fields = _get_expected_fields(request.data.get('equipment_type'))
         if fields:
             for field in fields:
                 if field.get('field') in expected_fields:
@@ -300,6 +301,11 @@ class EquipmentDetail(APIView):
             for field in fields:
                 if field.get('field', None) is None:
                     field.update({'field': Field.objects.create(name=field.get('name')).pk})
+                    logger.info(
+                        "{user} CREATED Field with {params}".format(
+                            user=request.user, params={"name": field.get('name')}
+                        )
+                    )
                 field.update({'described_object': equipment})
                 field_object_serializer = FieldObjectCreateSerializer(data=field)
                 if field_object_serializer.is_valid():
@@ -385,4 +391,31 @@ class EquipmentRequirements(APIView):
             equipment_types = EquipmentType.objects.all()
             serializer = EquipmentRequirementsSerializer(equipment_types, many=True)
             return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class RemoveFieldFromEquipment(APIView):
+    """The view to remove a field object from an equipment."""
+
+    @swagger_auto_schema(
+        operation_description='Remove a field object from an equipment.', responses={204: 'No content'}
+    )
+    def delete(self, request):
+        """Remove a field object from an equipment."""
+        if request.user.has_perm(CHANGE_EQUIPMENT):
+            try:
+                equipment = Equipment.objects.get(id=request.data.get("equipment_id"))
+                field_object = FieldObject.objects.get(id=request.data.get("fieldobject_id"))
+                if not equipment.id == field_object.described_object.id:
+                    return Response(
+                        str(field_object) + ' is not a field of ' + str(equipment), status=status.HTTP_400_BAD_REQUEST
+                    )
+                if field_object.field.id not in _get_expected_fields(equipment.equipment_type.id):
+                    logger.info("{user} DELETED {object}".format(user=request.user, object=repr(field_object)))
+                    field_object.field.delete()
+                    return Response(status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response(str(field_object) + " can't be removed", status=status.HTTP_400_BAD_REQUEST)
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
