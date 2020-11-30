@@ -491,6 +491,24 @@ class CheckToken(APIView):
         return Response(user.check_password(token))
 
 
+class ResendInscriptionEmail(APIView):
+    """Resend the inscription mail to an user"""
+
+    def get(self, request):
+       
+        try :
+            user = UserProfile.objects.get(pk=request.GET.get('userid'))
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.has_perm(ADD_USERPROFILE) :
+            data = {'id' : user.pk}
+            send_mail_to_setup_password(data)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
 def init_database():
     """Initialise the database for tests."""
     # Creation of 3 TeamTypes
