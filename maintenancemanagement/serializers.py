@@ -50,6 +50,7 @@ class FileSerializer(serializers.ModelSerializer):
         fields = ['id', 'file', 'is_manual']
 
     def validate_file(self, file):
+        """Check that the file sent is an image with imghdr or if it is a pdf."""
         if not imghdr.what(file):
             try:
                 from io import BytesIO
