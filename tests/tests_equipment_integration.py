@@ -1,5 +1,8 @@
+from io import BytesIO
+
 import pytest
 from init_db_tests import init_db
+from PIL import Image
 
 from django.contrib.auth.models import Permission
 from django.test import TestCase
@@ -50,13 +53,13 @@ class EquipmentTests(TestCase):
 
     def temporary_file(self):
         """
-        Returns a new temporary file
+        Returns a new temporary image.
         """
-        import tempfile
-        tmp_file = tempfile.TemporaryFile()
-        tmp_file.write(b'Coco veut un gateau')
-        tmp_file.seek(0)
-        return tmp_file
+        file_obj = BytesIO()
+        image = Image.new('1', (60, 60), 1)
+        image.save(file_obj, 'png')
+        file_obj.seek(0)
+        return file_obj
 
     def add_add_perm_file(self, user):
         """
