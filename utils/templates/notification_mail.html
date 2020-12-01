@@ -7,13 +7,13 @@
         <meta charset="utf-8">
     </head>
     <body>
-        <h1>Notifications Open-CMMS</h1>
-        <h2>Bonjour, veuillez prendre connaisance des taĉhes ci-dessous qui vous sont assignées</h2>
+        <h1>Open-CMMS notifications</h1>
+        <h2>Hello, please take note of the tasks assigned to you below</h2>
         {% def_element tasks|extract:0 as late_tasks%}
         {% def_element tasks|extract:1 as today_tasks%}
         {% def_element tasks|extract:2 as coming_tasks%}
         <div class="tasks" id="late_tasks">
-            <h3>Tâches en retard</h3>
+            <h3>Late tasks</h3>
             <ul>
             {% for task in late_tasks %}
                 <li>
@@ -26,7 +26,7 @@
             </ul>
         </div>
         <div class="tasks" id="today_tasks">
-            <h3>Tâches à réaliser aujourd'hui</h3>
+            <h3>Tasks to be done today</h3>
             <ul>
             {% for task in today_tasks %}
                 <li>
@@ -39,7 +39,7 @@
             </ul>
         </div>
         <div class="tasks" id="coming_tasks">
-            <h3>Tâches à réaliser dans la semaine</h3>
+            <h3>Tasks to be carried out during the week</h3>
             <ul>
             {% for task in coming_tasks %}
                 <li>
