@@ -491,6 +491,27 @@ class CheckToken(APIView):
         return Response(user.check_password(token))
 
 
+class CheckPassword(APIView):
+    """# Check the password of the user.
+
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    Response (response) : True if the password is correct else False
+    """
+
+    @swagger_auto_schema(
+        operation_description='Authenticate the token of a user.', responses={200: 'The request went well.'}
+    )
+    def post(self, request):
+        """docstrings."""
+        password = request.data['password']
+        username = request.data['username']
+        user = UserProfile.objects.get(username=username)
+        return Response(user.check_password(password))
+
+
 class ResendInscriptionEmail(APIView):
     """Resend the inscription mail to an user"""
 
