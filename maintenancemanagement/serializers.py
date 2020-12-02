@@ -1,5 +1,9 @@
 """Serializers enable the link between front-end and back-end."""
 
+import imghdr
+
+from PyPDF4.pdf import PdfFileReader
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
@@ -44,6 +48,16 @@ class FileSerializer(serializers.ModelSerializer):
 
         model = File
         fields = ['id', 'file', 'is_manual']
+
+    def validate_file(self, file):
+        """Check that the file sent is an image with imghdr or if it is a pdf."""
+        if not imghdr.what(file):
+            try:
+                from io import BytesIO
+                PdfFileReader(BytesIO(file.read()))
+            except Exception:
+                raise serializers.ValidationError('File should be an image or a pdf.')
+        return file
 
 
 class EquipmentSerializer(serializers.ModelSerializer):

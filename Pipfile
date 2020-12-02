@@ -15,10 +15,11 @@ djangorestframework-jwt = "*"
 drf_yasg = "*"
 apscheduler = "*"
 django_inlinecss = "*"
-
+pyPDF4 = "*"
 
 [dev-packages]
 pytest-django = "*"
+pytest = "*"
 coverage = "*"
 flake8 = "*"
 flake8-docstrings = "*"
@@ -27,6 +28,7 @@ pep8-naming = "*"
 black = "==18.6b4"
 isort = "*"
 yapf = "*"
+Pillow = "*"
 
 [requires]
 python_version = "3.7"
