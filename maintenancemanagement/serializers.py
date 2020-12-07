@@ -316,6 +316,41 @@ class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
         else:
             return obj.value
 
+class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
+    """Trigger condition validation serializer."""
+
+    delay = serializers.CharField()
+    field_object_id = serializers.IntegerField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['field', 'value', 'description', 'delay', 'field_object_id']
+
+class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
+    """Trigger condition create serializer."""
+
+    delay = serializers.CharField()
+    field_object_id = serializers.IntegerField()
+    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['described_object', 'field', 'field_value', 'value', 'description', 'delay', 'field_object_id']
+
+    def validate(self, data):
+        """Redefine the validate method."""
+        if data.get('field').name == "Duration":
+            data.update({"field_object_id": None}) 
+        if data.get("delay"):
+            value = data.get("value") + "|" + data.get("delay")
+            data.update({"value": value})
+            data.update({"field_value": None})
+            data.pop("delay")
+        return data
 
 #############################################################################
 ########################## FIELD VALUE SERIALIZER ###########################

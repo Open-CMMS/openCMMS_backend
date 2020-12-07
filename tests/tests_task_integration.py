@@ -756,25 +756,20 @@ class TaskTests(TestCase):
                 'trigger_conditions':
                     [
                         {
-                            "field": conditions.get(name="Date").id,
-                            "value": "2020-09-30",
-                            "description": "test_add_task_with_perm_with_trigger_conditions_1"
-                        },
-                        {
                             "field": conditions.get(name="Recurrence").id,
-                            "value": "Day",
-                            "description": "test_add_task_with_perm_with_trigger_conditions_2"
+                            "value": "30d",
+                            "delay": "7d",
+                            "description": "test_add_task_with_perm_with_trigger_conditions"
                         },
                     ]
             },
             format='json'
         )
+        print(response.data)
         self.assertEqual(response.status_code, 201)
         task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_conditions")
-        field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_1")
-        field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_2")
-        self.assertEqual(field_object_1.described_object, task)
-        self.assertEqual(field_object_2.described_object, task)
+        field_object = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions")
+        self.assertEqual(field_object.described_object, task)
 
     def test_US11_I1_tasklist_post_with_end_conditions_with_perm(self):
         """
@@ -832,7 +827,8 @@ class TaskTests(TestCase):
                     [
                         {
                             "field": trigger_conditions.get(name="Recurrence").id,
-                            "value": "Month",
+                            "value": "30d",
+                            "delay": "14d",
                             "description": "test_add_task_with_perm_with_trigger_and_end_conditions_1"
                         }
                     ],
@@ -857,7 +853,6 @@ class TaskTests(TestCase):
         )
         self.assertEqual(field_object_1.described_object, task)
         self.assertEqual(field_object_2.described_object, task)
-        self.assertEqual(field_object_1.field_value, FieldValue.objects.get(value='Month'))
 
     def test_US10_11_I1_tasklist_post_with_conditions_with_bad_values_with_perm(self):
         """

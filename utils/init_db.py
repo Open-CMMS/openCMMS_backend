@@ -9,9 +9,11 @@ def initialize_db():
     # Create the different type of Conditions
     field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
     Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Above Threshold", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Under Threshold", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Frequency", field_group=field_gr_cri_dec)
 
     field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
-
     Field.objects.create(name="Checkbox", field_group=field_gr_cri_fin)
     Field.objects.create(name="Integer", field_group=field_gr_cri_fin)
     Field.objects.create(name="Description", field_group=field_gr_cri_fin)

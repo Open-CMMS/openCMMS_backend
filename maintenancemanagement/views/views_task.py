@@ -17,7 +17,7 @@ from maintenancemanagement.serializers import (
     TaskListingSerializer,
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
-    TaskUpdateSerializer,
+    TaskUpdateSerializer, TriggerConditionsCreateSerializer, TriggerConditionsValidationSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -95,10 +95,9 @@ class TaskList(APIView):
             conditions = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
-                for condition in conditions:
-                    validation_serializer = FieldObjectValidationSerializer(data=condition)
-                    if not validation_serializer.is_valid():
-                        return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                error = self._validate_conditions(conditions)
+                if error:
+                    return error
                 task = task_serializer.save()
                 logger.info("{user} CREATED Task with {params}".format(user=request.user, params=request.data))
                 self._save_conditions(request, conditions, task)
@@ -109,20 +108,37 @@ class TaskList(APIView):
     def _extract_conditions_from_data(self, request):
         trigger_conditions = request.data.pop('trigger_conditions', None)
         end_conditions = request.data.pop('end_conditions', None)
-        conditions = []
+        return trigger_conditions, end_conditions
+
+    def _validate_conditions(self, conditions):
+        (trigger_conditions, end_conditions) = conditions
         if trigger_conditions:
-            conditions.extend(trigger_conditions)
+            for trigger_condition in trigger_conditions:
+                validation_serializer = TriggerConditionsValidationSerializer(data=trigger_condition)
+                if not validation_serializer.is_valid():
+                    return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         if end_conditions:
-            conditions.extend(end_conditions)
-        return conditions
+            for end_condition in end_conditions:
+                validation_serializer = FieldObjectValidationSerializer(data=end_condition)
+                if not validation_serializer.is_valid():
+                    return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def _save_conditions(self, request, conditions, task):
-        for condition in conditions:
-            condition.update({'described_object': task})
-            condition_serializer = FieldObjectCreateSerializer(data=condition)
-            if condition_serializer.is_valid():
-                condition_serializer.save()
-                logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=condition))
+        (trigger_conditions, end_conditions) = conditions
+        if trigger_conditions:
+            for trigger_condition in trigger_conditions:
+                trigger_condition.update({'described_object': task})
+                condition_serializer = TriggerConditionsCreateSerializer(data=trigger_condition)
+                if condition_serializer.is_valid():
+                    condition_serializer.save()
+                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=trigger_condition))
+        if end_conditions:
+            for end_condition in end_conditions:
+                end_condition.update({'described_object': task})
+                condition_serializer = FieldObjectCreateSerializer(data=end_condition)
+                if condition_serializer.is_valid():
+                    condition_serializer.save()
+                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=end_condition))
 
 
 class TaskDetail(APIView):

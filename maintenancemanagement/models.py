@@ -99,7 +99,7 @@ class FieldObject(models.Model):
         """Define the representation of FieldObject."""
         return "<FieldObject: id={id}, field={field}, field_value={field_value}, value={value},\
 description={description}>".format(
-            id=self.id, field=self.field, field_value=self.value, value=self.value, description=self.description
+            id=self.id, field=self.field, field_value=self.field_value, value=self.value, description=self.description
         )
 
 
@@ -196,6 +196,7 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
     )
+    is_triggered = models.BooleanField(default=True, null=True)
     over = models.BooleanField(default=False, null=True)
 
     def __str__(self):
@@ -205,7 +206,7 @@ class Task(models.Model):
     def __repr__(self):
         """Define formal representation of a task."""
         return "<Task: id={id}, name='{name}', end_date={date}, duration={duration}, is_template={template}, \
-equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, over={over}>".format(
+equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, is_triggered={triggered}, over={over}>".format(
             id=self.id,
             name=self.name,
             date=self.end_date,
@@ -215,5 +216,6 @@ equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, over
             type=self.equipment_type,
             teams=self.teams,
             files=self.files,
+            triggered=self.is_triggered,
             over=self.over
         )
