@@ -203,7 +203,12 @@ class TestDataProvider(APIView):
             if not serializer.is_valid():
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             try:
-                value = test_dataprovider_configuration(request.data['file_name'], request.data['ip_address'])
+                if not request.data['port']:
+                    value = test_dataprovider_configuration(request.data['file_name'], request.data['ip_address'], 502)
+                else:
+                    value = test_dataprovider_configuration(
+                        request.data['file_name'], request.data['ip_address'], request.data['port']
+                    )
                 logger.info("TESTED DataProvider with {data}".format(data=request.data))
                 return Response(value, status=status.HTTP_200_OK)
             except DataProviderException as e:
