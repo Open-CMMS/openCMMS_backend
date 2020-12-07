@@ -100,6 +100,8 @@ class TaskList(APIView):
                     if not validation_serializer.is_valid():
                         return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 task = task_serializer.save()
+                task.created_by = request.user
+                task.save()
                 logger.info("{user} CREATED Task with {params}".format(user=request.user, params=request.data))
                 self._save_conditions(request, conditions, task)
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
@@ -244,6 +246,7 @@ class TaskDetail(APIView):
             if end_field_object.value is None:
                 over = False
         if over is True:
+            task.achieved_by = request.user
             self._trigger_recurrent_task_if_recurrent(request, task)
         task.over = over
         logger.info(
@@ -287,6 +290,7 @@ class TaskDetail(APIView):
             new_task.pk = None
             new_task.save()
             new_task.end_date = task.end_date + self._parse_time(recurrent_object.value)
+            new_task.achieved_by = None
             new_task.save()
             logger.info("{user} TRIGGER RECURRENT TASK ON {task}".format(user=request.user, task=new_task))
 
