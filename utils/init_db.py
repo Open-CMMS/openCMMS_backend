@@ -8,7 +8,7 @@ def initialize_db():
     """Initiate the database."""
     # Create the different type of Conditions
     field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
-    Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
     Field.objects.create(name="Above Threshold", field_group=field_gr_cri_dec)
     Field.objects.create(name="Under Threshold", field_group=field_gr_cri_dec)
     Field.objects.create(name="Frequency", field_group=field_gr_cri_dec)
