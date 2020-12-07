@@ -316,11 +316,12 @@ class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
         else:
             return obj.value
 
+
 class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
     """Trigger condition validation serializer."""
 
     delay = serializers.CharField()
-    field_object_id = serializers.IntegerField()
+    field_object_id = serializers.IntegerField(allow_null=True, required=False)
 
     class Meta:
         """This class contains the serializer metadata."""
@@ -328,11 +329,22 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
         model = FieldObject
         fields = ['field', 'value', 'description', 'delay', 'field_object_id']
 
+    def validate(self, data):
+        """Redefine the validate method."""
+        if data.get('field').name in [
+            'Above Threshold', 'Under Threshold', 'Frequency'
+        ] and 'field_object_id' not in data:
+            raise serializers.ValidationError(
+                f'Misses field_object_id for {data.get("field").name} trigger condition.'
+            )
+        return data
+
+
 class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
     """Trigger condition create serializer."""
 
     delay = serializers.CharField()
-    field_object_id = serializers.IntegerField()
+    field_object_id = serializers.IntegerField(allow_null=True, required=False)
     described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
 
     class Meta:
@@ -343,14 +355,17 @@ class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Redefine the validate method."""
-        if data.get('field').name == "Duration":
-            data.update({"field_object_id": None}) 
-        if data.get("delay"):
-            value = data.get("value") + "|" + data.get("delay")
-            data.update({"value": value})
-            data.update({"field_value": None})
-            data.pop("delay")
+        if data.get('field').name == 'Recurrence':
+            value = f'{data.get("value")}|{data.get("delay")}'
+        else:  #  data.get('field').name == 'Above Threshold':
+            value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}'
+        data.update({"value": value})
+        data.update({"field_value": None})
+        data.pop("delay")
+        if 'field_object_id' in data:
+            data.pop('field_object_id')
         return data
+
 
 #############################################################################
 ########################## FIELD VALUE SERIALIZER ###########################
