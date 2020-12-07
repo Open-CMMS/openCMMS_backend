@@ -1,6 +1,7 @@
 """This is the models file for our utilities."""
-from django.db import models
 from maintenancemanagement.models import Equipment, FieldObject
+
+from django.db import models
 
 
 class DataProvider(models.Model):
@@ -9,7 +10,7 @@ class DataProvider(models.Model):
     name = models.CharField(max_length=100, default="", blank=False, null=False)
     file_name = models.CharField(max_length=100, blank=False, null=False)
     ip_address = models.CharField(max_length=100, blank=False, null=False)
-    port = models.PositiveIntegerField(default=502)
+    port = models.PositiveIntegerField(default=502, blank=True)
     equipment = models.ForeignKey(
         Equipment,
         verbose_name="Linked equipment",
