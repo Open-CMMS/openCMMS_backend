@@ -8,19 +8,11 @@ from PIL import Image
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    Field,
-    FieldGroup,
-    FieldObject,
-    FieldValue,
-    File,
-    Task,
+    Field, FieldGroup, FieldObject, FieldValue, File, Task,
 )
 from maintenancemanagement.serializers import (
-    EquipmentTypeSerializer,
-    FileSerializer,
-    TaskListingSerializer,
-    TaskSerializer,
-    TeamSerializer,
+    EquipmentTypeSerializer, FileSerializer, TaskListingSerializer,
+    TaskSerializer, TeamSerializer,
 )
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -759,8 +751,26 @@ class TaskTests(TestCase):
                             "field": conditions.get(name="Recurrence").id,
                             "value": "30d",
                             "delay": "7d",
-                            "description": "test_add_task_with_perm_with_trigger_conditions"
-                        },
+                            "description": "test_add_task_with_perm_with_trigger_conditions_recurrence"
+                        }, {
+                            'field': conditions.get(name='Above Threshold').id,
+                            'value': '0.6',
+                            'field_object_id': 1,
+                            'delay': '2d',
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
+                        }, {
+                            'field': conditions.get(name='Under Threshold').id,
+                            'value': '0.6',
+                            'field_object_id': 1,
+                            'delay': '2d',
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
+                        }, {
+                            'field': conditions.get(name='Under Threshold').id,
+                            'value': '10000',
+                            'field_object_id': 1,
+                            'delay': '2d',
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_frequency'
+                        }
                     ]
             },
             format='json'
@@ -768,8 +778,23 @@ class TaskTests(TestCase):
         print(response.data)
         self.assertEqual(response.status_code, 201)
         task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_conditions")
-        field_object = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions")
-        self.assertEqual(field_object.described_object, task)
+        field_object1 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_recurrence"
+        )
+        field_object2 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_above_threshold"
+        )
+        field_object3 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_under_threshold"
+        )
+        field_object4 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_frequency"
+        )
+        self.assertEqual(field_object1.described_object, task)
+        self.assertEqual(field_object1.value, '30d|7d')
+        self.assertEqual(field_object2.value, '0.6|1|2d')
+        self.assertEqual(field_object3.value, '0.6|1|2d')
+        self.assertEqual(field_object4.value, '10000|1|2d')
 
     def test_US11_I1_tasklist_post_with_end_conditions_with_perm(self):
         """
@@ -818,7 +843,8 @@ class TaskTests(TestCase):
         trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         response = client.post(
-            '/api/maintenancemanagement/tasks/', {
+            '/api/maintenancemanagement/tasks/',
+            {
                 'name':
                     'verifier pneus',
                 'description':
@@ -827,6 +853,7 @@ class TaskTests(TestCase):
                     [
                         {
                             "field": trigger_conditions.get(name="Recurrence").id,
+                            # "field_object_id": 2,  # Si on le met pas ça dit qu'il est requis, si on le mets ça plante
                             "value": "30d",
                             "delay": "14d",
                             "description": "test_add_task_with_perm_with_trigger_and_end_conditions_1"
