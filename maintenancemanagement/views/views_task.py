@@ -17,7 +17,9 @@ from maintenancemanagement.serializers import (
     TaskListingSerializer,
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
-    TaskUpdateSerializer, TriggerConditionsCreateSerializer, TriggerConditionsValidationSerializer,
+    TaskUpdateSerializer,
+    TriggerConditionsCreateSerializer,
+    TriggerConditionsValidationSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -131,14 +133,18 @@ class TaskList(APIView):
                 condition_serializer = TriggerConditionsCreateSerializer(data=trigger_condition)
                 if condition_serializer.is_valid():
                     condition_serializer.save()
-                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=trigger_condition))
+                    logger.info(
+                        "{user} CREATED FieldObject with {params}".format(user=request.user, params=trigger_condition)
+                    )
         if end_conditions:
             for end_condition in end_conditions:
                 end_condition.update({'described_object': task})
                 condition_serializer = FieldObjectCreateSerializer(data=end_condition)
                 if condition_serializer.is_valid():
                     condition_serializer.save()
-                    logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=end_condition))
+                    logger.info(
+                        "{user} CREATED FieldObject with {params}".format(user=request.user, params=end_condition)
+                    )
 
 
 class TaskDetail(APIView):
@@ -289,7 +295,7 @@ class TaskDetail(APIView):
             object_id=task.id,
             content_type=content_type_object,
             field__field_group__name='Trigger Conditions',
-            field__name="Duration"
+            field__name="Recurrence"
         )
         if recurrent_object.count() == 1:
             recurrent_object = recurrent_object[0]
@@ -466,8 +472,9 @@ class UserTaskList(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if request.user.has_perm(VIEW_TASK) or request.user == user:
-            tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(),
-                                        is_template=False).distinct().order_by('over', 'end_date')
+            tasks = Task.objects.filter(
+                teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(), is_template=False
+            ).distinct().order_by('over', 'end_date')
             serializer = TaskListingSerializer(tasks, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
