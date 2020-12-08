@@ -3,7 +3,7 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from usersmanagement.models import Team
+from usersmanagement.models import Team, UserProfile
 
 
 class File(models.Model):
@@ -161,6 +161,20 @@ class Task(models.Model):
     description = models.TextField(max_length=2000, default="", blank=True)
     duration = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="tasks_created"
+    )
+    achieved_by = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="tasks_achieved"
+    )
     equipment = models.ForeignKey(
         Equipment,
         verbose_name="Assigned equipment",

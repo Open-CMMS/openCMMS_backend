@@ -2,12 +2,8 @@ import os
 
 import pytest
 from init_db_tests import init_db
-
-from django.contrib.auth.models import Permission
-from django.test import TestCase, client
 from maintenancemanagement.models import Equipment, Field, FieldObject
 from openCMMS.settings import BASE_DIR
-from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
 from utils.data_provider import add_job, scheduler
 from utils.models import DataProvider
@@ -15,6 +11,10 @@ from utils.serializers import (
     DataProviderRequirementsSerializer,
     DataProviderSerializer,
 )
+
+from django.contrib.auth.models import Permission
+from django.test import TestCase, client
+from rest_framework.test import APIClient
 
 
 class DataProviderTest(TestCase):
@@ -97,6 +97,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -121,6 +122,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -154,6 +156,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'fake field': 'useless data',
@@ -206,6 +209,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test pour put',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -219,6 +223,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider mis à jour',
                 'recurrence': '5d',
                 'ip_address': '192.168.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -245,6 +250,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test pour put',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -297,7 +303,7 @@ class DataProviderTest(TestCase):
             Test if a user with perm can test a data provider.
         """
         with open(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers.py'), "w+") as file:
-            file.write('def get_data(ip_address):\n')
+            file.write('def get_data(ip_address, port):\n')
             file.write('    return 2')
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -309,6 +315,7 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
@@ -316,7 +323,7 @@ class DataProviderTest(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, 2)
+        self.assertEqual(response.data["data"], 2)
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers.py'))
 
     def test_US23_I6_testdataprovider_post_without_perm(self):
@@ -334,7 +341,7 @@ class DataProviderTest(TestCase):
             Test if a user with perm can test a data provider with a not well formted file.
         """
         with open(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error.py'), "w+") as file:
-            file.write('def wrong_get_data(ip_address):\n')
+            file.write('def wrong_get_data(ip_address, port):\n')
             file.write('    return 2')
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -346,14 +353,15 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 501)
-        self.assertEqual(response.data, 'Python file is not well formated, please follow the example')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["error"], 'Python file is not well formated, please follow the example')
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error.py'))
 
     def test_US23_I6_testdataprovider_post_with_perm_but_not_file(self):
@@ -370,14 +378,15 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 501)
-        self.assertEqual(response.data, "Python file not found, please enter 'name_of_your_file.py'")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["error"], "Python file not found, please enter 'name_of_your_file.py'")
 
     def test_US23_I6_testdataprovider_post_with_perm_and_not_working_get_data(self):
         """
@@ -387,7 +396,7 @@ class DataProviderTest(TestCase):
             os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error_in_getdata.py'), "w+"
         ) as file:
             file.write('from utils.data_provider import GetDataException\n')
-            file.write('def get_data(ip_address):\n')
+            file.write('def get_data(ip_address, port):\n')
             file.write('    raise GetDataException()')
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -399,12 +408,13 @@ class DataProviderTest(TestCase):
                 'name': 'dataprovider de test',
                 'recurrence': '10d',
                 'ip_address': '127.0.0.1',
+                'port': 5002,
                 'equipment': Equipment.objects.get(name='Embouteilleuse AXB1').id,
                 'field_object': Field.objects.get(name="Nb bouteilles").object_set.get().id,
                 'is_activated': True
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 501)
-        self.assertEqual(response.data, 'IP not found or python file not working')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["error"], 'IP not found or python file not working')
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error_in_getdata.py'))
