@@ -331,14 +331,28 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Redefine the validate method."""
-        if data.get('field').name in [
-            'Above Threshold', 'Under Threshold', 'Frequency'
-        ] and 'field_object_id' not in data:
-            raise serializers.ValidationError(
-                f'Misses field_object_id for {data.get("field").name} trigger condition.'
-            )
-        return data
-
+        try:
+            if data.get("field_object_id") is not None:
+                FieldObject.objects.get(id=int(data.get("field_object_id")))
+            if data.get('field').name in [
+                'Above Threshold', 'Under Threshold', 'Frequency'
+            ] and data.get("value") is not None:
+                float(data.get("value"))
+            if data.get('field').name in [
+                'Above Threshold', 'Under Threshold', 'Frequency'
+            ] and 'field_object_id' not in data:
+                raise serializers.ValidationError(
+                    f'Misses field_object_id for {data.get("field").name} trigger condition.'
+                )
+            if data.get('field').name == 'Recurrence' and 'field_object_id' in data:
+                raise serializers.ValidationError(
+                    'field_object_id not expected.'
+                )
+            return data
+        except ObjectDoesNotExist as e:
+            raise serializers.ValidationError(e)
+        except ValueError as e:
+            raise serializers.ValidationError(e)
 
 class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
     """Trigger condition create serializer."""
@@ -357,7 +371,10 @@ class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
         """Redefine the validate method."""
         if data.get('field').name == 'Recurrence':
             value = f'{data.get("value")}|{data.get("delay")}'
-        else:  #  data.get('field').name == 'Above Threshold':
+        elif data.get('field').name == 'Frequency':
+            next_trigger = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value) + float(data.get("value"))
+            value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}|{next_trigger}'
+        else:
             value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}'
         data.update({"value": value})
         data.update({"field_value": None})

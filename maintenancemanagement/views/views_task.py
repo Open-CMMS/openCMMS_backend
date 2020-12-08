@@ -94,13 +94,15 @@ class TaskList(APIView):
     def post(self, request):
         """Add a Task into the database."""
         if request.user.has_perm(ADD_TASK):
-            conditions = self._extract_conditions_from_data(request)
+            conditions, task_activated = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
                 error = self._validate_conditions(conditions)
                 if error:
                     return error
                 task = task_serializer.save()
+                task.is_activated = task_activated
+                task.save()
                 logger.info("{user} CREATED Task with {params}".format(user=request.user, params=request.data))
                 self._save_conditions(request, conditions, task)
                 return Response(task_serializer.data, status=status.HTTP_201_CREATED)
@@ -110,7 +112,7 @@ class TaskList(APIView):
     def _extract_conditions_from_data(self, request):
         trigger_conditions = request.data.pop('trigger_conditions', None)
         end_conditions = request.data.pop('end_conditions', None)
-        return trigger_conditions, end_conditions
+        return (trigger_conditions, end_conditions), trigger_conditions is None
 
     def _validate_conditions(self, conditions):
         (trigger_conditions, end_conditions) = conditions
