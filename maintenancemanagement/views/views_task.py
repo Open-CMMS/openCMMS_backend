@@ -1,8 +1,7 @@
 """This module defines the views corresponding to the tasks."""
 
 import logging
-import re
-from datetime import timedelta
+from utils.methods import parse_time
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -18,6 +17,8 @@ from maintenancemanagement.serializers import (
     TaskSerializer,
     TaskTemplateRequirementsSerializer,
     TaskUpdateSerializer,
+    TriggerConditionsCreateSerializer,
+    TriggerConditionsValidationSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -92,14 +93,14 @@ class TaskList(APIView):
     def post(self, request):
         """Add a Task into the database."""
         if request.user.has_perm(ADD_TASK):
-            conditions = self._extract_conditions_from_data(request)
+            conditions, task_triggered = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
-                for condition in conditions:
-                    validation_serializer = FieldObjectValidationSerializer(data=condition)
-                    if not validation_serializer.is_valid():
-                        return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                error = self._validate_conditions(conditions)
+                if error:
+                    return error
                 task = task_serializer.save()
+                task.is_triggered = task_triggered
                 task.created_by = request.user
                 task.save()
                 logger.info("{user} CREATED Task with {params}".format(user=request.user, params=request.data))
@@ -111,20 +112,41 @@ class TaskList(APIView):
     def _extract_conditions_from_data(self, request):
         trigger_conditions = request.data.pop('trigger_conditions', None)
         end_conditions = request.data.pop('end_conditions', None)
-        conditions = []
+        return (trigger_conditions, end_conditions), trigger_conditions is None
+
+    def _validate_conditions(self, conditions):
+        (trigger_conditions, end_conditions) = conditions
         if trigger_conditions:
-            conditions.extend(trigger_conditions)
+            for trigger_condition in trigger_conditions:
+                validation_serializer = TriggerConditionsValidationSerializer(data=trigger_condition)
+                if not validation_serializer.is_valid():
+                    return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         if end_conditions:
-            conditions.extend(end_conditions)
-        return conditions
+            for end_condition in end_conditions:
+                validation_serializer = FieldObjectValidationSerializer(data=end_condition)
+                if not validation_serializer.is_valid():
+                    return Response(validation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def _save_conditions(self, request, conditions, task):
-        for condition in conditions:
-            condition.update({'described_object': task})
-            condition_serializer = FieldObjectCreateSerializer(data=condition)
-            if condition_serializer.is_valid():
-                condition_serializer.save()
-                logger.info("{user} CREATED FieldObject with {params}".format(user=request.user, params=condition))
+        (trigger_conditions, end_conditions) = conditions
+        if trigger_conditions:
+            for trigger_condition in trigger_conditions:
+                trigger_condition.update({'described_object': task})
+                condition_serializer = TriggerConditionsCreateSerializer(data=trigger_condition)
+                if condition_serializer.is_valid():
+                    condition_serializer.save()
+                    logger.info(
+                        "{user} CREATED FieldObject with {params}".format(user=request.user, params=trigger_condition)
+                    )
+        if end_conditions:
+            for end_condition in end_conditions:
+                end_condition.update({'described_object': task})
+                condition_serializer = FieldObjectCreateSerializer(data=end_condition)
+                if condition_serializer.is_valid():
+                    condition_serializer.save()
+                    logger.info(
+                        "{user} CREATED FieldObject with {params}".format(user=request.user, params=end_condition)
+                    )
 
 
 class TaskDetail(APIView):
@@ -221,7 +243,7 @@ class TaskDetail(APIView):
                     field_object_serializer.save()
 
             if 'duration' in request.data.keys():
-                request.data.update({'duration': self._parse_time(request.data['duration'])})
+                request.data.update({'duration': parse_time(request.data['duration'])})
             serializer = TaskUpdateSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
                 logger.info(
@@ -254,18 +276,6 @@ class TaskDetail(APIView):
         )
         task.save()
 
-    def _parse_time(self, time_str):
-        regex = re.compile(r'((?P<days>\d+?)d ?)?((?P<hours>\d+?)h ?)?((?P<minutes>\d+?)m ?)?')
-        parts = regex.match(time_str)
-        if not parts:
-            return
-        parts = parts.groupdict()
-        time_params = {}
-        for (name, param) in parts.items():
-            if param:
-                time_params[name] = int(param)
-        return timedelta(**time_params)
-
     def _trigger_recurrent_task_if_recurrent(
         self,
         request,
@@ -276,7 +286,7 @@ class TaskDetail(APIView):
             object_id=task.id,
             content_type=content_type_object,
             field__field_group__name='Trigger Conditions',
-            field__name="Duration"
+            field__name="Recurrence"
         )
         if recurrent_object.count() == 1:
             recurrent_object = recurrent_object[0]
@@ -289,7 +299,7 @@ class TaskDetail(APIView):
             new_task = Task.objects.get(pk=task.pk)
             new_task.pk = None
             new_task.save()
-            new_task.end_date = task.end_date + self._parse_time(recurrent_object.value)
+            new_task.end_date = task.end_date + parse_time(recurrent_object.value)
             new_task.achieved_by = None
             new_task.save()
             logger.info("{user} TRIGGER RECURRENT TASK ON {task}".format(user=request.user, task=new_task))
@@ -454,8 +464,9 @@ class UserTaskList(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if request.user.has_perm(VIEW_TASK) or request.user == user:
-            tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(),
-                                        is_template=False).distinct().order_by('over', 'end_date')
+            tasks = Task.objects.filter(
+                teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(), is_template=False
+            ).distinct().order_by('over', 'end_date')
             serializer = TaskListingSerializer(tasks, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

@@ -317,6 +317,73 @@ class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
             return obj.value
 
 
+class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
+    """Trigger condition validation serializer."""
+
+    delay = serializers.CharField()
+    field_object_id = serializers.IntegerField(allow_null=True, required=False)
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['field', 'value', 'description', 'delay', 'field_object_id']
+
+    def validate(self, data):
+        """Redefine the validate method."""
+        try:
+            if data.get("field_object_id") is not None:
+                FieldObject.objects.get(id=int(data.get("field_object_id")))
+            if data.get('field').name in [
+                'Above Threshold', 'Under Threshold', 'Frequency'
+            ] and data.get("value") is not None:
+                float(data.get("value"))
+            if data.get('field').name in [
+                'Above Threshold', 'Under Threshold', 'Frequency'
+            ] and 'field_object_id' not in data:
+                raise serializers.ValidationError(
+                    f'Misses field_object_id for {data.get("field").name} trigger condition.'
+                )
+            if data.get('field').name == 'Recurrence' and 'field_object_id' in data:
+                raise serializers.ValidationError(
+                    'field_object_id not expected.'
+                )
+            return data
+        except ObjectDoesNotExist as e:
+            raise serializers.ValidationError(e)
+        except ValueError as e:
+            raise serializers.ValidationError(e)
+
+class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
+    """Trigger condition create serializer."""
+
+    delay = serializers.CharField()
+    field_object_id = serializers.IntegerField(allow_null=True, required=False)
+    described_object = DescribedObjectRelatedField(queryset=FieldObject.objects.all())
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['described_object', 'field', 'field_value', 'value', 'description', 'delay', 'field_object_id']
+
+    def validate(self, data):
+        """Redefine the validate method."""
+        if data.get('field').name == 'Recurrence':
+            value = f'{data.get("value")}|{data.get("delay")}'
+        elif data.get('field').name == 'Frequency':
+            next_trigger = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value) + float(data.get("value"))
+            value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}|{next_trigger}'
+        else:
+            value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}'
+        data.update({"value": value})
+        data.update({"field_value": None})
+        data.pop("delay")
+        if 'field_object_id' in data:
+            data.pop('field_object_id')
+        return data
+
+
 #############################################################################
 ########################## FIELD VALUE SERIALIZER ###########################
 #############################################################################

@@ -8,19 +8,11 @@ from PIL import Image
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    Field,
-    FieldGroup,
-    FieldObject,
-    FieldValue,
-    File,
-    Task,
+    Field, FieldGroup, FieldObject, FieldValue, File, Task,
 )
 from maintenancemanagement.serializers import (
-    EquipmentTypeSerializer,
-    FileSerializer,
-    TaskListingSerializer,
-    TaskSerializer,
-    TeamSerializer,
+    EquipmentTypeSerializer, FileSerializer, TaskListingSerializer,
+    TaskSerializer, TeamSerializer,
 )
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -747,6 +739,8 @@ class TaskTests(TestCase):
         client = APIClient()
         client.force_authenticate(user=user)
         conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        field_object = FieldObject.objects.get(field=Field.objects.get(name="Nb bouteilles"))
+        nb_bouteilles_value = float(field_object.value)
         response = client.post(
             '/api/maintenancemanagement/tasks/', {
                 'name':
@@ -756,25 +750,165 @@ class TaskTests(TestCase):
                 'trigger_conditions':
                     [
                         {
-                            "field": conditions.get(name="Date").id,
-                            "value": "2020-09-30",
-                            "description": "test_add_task_with_perm_with_trigger_conditions_1"
-                        },
-                        {
                             "field": conditions.get(name="Recurrence").id,
-                            "value": "Day",
-                            "description": "test_add_task_with_perm_with_trigger_conditions_2"
-                        },
+                            "value": "30d",
+                            "delay": "7d",
+                            "description": "test_add_task_with_perm_with_trigger_conditions_recurrence"
+                        }, {
+                            'field': conditions.get(name='Above Threshold').id,
+                            'value': '0.6',
+                            'field_object_id': field_object.id,
+                            'delay': '2d',
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
+                        }, {
+                            'field': conditions.get(name='Under Threshold').id,
+                            'value': '0.6',
+                            'field_object_id': field_object.id,
+                            'delay': '2d',
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
+                        }, {
+                            'field': conditions.get(name='Frequency').id,
+                            'value': '10000',
+                            'field_object_id': field_object.id,
+                            'delay': '2d',
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_frequency'
+                        }
                     ]
             },
             format='json'
         )
         self.assertEqual(response.status_code, 201)
         task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_conditions")
-        field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_1")
-        field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_trigger_conditions_2")
-        self.assertEqual(field_object_1.described_object, task)
-        self.assertEqual(field_object_2.described_object, task)
+        field_object1 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_recurrence"
+        )
+        field_object2 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_above_threshold"
+        )
+        field_object3 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_under_threshold"
+        )
+        field_object4 = FieldObject.objects.get(
+            description="test_add_task_with_perm_with_trigger_conditions_frequency"
+        )
+        self.assertEqual(field_object1.described_object, task)
+        self.assertEqual(field_object1.value, '30d|7d')
+        self.assertEqual(field_object2.value, f'0.6|{field_object.id}|2d')
+        self.assertEqual(field_object3.value, f'0.6|{field_object.id}|2d')
+        self.assertEqual(field_object4.value, f'10000|{field_object.id}|2d|{nb_bouteilles_value + 10000}')
+
+    def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_1(self):
+        """
+            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_trigger_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Recurrence").id,
+                            "value": "30d",
+                            "description": "test_add_task_with_perm_with_trigger_conditions_recurrence"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_2(self):
+        """
+            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_trigger_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": conditions.get(name="Recurrence").id,
+                            "value": "30d",
+                            'delay': '2d',
+                            "description": "test_add_task_with_perm_with_trigger_conditions_recurrence",
+                            'field_object_id': 1,
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_3(self):
+        """
+            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_trigger_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            'field': conditions.get(name='Above Threshold').id,
+                            'value': '0.6',
+                            'field_object_id': 1,
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_4(self):
+        """
+            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_add_task_with_perm_with_trigger_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            'field': conditions.get(name='Above Threshold').id,
+                            'value': '0.6',
+                            'delay': '2d',
+                            'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
 
     def test_US11_I1_tasklist_post_with_end_conditions_with_perm(self):
         """
@@ -823,7 +957,8 @@ class TaskTests(TestCase):
         trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         response = client.post(
-            '/api/maintenancemanagement/tasks/', {
+            '/api/maintenancemanagement/tasks/',
+            {
                 'name':
                     'verifier pneus',
                 'description':
@@ -832,7 +967,9 @@ class TaskTests(TestCase):
                     [
                         {
                             "field": trigger_conditions.get(name="Recurrence").id,
-                            "value": "Month",
+                            # "field_object_id": 2,  # Si on le met pas ça dit qu'il est requis, si on le mets ça plante
+                            "value": "30d",
+                            "delay": "14d",
                             "description": "test_add_task_with_perm_with_trigger_and_end_conditions_1"
                         }
                     ],
@@ -857,7 +994,6 @@ class TaskTests(TestCase):
         )
         self.assertEqual(field_object_1.described_object, task)
         self.assertEqual(field_object_2.described_object, task)
-        self.assertEqual(field_object_1.field_value, FieldValue.objects.get(value='Month'))
 
     def test_US10_11_I1_tasklist_post_with_conditions_with_bad_values_with_perm(self):
         """
