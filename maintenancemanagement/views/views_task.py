@@ -1,8 +1,7 @@
 """This module defines the views corresponding to the tasks."""
 
 import logging
-import re
-from datetime import timedelta
+from utils.methods import parse_time
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -94,14 +93,14 @@ class TaskList(APIView):
     def post(self, request):
         """Add a Task into the database."""
         if request.user.has_perm(ADD_TASK):
-            conditions, task_activated = self._extract_conditions_from_data(request)
+            conditions, task_triggered = self._extract_conditions_from_data(request)
             task_serializer = TaskCreateSerializer(data=request.data)
             if task_serializer.is_valid():
                 error = self._validate_conditions(conditions)
                 if error:
                     return error
                 task = task_serializer.save()
-                task.is_activated = task_activated
+                task.is_triggered = task_triggered
                 task.save()
                 logger.info("{user} CREATED Task with {params}".format(user=request.user, params=request.data))
                 self._save_conditions(request, conditions, task)
@@ -243,7 +242,7 @@ class TaskDetail(APIView):
                     field_object_serializer.save()
 
             if 'duration' in request.data.keys():
-                request.data.update({'duration': self._parse_time(request.data['duration'])})
+                request.data.update({'duration': parse_time(request.data['duration'])})
             serializer = TaskUpdateSerializer(task, data=request.data, partial=True)
             if serializer.is_valid():
                 logger.info(
@@ -275,18 +274,6 @@ class TaskDetail(APIView):
         )
         task.save()
 
-    def _parse_time(self, time_str):
-        regex = re.compile(r'((?P<days>\d+?)d ?)?((?P<hours>\d+?)h ?)?((?P<minutes>\d+?)m ?)?')
-        parts = regex.match(time_str)
-        if not parts:
-            return
-        parts = parts.groupdict()
-        time_params = {}
-        for (name, param) in parts.items():
-            if param:
-                time_params[name] = int(param)
-        return timedelta(**time_params)
-
     def _trigger_recurrent_task_if_recurrent(
         self,
         request,
@@ -310,7 +297,7 @@ class TaskDetail(APIView):
             new_task = Task.objects.get(pk=task.pk)
             new_task.pk = None
             new_task.save()
-            new_task.end_date = task.end_date + self._parse_time(recurrent_object.value)
+            new_task.end_date = task.end_date + parse_time(recurrent_object.value)
             new_task.save()
             logger.info("{user} TRIGGER RECURRENT TASK ON {task}".format(user=request.user, task=new_task))
 
