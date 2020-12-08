@@ -1,7 +1,6 @@
 """This module defines the views corresponding to the tasks."""
 
 import logging
-from utils.methods import parse_time
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -9,22 +8,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import FieldObject, File, Task
 from maintenancemanagement.serializers import (
-    FieldObjectCreateSerializer,
-    FieldObjectValidationSerializer,
-    TaskCreateSerializer,
-    TaskDetailsSerializer,
-    TaskListingSerializer,
-    TaskSerializer,
-    TaskTemplateRequirementsSerializer,
-    TaskUpdateSerializer,
-    TriggerConditionsCreateSerializer,
-    TriggerConditionsValidationSerializer,
+    FieldObjectCreateSerializer, FieldObjectValidationSerializer,
+    TaskCreateSerializer, TaskDetailsSerializer, TaskListingSerializer,
+    TaskSerializer, TaskTemplateRequirementsSerializer, TaskUpdateSerializer,
+    TriggerConditionsCreateSerializer, TriggerConditionsValidationSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.views.views_team import belongs_to_team
+from utils.methods import parse_time
 
 logger = logging.getLogger(__name__)
 VIEW_TASK = "maintenancemanagement.view_task"
@@ -267,24 +261,21 @@ class TaskDetail(APIView):
             if end_field_object.value is None:
                 over = False
         if over is True:
-            self._trigger_recurrent_task_if_recurrent(request, task)
-        task.over = over
+            if 
+            self._generate_new_task(request, task)
+        
         logger.info(
             "{user} UPDATED {object} with {params}".format(user=request.user, object=repr(task), params=request.data)
         )
         task.save()
 
-    def _trigger_recurrent_task_if_recurrent(
-        self,
-        request,
-        task,
-    ):
+    def _generate_new_task(self, request, task):
         content_type_object = ContentType.objects.get_for_model(task)
         recurrent_object = FieldObject.objects.filter(
             object_id=task.id,
             content_type=content_type_object,
             field__field_group__name='Trigger Conditions',
-            field__name="Recurrence"
+            # field__name="Recurrence"
         )
         if recurrent_object.count() == 1:
             recurrent_object = recurrent_object[0]
@@ -310,6 +301,8 @@ class TaskDetail(APIView):
                 )
             for end in end_fields_objects:
                 FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
+
+
 
     @swagger_auto_schema(
         operation_description='Delete the Task corresponding to the given key.',
