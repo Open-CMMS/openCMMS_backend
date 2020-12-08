@@ -1,6 +1,7 @@
 """This module defines the views corresponding to the tasks."""
 
 import logging
+from datetime import date
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -269,7 +270,12 @@ class TaskDetail(APIView):
                 over = False
         if over is True:
             task.achieved_by = request.user
-            self._generate_new_task(request, task)
+
+            content_type_object = ContentType.objects.get_for_model(task)
+            if FieldObject.objects.filter(
+                object_id=task.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
+            ).count() > 0:
+                self._generate_new_task(request, task)
         task.over = over
         logger.info(
             "{user} UPDATED {object} with {params}".format(user=request.user, object=repr(task), params=request.data)
@@ -278,37 +284,40 @@ class TaskDetail(APIView):
 
     def _generate_new_task(self, request, task):
         content_type_object = ContentType.objects.get_for_model(task)
-        recurrent_object = FieldObject.objects.filter(
-            object_id=task.id,
-            content_type=content_type_object,
-            field__field_group__name='Trigger Conditions',
-            # field__name="Recurrence"
+        old_trigger_conditions = FieldObject.objects.filter(
+            object_id=task.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
         )
-        if recurrent_object.count() == 1:
-            recurrent_object = recurrent_object[0]
-            end_fields_objects = FieldObject.objects.filter(
-                object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
-            )
-            trigger_fields_objects = FieldObject.objects.filter(
-                object_id=task.id, content_type=content_type_object, field__field_group__name='Trigger Conditions'
-            )
-            new_task = Task.objects.get(pk=task.pk)
-            new_task.pk = None
-            new_task.save()
-            new_task.end_date = task.end_date + parse_time(recurrent_object.value)
-            new_task.achieved_by = None
-            new_task.save()
-            logger.info("{user} TRIGGER RECURRENT TASK ON {task}".format(user=request.user, task=new_task))
+        end_fields_objects = FieldObject.objects.filter(
+            object_id=task.id, content_type=content_type_object, field__field_group__name='End Conditions'
+        )
 
-            for trigger in trigger_fields_objects:
-                FieldObject.objects.create(
-                    described_object=new_task,
-                    field=trigger.field,
-                    description=trigger.description,
-                    value=trigger.value
-                )
-            for end in end_fields_objects:
-                FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
+        new_task = Task.objects.get(pk=task.pk)
+        new_task.pk = None
+        new_task.achieved_by = None
+        new_task.save()
+        for old_trigger_condition in old_trigger_conditions:
+            self._create_new_trigger_condition(old_trigger_condition, new_task)
+        for end in end_fields_objects:
+            FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
+
+        logger.info("{user} TRIGGER RECURRENT TASK ON {task}".format(user=request.user, task=new_task))
+
+    def _create_new_trigger_condition(self, trigger_condition, task):
+        new_trigger_condition = trigger_condition
+        new_trigger_condition.pk = None
+        new_trigger_condition.described_object = task
+        if trigger_condition.field.name == 'Recurrence':
+            new_trigger_condition.save()
+            task.end_date = date.today() + parse_time(trigger_condition.value.split('|')[0])
+            task.save()
+        elif trigger_condition.field.name == 'Frequency':
+            splited = trigger_condition.split('|')
+            trigger_condition.value = '|'.join(splited[:3])
+            new_frequency = float(FieldObject.objects.get(id=int(splited[1]))) + float(splited[0])
+            trigger_condition.value += f'|{new_frequency}'
+            trigger_condition.save()
+        else:
+            trigger_condition.save()
 
     @swagger_auto_schema(
         operation_description='Delete the Task corresponding to the given key.',
