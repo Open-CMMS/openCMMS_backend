@@ -410,6 +410,165 @@ class FieldValueCreateSerializer(serializers.ModelSerializer):
 
 
 #############################################################################
+########################## EQUIPMENT SERIALIZER #############################
+#############################################################################
+
+
+class EquipmentFieldSerializer(serializers.ModelSerializer):
+    """Equipment field serializer."""
+
+    field_name = serializers.CharField(source='field.name')
+    field_value = FieldValueSerializer()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'field', 'field_name', 'value', 'field_value', 'description']
+
+
+class EquipmentDetailsSerializer(serializers.ModelSerializer):
+    """Equipment details serializer."""
+
+    equipment_type = EquipmentTypeSerializer()
+    files = FileSerializer(many=True)
+    field = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            Equipement as obj."""
+        content_type_object = ContentType.objects.get_for_model(obj)
+        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
+        return EquipmentFieldSerializer(fields, many=True).data
+
+
+class EquipmentCreateSerializer(serializers.ModelSerializer):
+    """Equipment create serializer."""
+
+    field = serializers.ListField(required=False)
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+
+class EquipmentUpdateSerializer(serializers.ModelSerializer):
+    """Equipment update serializer."""
+
+    field = serializers.ListField(required=False)
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+
+class EquipmentRequirementsSerializer(serializers.ModelSerializer):
+    """This serializer serialize EquipementType in a explicite way.
+
+    This serializer does not serialize the id of the Field of its
+    EquipementType, but use the data of FieldRequirementsSerializer instead.
+
+    Exemple of a JSON we get by using it :
+    {
+        "id":1,
+        "name":"Voiture",
+        "fields":[
+            {
+                "id":5,
+                "name":"Marque",
+                "value":["Volvo", "Peugeot", "Ferrari"]
+            },
+            {
+                "id":6,
+                "name":"Kilometrage",
+                "value":[]
+            }
+        ]
+    },
+    {
+        "id":3,
+        "name":"Embouteilleuse",
+        "fields":[
+            {
+                "id":5,
+                "name":"Marque",
+                "value":["GAI", "Bosch"]
+            },
+            {
+                "id":6,
+                "name":"Capacité",
+                "value":[]
+            }
+        ]
+    }
+    """
+
+    field = serializers.SerializerMethodField()
+
+    # This would make more sens to use `fields`, but it does not work
+    # so we use `field`.
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = EquipmentType
+        fields = ['id', 'name', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            EquipementType as obj."""
+        fields_groups = obj.fields_groups.all()
+        fields = []
+        for fields_group in fields_groups:
+            fields.extend(fields_group.field_set.all())
+        return FieldRequirementsSerializer(fields, many=True).data
+
+
+class EquipmentFieldDataProviderSerializer(serializers.ModelSerializer):
+    """Equipment field serializer."""
+
+    name = serializers.CharField(source='field.name')
+    field_value = FieldValueSerializer()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'field', 'name', 'value', 'field_value', 'description']
+
+
+class EquipmentDetailsDataProviderSerializer(serializers.ModelSerializer):
+    """Equipment details serializer."""
+
+    equipment_type = EquipmentTypeSerializer()
+    files = FileSerializer(many=True)
+    field = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            Equipement as obj."""
+        content_type_object = ContentType.objects.get_for_model(obj)
+        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
+        return EquipmentFieldDataProviderSerializer(fields, many=True).data
+
+
+#############################################################################
 ############################## TASK SERIALIZER ##############################
 #############################################################################
 
@@ -419,7 +578,7 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
 
     equipment_type = EquipmentTypeSerializer()
     teams = TeamSerializer(many=True)
-    equipment = EquipmentSerializer()
+    equipment = EquipmentDetailsSerializer()
     trigger_conditions = serializers.SerializerMethodField()
     end_conditions = serializers.SerializerMethodField()
     files = FileSerializer(many=True)
@@ -621,165 +780,6 @@ class TaskListingSerializer(serializers.ModelSerializer):
             return result
         else:
             return ''
-
-
-#############################################################################
-########################## EQUIPMENT SERIALIZER #############################
-#############################################################################
-
-
-class EquipmentFieldSerializer(serializers.ModelSerializer):
-    """Equipment field serializer."""
-
-    field_name = serializers.CharField(source='field.name')
-    field_value = FieldValueSerializer()
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = FieldObject
-        fields = ['id', 'field', 'field_name', 'value', 'field_value', 'description']
-
-
-class EquipmentDetailsSerializer(serializers.ModelSerializer):
-    """Equipment details serializer."""
-
-    equipment_type = EquipmentTypeSerializer()
-    files = FileSerializer(many=True)
-    field = serializers.SerializerMethodField()
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = Equipment
-        fields = ['id', 'name', 'equipment_type', 'files', 'field']
-
-    def get_field(self, obj):
-        """Get the explicit field associated with the \
-            Equipement as obj."""
-        content_type_object = ContentType.objects.get_for_model(obj)
-        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
-        return EquipmentFieldSerializer(fields, many=True).data
-
-
-class EquipmentCreateSerializer(serializers.ModelSerializer):
-    """Equipment create serializer."""
-
-    field = serializers.ListField(required=False)
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = Equipment
-        fields = ['id', 'name', 'equipment_type', 'files', 'field']
-
-
-class EquipmentUpdateSerializer(serializers.ModelSerializer):
-    """Equipment update serializer."""
-
-    field = serializers.ListField(required=False)
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = Equipment
-        fields = ['id', 'name', 'equipment_type', 'files', 'field']
-
-
-class EquipmentRequirementsSerializer(serializers.ModelSerializer):
-    """This serializer serialize EquipementType in a explicite way.
-
-    This serializer does not serialize the id of the Field of its
-    EquipementType, but use the data of FieldRequirementsSerializer instead.
-
-    Exemple of a JSON we get by using it :
-    {
-        "id":1,
-        "name":"Voiture",
-        "fields":[
-            {
-                "id":5,
-                "name":"Marque",
-                "value":["Volvo", "Peugeot", "Ferrari"]
-            },
-            {
-                "id":6,
-                "name":"Kilometrage",
-                "value":[]
-            }
-        ]
-    },
-    {
-        "id":3,
-        "name":"Embouteilleuse",
-        "fields":[
-            {
-                "id":5,
-                "name":"Marque",
-                "value":["GAI", "Bosch"]
-            },
-            {
-                "id":6,
-                "name":"Capacité",
-                "value":[]
-            }
-        ]
-    }
-    """
-
-    field = serializers.SerializerMethodField()
-
-    # This would make more sens to use `fields`, but it does not work
-    # so we use `field`.
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = EquipmentType
-        fields = ['id', 'name', 'field']
-
-    def get_field(self, obj):
-        """Get the explicit field associated with the \
-            EquipementType as obj."""
-        fields_groups = obj.fields_groups.all()
-        fields = []
-        for fields_group in fields_groups:
-            fields.extend(fields_group.field_set.all())
-        return FieldRequirementsSerializer(fields, many=True).data
-
-
-class EquipmentFieldDataProviderSerializer(serializers.ModelSerializer):
-    """Equipment field serializer."""
-
-    name = serializers.CharField(source='field.name')
-    field_value = FieldValueSerializer()
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = FieldObject
-        fields = ['id', 'field', 'name', 'value', 'field_value', 'description']
-
-
-class EquipmentDetailsDataProviderSerializer(serializers.ModelSerializer):
-    """Equipment details serializer."""
-
-    equipment_type = EquipmentTypeSerializer()
-    files = FileSerializer(many=True)
-    field = serializers.SerializerMethodField()
-
-    class Meta:
-        """This class contains the serializer metadata."""
-
-        model = Equipment
-        fields = ['id', 'name', 'equipment_type', 'files', 'field']
-
-    def get_field(self, obj):
-        """Get the explicit field associated with the \
-            Equipement as obj."""
-        content_type_object = ContentType.objects.get_for_model(obj)
-        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
-        return EquipmentFieldDataProviderSerializer(fields, many=True).data
 
 
 #############################################################################
