@@ -8,10 +8,16 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import FieldObject, File, Task
 from maintenancemanagement.serializers import (
-    FieldObjectCreateSerializer, FieldObjectValidationSerializer,
-    TaskCreateSerializer, TaskDetailsSerializer, TaskListingSerializer,
-    TaskSerializer, TaskTemplateRequirementsSerializer, TaskUpdateSerializer,
-    TriggerConditionsCreateSerializer, TriggerConditionsValidationSerializer,
+    FieldObjectCreateSerializer,
+    FieldObjectValidationSerializer,
+    TaskCreateSerializer,
+    TaskDetailsSerializer,
+    TaskListingSerializer,
+    TaskSerializer,
+    TaskTemplateRequirementsSerializer,
+    TaskUpdateSerializer,
+    TriggerConditionsCreateSerializer,
+    TriggerConditionsValidationSerializer,
 )
 from rest_framework import status
 from rest_framework.response import Response
@@ -95,6 +101,7 @@ class TaskList(APIView):
                     return error
                 task = task_serializer.save()
                 task.is_triggered = task_triggered
+                task.created_by = request.user
                 task.save()
                 logger.info("{user} CREATED Task with {params}".format(user=request.user, params=request.data))
                 self._save_conditions(request, conditions, task)
@@ -261,9 +268,9 @@ class TaskDetail(APIView):
             if end_field_object.value is None:
                 over = False
         if over is True:
-            if 
+            task.achieved_by = request.user
             self._generate_new_task(request, task)
-        
+        task.over = over
         logger.info(
             "{user} UPDATED {object} with {params}".format(user=request.user, object=repr(task), params=request.data)
         )
@@ -289,6 +296,7 @@ class TaskDetail(APIView):
             new_task.pk = None
             new_task.save()
             new_task.end_date = task.end_date + parse_time(recurrent_object.value)
+            new_task.achieved_by = None
             new_task.save()
             logger.info("{user} TRIGGER RECURRENT TASK ON {task}".format(user=request.user, task=new_task))
 
@@ -301,8 +309,6 @@ class TaskDetail(APIView):
                 )
             for end in end_fields_objects:
                 FieldObject.objects.create(described_object=new_task, field=end.field, description=end.description)
-
-
 
     @swagger_auto_schema(
         operation_description='Delete the Task corresponding to the given key.',

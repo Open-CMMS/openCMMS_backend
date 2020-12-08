@@ -4,6 +4,7 @@ from maintenancemanagement.serializers import (
     EquipmentSerializer,
     FieldObjectSerializer,
 )
+
 from rest_framework import serializers
 
 from .models import DataProvider
@@ -19,7 +20,9 @@ class DataProviderSerializer(serializers.ModelSerializer):
         """This class contains the serializer metadata."""
 
         model = DataProvider
-        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
+        fields = [
+            'id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated', 'port'
+        ]
 
 
 class DataProviderCreateSerializer(serializers.ModelSerializer):
@@ -29,7 +32,9 @@ class DataProviderCreateSerializer(serializers.ModelSerializer):
         """This class contains the serializer metadata."""
 
         model = DataProvider
-        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
+        fields = [
+            'id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated', 'port'
+        ]
 
 
 class DataProviderUpdateSerializer(serializers.ModelSerializer):
@@ -39,7 +44,9 @@ class DataProviderUpdateSerializer(serializers.ModelSerializer):
         """This class contains the serializer metadata."""
 
         model = DataProvider
-        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
+        fields = [
+            'id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated', 'port'
+        ]
 
 
 class DataProviderDetailsSerializer(serializers.ModelSerializer):
@@ -52,7 +59,9 @@ class DataProviderDetailsSerializer(serializers.ModelSerializer):
         """This class contains the serializer metadata."""
 
         model = DataProvider
-        fields = ['id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated']
+        fields = [
+            'id', 'name', 'file_name', 'ip_address', 'equipment', 'field_object', 'recurrence', 'is_activated', 'port'
+        ]
 
 
 class DataProviderRequirementsSerializer(serializers.Serializer):

@@ -7,7 +7,7 @@ from PyPDF4.pdf import PdfFileReader
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
-from usersmanagement.serializers import TeamSerializer
+from usersmanagement.serializers import TeamSerializer, UserProfileSerializer
 
 from .models import (
     Equipment,
@@ -424,6 +424,8 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
     end_conditions = serializers.SerializerMethodField()
     files = FileSerializer(many=True)
     duration = serializers.SerializerMethodField()
+    created_by = UserProfileSerializer()
+    achieved_by = UserProfileSerializer()
 
     class Meta:
         """This class contains the serializer metadata."""
@@ -431,7 +433,7 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
         model = Task
         fields = [
             'id', 'name', 'description', 'end_date', 'duration', 'is_template', 'equipment', 'teams', 'files', 'over',
-            'trigger_conditions', 'end_conditions', 'equipment_type'
+            'trigger_conditions', 'end_conditions', 'equipment_type', 'created_by', 'achieved_by'
         ]
 
     def get_trigger_conditions(self, obj):
