@@ -2,12 +2,8 @@ import os
 
 import pytest
 from init_db_tests import init_db
-
-from django.contrib.auth.models import Permission
-from django.test import TestCase, client
 from maintenancemanagement.models import Equipment, Field, FieldObject
 from openCMMS.settings import BASE_DIR
-from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
 from utils.data_provider import add_job, scheduler
 from utils.models import DataProvider
@@ -15,6 +11,10 @@ from utils.serializers import (
     DataProviderRequirementsSerializer,
     DataProviderSerializer,
 )
+
+from django.contrib.auth.models import Permission
+from django.test import TestCase, client
+from rest_framework.test import APIClient
 
 
 class DataProviderTest(TestCase):
@@ -323,7 +323,7 @@ class DataProviderTest(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, 2)
+        self.assertEqual(response.data["data"], 2)
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers.py'))
 
     def test_US23_I6_testdataprovider_post_without_perm(self):
@@ -360,8 +360,8 @@ class DataProviderTest(TestCase):
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 501)
-        self.assertEqual(response.data, 'Python file is not well formated, please follow the example')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["error"], 'Python file is not well formated, please follow the example')
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error.py'))
 
     def test_US23_I6_testdataprovider_post_with_perm_but_not_file(self):
@@ -385,8 +385,8 @@ class DataProviderTest(TestCase):
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 501)
-        self.assertEqual(response.data, "Python file not found, please enter 'name_of_your_file.py'")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["error"], "Python file not found, please enter 'name_of_your_file.py'")
 
     def test_US23_I6_testdataprovider_post_with_perm_and_not_working_get_data(self):
         """
@@ -415,6 +415,6 @@ class DataProviderTest(TestCase):
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 501)
-        self.assertEqual(response.data, 'IP not found or python file not working')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["error"], 'IP not found or python file not working')
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error_in_getdata.py'))
