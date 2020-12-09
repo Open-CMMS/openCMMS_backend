@@ -447,7 +447,7 @@ class TaskTests(TestCase):
         field_object = FieldObject.objects.get(field=Field.objects.get(name="Nb bouteilles"))
         nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
-        response1 = client.post(
+        client.post(
             '/api/maintenancemanagement/tasks/',
             {
                 'name':
@@ -496,7 +496,6 @@ class TaskTests(TestCase):
             format='json'
         )
         task = Task.objects.get(name='verifier pneus')
-        print(response1.data)
         response = client.put(
             f'/api/maintenancemanagement/tasks/{task.id}/', {
                 'end_conditions':
@@ -547,7 +546,7 @@ class TaskTests(TestCase):
         field_object = FieldObject.objects.get(field=Field.objects.get(name="Nb bouteilles"))
         nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
-        response1 = client.post(
+        client.post(
             '/api/maintenancemanagement/tasks/',
             {
                 'name':
@@ -596,7 +595,6 @@ class TaskTests(TestCase):
             format='json'
         )
         task = Task.objects.get(name='verifier pneus')
-        print(response1.data)
         response = client.put(
             f'/api/maintenancemanagement/tasks/{task.id}/', {
                 'end_conditions':
