@@ -8,11 +8,19 @@ from PIL import Image
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    Field, FieldGroup, FieldObject, FieldValue, File, Task,
+    Field,
+    FieldGroup,
+    FieldObject,
+    FieldValue,
+    File,
+    Task,
 )
 from maintenancemanagement.serializers import (
-    EquipmentTypeSerializer, FileSerializer, TaskListingSerializer,
-    TaskSerializer, TeamSerializer,
+    EquipmentTypeSerializer,
+    FileSerializer,
+    TaskListingSerializer,
+    TaskSerializer,
+    TeamSerializer,
 )
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -308,7 +316,7 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "id": FieldObject.objects.get(field=checkbox).id,
+                            "field": FieldObject.objects.get(field=checkbox).id,
                             "value": "false",
                             "description": "maj_checkbox"
                         },
@@ -908,7 +916,6 @@ class TaskTests(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, 400)
-
 
     def test_US11_I1_tasklist_post_with_end_conditions_with_perm(self):
         """
