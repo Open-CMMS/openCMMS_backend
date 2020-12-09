@@ -6,7 +6,7 @@ from secrets import token_hex
 from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
@@ -489,6 +489,46 @@ class CheckToken(APIView):
         username = request.data['username']
         user = UserProfile.objects.get(username=username)
         return Response(user.check_password(token))
+
+
+class CheckPassword(APIView):
+    """# Check the password of the user.
+
+    Parameters :
+    request (HttpRequest) : the request coming from the front-end
+
+    Return :
+    Response (response) : True if the password is correct else False
+    """
+
+    @swagger_auto_schema(
+        operation_description='Authenticate the token of a user.', responses={200: 'The request went well.'}
+    )
+    def post(self, request):
+        """docstrings."""
+        
+        password = request.data['password']
+        username = request.data['username']
+        user = authenticate(username=username, password=password)
+        return Response(user is not None)
+
+
+class ResendInscriptionEmail(APIView):
+    """Resend the inscription mail to an user"""
+
+    def get(self, request):
+       
+        try :
+            user = UserProfile.objects.get(pk=request.GET.get('userid'))
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.has_perm(ADD_USERPROFILE) :
+            data = {'id' : user.pk}
+            send_mail_to_setup_password(data)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 def init_database():

@@ -1,3 +1,7 @@
+from io import BytesIO
+
+from PIL import Image
+
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
@@ -42,6 +46,16 @@ class FileTests(TestCase):
         user.save()
         return user
 
+    def temporary_image(self, ext):
+        """
+        Returns a new temporary image.
+        """
+        file_obj = BytesIO()
+        image = Image.new('1', (60, 60), 1)
+        image.save(file_obj, ext)
+        file_obj.seek(0)
+        return file_obj
+
     def temporary_file(self):
         """
         Returns a new temporary file
@@ -73,16 +87,61 @@ class FileTests(TestCase):
         response = client.get('/api/maintenancemanagement/files/', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_add_file_with_connected(self):
+    def test_add_png_file_with_connected(self):
+        """
+            Test if a user with perm can add a png file.
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {'file': self.temporary_image('png'), 'is_manual': 'False'}
+        response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        self.assertEqual(response.status_code, 201)
+
+    def test_add_jpg_file_with_connected(self):
+        """
+            Test if a user with perm can add a jpg file.
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {'file': self.temporary_image('JPEG'), 'is_manual': 'False'}
+        response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        self.assertEqual(response.status_code, 201)
+
+    def test_add_bitmap_file_with_connected(self):
         """
             Test if a user with perm can add a file.
         """
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data = {'file': self.temporary_image('BMP'), 'is_manual': 'False'}
         response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         self.assertEqual(response.status_code, 201)
+
+    def test_add_pdf_file_with_connected(self):
+        """
+            Test if a user with perm can add a file.
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {'file': self.temporary_image('PDF'), 'is_manual': 'False'}
+        response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        print(response.data)
+        self.assertEqual(response.status_code, 201)
+
+    def test_add_text_file_with_connected(self):
+        """
+            Test if a user can't add text file.
+        """
+        user = self.set_up_without_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
+        self.assertEqual(response.status_code, 400)
 
     def test_add_file_without_connected(self):
         """
@@ -100,13 +159,14 @@ class FileTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data = {'file': self.temporary_image('png'), 'is_manual': 'False'}
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         response = client.get('/api/maintenancemanagement/files/' + str(pk) + '/')
         path = settings.BASE_DIR + response.data["file"]
-        file = open(path)
-        self.assertEqual(file.read(), "Coco veut un gateau")
+        with Image.open(path) as img:
+            colors = img.getcolors()
+        self.assertEqual(colors, [(3600, 255)])
 
     def test_view_file_details_without_connected(self):
         """
@@ -115,7 +175,7 @@ class FileTests(TestCase):
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data = {'file': self.temporary_image('png'), 'is_manual': 'False'}
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         user.user_permissions.clear()
@@ -131,7 +191,7 @@ class FileTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data = {'file': self.temporary_image('png'), 'is_manual': 'False'}
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         response = client.delete('/api/maintenancemanagement/files/' + str(pk) + '/')
@@ -144,7 +204,7 @@ class FileTests(TestCase):
         user = self.set_up_without_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        data = {'file': self.temporary_file(), 'is_manual': 'False'}
+        data = {'file': self.temporary_image('png'), 'is_manual': 'False'}
         response1 = client.post('/api/maintenancemanagement/files/', data, format='multipart')
         pk = response1.data['id']
         user.user_permissions.clear()

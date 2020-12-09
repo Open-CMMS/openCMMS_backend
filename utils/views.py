@@ -3,13 +3,8 @@ import logging
 import os
 
 from drf_yasg.utils import swagger_auto_schema
-
-from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import Equipment, FieldObject
 from openCMMS.settings import BASE_DIR
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from utils.data_provider import (
     DataProviderException,
     add_job,
@@ -23,6 +18,11 @@ from utils.serializers import (
     DataProviderRequirementsSerializer,
     DataProviderUpdateSerializer,
 )
+
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +142,8 @@ class DataProviderDetail(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm("utils.delete_dataprovider"):
             logger.info("DELETED DataProvider {dataprovider}".format(dataprovider=repr(dataprovider)))
+            if dataprovider.job_id:
+                scheduler.remove_job(dataprovider.job_id)
             dataprovider.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -199,11 +201,19 @@ class TestDataProvider(APIView):
         if request.user.has_perm("utils.change_dataprovider") or request.user.has_perm("utils.add_dataprovider"):
             serializer = DataProviderCreateSerializer(data=request.data)
             if not serializer.is_valid():
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                response = {"error": serializer.errors}
+                return Response(response, status=status.HTTP_200_OK)
             try:
-                value = test_dataprovider_configuration(request.data['file_name'], request.data['ip_address'])
+                if not request.data['port']:
+                    value = test_dataprovider_configuration(request.data['file_name'], request.data['ip_address'], 502)
+                else:
+                    value = test_dataprovider_configuration(
+                        request.data['file_name'], request.data['ip_address'], request.data['port']
+                    )
                 logger.info("TESTED DataProvider with {data}".format(data=request.data))
-                return Response(value, status=status.HTTP_200_OK)
+                response = {"data": value}
+                return Response(response, status=status.HTTP_200_OK)
             except DataProviderException as e:
-                return Response(str(e), status=status.HTTP_501_NOT_IMPLEMENTED)
+                response = {"error": str(e)}
+                return Response(response, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_401_UNAUTHORIZED)

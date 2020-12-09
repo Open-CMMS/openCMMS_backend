@@ -1,6 +1,7 @@
 """This is the models file for our utilities."""
-from django.db import models
 from maintenancemanagement.models import Equipment, FieldObject
+
+from django.db import models
 
 
 class DataProvider(models.Model):
@@ -9,6 +10,7 @@ class DataProvider(models.Model):
     name = models.CharField(max_length=100, default="", blank=False, null=False)
     file_name = models.CharField(max_length=100, blank=False, null=False)
     ip_address = models.CharField(max_length=100, blank=False, null=False)
+    port = models.PositiveIntegerField(default=502, blank=True, null=True)
     equipment = models.ForeignKey(
         Equipment,
         verbose_name="Linked equipment",
@@ -40,7 +42,7 @@ class DataProvider(models.Model):
     def __repr__(self):
         """Define the representation of a dataprovider."""
         return '<DataProvider: ' + "id={id}, name='{name}', filename='{file_name}', equipment=\
-'{equipment_name}', field_object='{field_object_field_name}', ip_address={ip_address}, recurrence=\
+'{equipment_name}', field_object='{field_object_field_name}', ip_address={ip_address}, port={port}, recurrence=\
 {recurrence}, is_activated={is_activated}, job_id={job_id}".format(
             id=self.id,
             name=self.name,
@@ -48,6 +50,7 @@ class DataProvider(models.Model):
             equipment_name=self.equipment.name,
             field_object_field_name=self.field_object.field.name,
             ip_address=self.ip_address,
+            port=self.port,
             recurrence=self.recurrence,
             is_activated=self.is_activated,
             job_id=self.job_id

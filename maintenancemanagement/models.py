@@ -3,7 +3,7 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from usersmanagement.models import Team
+from usersmanagement.models import Team, UserProfile
 
 
 class File(models.Model):
@@ -99,7 +99,7 @@ class FieldObject(models.Model):
         """Define the representation of FieldObject."""
         return "<FieldObject: id={id}, field={field}, field_value={field_value}, value={value},\
 description={description}>".format(
-            id=self.id, field=self.field, field_value=self.value, value=self.value, description=self.description
+            id=self.id, field=self.field, field_value=self.field_value, value=self.value, description=self.description
         )
 
 
@@ -158,9 +158,23 @@ class Task(models.Model):
 
     name = models.CharField(max_length=100)
     end_date = models.DateField(null=True, blank=True)  # Correspond à la date butoire
-    description = models.TextField(max_length=2000, default="")
+    description = models.TextField(max_length=2000, default="", blank=True)
     duration = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="tasks_created"
+    )
+    achieved_by = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="tasks_achieved"
+    )
     equipment = models.ForeignKey(
         Equipment,
         verbose_name="Assigned equipment",
@@ -196,6 +210,7 @@ class Task(models.Model):
         related_query_name="task",
         blank=True,
     )
+    is_triggered = models.BooleanField(default=True, null=True)
     over = models.BooleanField(default=False, null=True)
 
     def __str__(self):
@@ -205,7 +220,7 @@ class Task(models.Model):
     def __repr__(self):
         """Define formal representation of a task."""
         return "<Task: id={id}, name='{name}', end_date={date}, duration={duration}, is_template={template}, \
-equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, over={over}>".format(
+equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, is_triggered={triggered}, over={over}>".format(
             id=self.id,
             name=self.name,
             date=self.end_date,
@@ -215,5 +230,6 @@ equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, over
             type=self.equipment_type,
             teams=self.teams,
             files=self.files,
+            triggered=self.is_triggered,
             over=self.over
         )

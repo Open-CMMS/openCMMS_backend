@@ -61,7 +61,9 @@ def get_imminent_tasks(user):
         coming_tasks_set())) : the tasks assigned to the user.
     """
     result = (set(), set(), set())
-    tasks = Task.objects.filter(teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(), over=False)
+    tasks = Task.objects.filter(
+        teams__pk__in=user.groups.all().values_list("id", flat=True).iterator(), over=False, is_triggered=True
+    )
     for task in tasks:
         if task.end_date:
             if task.end_date < date.today():

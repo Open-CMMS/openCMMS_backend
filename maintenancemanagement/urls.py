@@ -15,7 +15,12 @@ urlpatterns = []
 urlpatterns_equipment = [
     path('equipments/', views_equipment.EquipmentList.as_view(), name='equipment-list'),
     path('equipments/<int:pk>/', views_equipment.EquipmentDetail.as_view(), name='equipment-detail'),
-    path('equipments/requirements', views_equipment.EquipmentRequirements.as_view(), name='equipement-requirements'),
+    path('equipments/requirements/', views_equipment.EquipmentRequirements.as_view(), name='equipement-requirements'),
+    path(
+        'removefieldfromequipment/',
+        views_equipment.RemoveFieldFromEquipment.as_view(),
+        name='remove-field-from-equipment'
+    ),
 ]
 
 urlpatterns_equipmenttype = [

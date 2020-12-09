@@ -12,16 +12,10 @@ from utils.models import DataProvider
 
 def init_db():
     field_gr_cri_dec = FieldGroup.objects.create(name="Trigger Conditions", is_equipment=False)
-    Field.objects.create(name="Date", field_group=field_gr_cri_dec)
-    Field.objects.create(name="Integer", field_group=field_gr_cri_dec)
-    Field.objects.create(name="Float", field_group=field_gr_cri_dec)
-    Field.objects.create(name="Duration", field_group=field_gr_cri_dec)
-    field_recurrence_dec = Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
-
-    FieldValue.objects.create(value="Day", field=field_recurrence_dec)
-    FieldValue.objects.create(value="Week", field=field_recurrence_dec)
-    FieldValue.objects.create(value="Month", field=field_recurrence_dec)
-    FieldValue.objects.create(value="Year", field=field_recurrence_dec)
+    Field.objects.create(name="Above Threshold", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Under Threshold", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Frequency", field_group=field_gr_cri_dec)
+    Field.objects.create(name="Recurrence", field_group=field_gr_cri_dec)
 
     field_gr_cri_fin = FieldGroup.objects.create(name="End Conditions", is_equipment=False)
 
