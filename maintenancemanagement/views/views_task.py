@@ -214,49 +214,60 @@ class TaskDetail(APIView):
     )
     def put(self, request, pk):
         """Update the Task corresponding to the given key."""
-        try:
-            task = Task.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(CHANGE_TASK):
-            end_conditions = request.data.pop('end_conditions', None)
-            if end_conditions:
-                if end_conditions[0].get('file', None) is not None:
-                    end_file = File.objects.get(pk=end_conditions[0].get('file'))
-                    task.files.add(end_file)
-                    logger.info(
-                        "{user} UPDATED {object} with {params}".format(
-                            user=request.user, object=repr(task), params=request.data
-                        )
-                    )
-                    task.save()
-                    end_conditions[0].update({'value': end_file.file.path})
-                field_object = FieldObject.objects.get(pk=end_conditions[0].get('id'))
-                field_object_serializer = FieldObjectCreateSerializer(
-                    field_object, data=end_conditions[0], partial=True
-                )
-                if field_object_serializer.is_valid():
-                    logger.info(
-                        "{user} UPDATED {object} with {params}".format(
-                            user=request.user, object=repr(field_object), params=end_conditions[0]
-                        )
-                    )
-                    field_object_serializer.save()
+            try:
+                task = Task.objects.get(pk=pk)
+                data = request.data.copy()  # Because request.data is immutable and we will modify its content
+                content_type_object = ContentType.objects.get_for_model(task)
+                end_conditions = data.pop('end_conditions', None)
+                if end_conditions:
+                    for end_condition in end_conditions:
+                        try:
+                            field_object = FieldObject.objects.get(
+                                pk=end_condition.get('field'), object_id=task.id, content_type=content_type_object
+                            )
 
-            if 'duration' in request.data.keys():
-                request.data.update({'duration': parse_time(request.data['duration'])})
-            serializer = TaskUpdateSerializer(task, data=request.data, partial=True)
-            if serializer.is_valid():
-                logger.info(
-                    "{user} UPDATED {object} with {params}".format(
-                        user=request.user, object=repr(task), params=request.data
+                            if end_condition.get('file', None) is not None:
+                                end_file = File.objects.get(pk=end_condition.get('file'))
+                                task.files.add(end_file)
+                                logger.info(
+                                    "{user} UPDATED {object} with {params}".format(
+                                        user=request.user, object=repr(task), params=data
+                                    )
+                                )
+                                task.save()
+                                end_condition.update({'value': end_file.file.path})
+
+                            field_object_serializer = FieldObjectCreateSerializer(
+                                field_object, data=end_condition, partial=True
+                            )
+                            if field_object_serializer.is_valid():
+                                logger.info(
+                                    "{user} UPDATED {object} with {params}".format(
+                                        user=request.user, object=repr(field_object), params=end_condition
+                                    )
+                                )
+                                field_object_serializer.save()
+
+                        except ObjectDoesNotExist:
+                            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                if 'duration' in request.data.keys():
+                    data.update({'duration': parse_time(request.data['duration'])})
+                serializer = TaskUpdateSerializer(task, data=data, partial=True)
+                if serializer.is_valid():
+                    logger.info(
+                        "{user} UPDATED {object} with {params}".format(
+                            user=request.user, object=repr(task), params=data
+                        )
                     )
-                )
-                task = serializer.save()
-                self._check_if_over(request, task)
-                serializer_details = TaskDetailsSerializer(task)
-                return Response(serializer_details.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    task = serializer.save()
+                    self._check_if_over(request, task)
+                    serializer_details = TaskDetailsSerializer(task)
+                    return Response(serializer_details.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def _check_if_over(self, request, task):
@@ -311,9 +322,9 @@ class TaskDetail(APIView):
             task.end_date = date.today() + parse_time(trigger_condition.value.split('|')[0])
             task.save()
         elif trigger_condition.field.name == 'Frequency':
-            splited = trigger_condition.split('|')
+            splited = trigger_condition.value.split('|')
             trigger_condition.value = '|'.join(splited[:3])
-            new_frequency = float(FieldObject.objects.get(id=int(splited[1]))) + float(splited[0])
+            new_frequency = float(FieldObject.objects.get(id=int(splited[1])).value) + float(splited[0])
             trigger_condition.value += f'|{new_frequency}'
             trigger_condition.save()
         else:
