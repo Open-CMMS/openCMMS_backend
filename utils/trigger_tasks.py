@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 def check_tasks():
     """The method that will be running inside a job of a scheduler.
-    It checks on all tasks whether it should be activated then activates it if necessary.
+    It checks on all tasks whether it should be activated then activates
+    it if necessary.
     """
     tasks_to_check = Task.objects.filter(over=False, is_triggered=False)
     for task in tasks_to_check:
