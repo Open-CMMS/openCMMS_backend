@@ -334,9 +334,8 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
         try:
             if data.get("field_object_id") is not None:
                 FieldObject.objects.get(id=int(data.get("field_object_id")))
-            if data.get('field').name in [
-                'Above Threshold', 'Under Threshold', 'Frequency'
-            ] and data.get("value") is not None:
+            if data.get('field').name in ['Above Threshold', 'Under Threshold', 'Frequency'
+                                         ] and data.get("value") is not None:
                 float(data.get("value"))
             if data.get('field').name in [
                 'Above Threshold', 'Under Threshold', 'Frequency'
@@ -345,14 +344,13 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
                     f'Misses field_object_id for {data.get("field").name} trigger condition.'
                 )
             if data.get('field').name == 'Recurrence' and 'field_object_id' in data:
-                raise serializers.ValidationError(
-                    'field_object_id not expected.'
-                )
+                raise serializers.ValidationError('field_object_id not expected.')
             return data
         except ObjectDoesNotExist as e:
             raise serializers.ValidationError(e)
         except ValueError as e:
             raise serializers.ValidationError(e)
+
 
 class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
     """Trigger condition create serializer."""
@@ -372,7 +370,8 @@ class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
         if data.get('field').name == 'Recurrence':
             value = f'{data.get("value")}|{data.get("delay")}'
         elif data.get('field').name == 'Frequency':
-            next_trigger = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value) + float(data.get("value"))
+            next_trigger = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value
+                                ) + float(data.get("value"))
             value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}|{next_trigger}'
         else:
             value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}'
@@ -425,6 +424,25 @@ class EquipmentFieldSerializer(serializers.ModelSerializer):
 
         model = FieldObject
         fields = ['id', 'field', 'field_name', 'value', 'field_value', 'description']
+
+
+class EquipmentListingSerializer(serializers.ModelSerializer):
+    """Equipment listing serializer."""
+
+    field = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            Equipement as obj."""
+        content_type_object = ContentType.objects.get_for_model(obj)
+        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
+        return EquipmentFieldSerializer(fields, many=True).data
 
 
 class EquipmentDetailsSerializer(serializers.ModelSerializer):

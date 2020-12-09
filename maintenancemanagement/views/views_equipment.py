@@ -15,8 +15,8 @@ from maintenancemanagement.models import (
 from maintenancemanagement.serializers import (
     EquipmentCreateSerializer,
     EquipmentDetailsSerializer,
+    EquipmentListingSerializer,
     EquipmentRequirementsSerializer,
-    EquipmentSerializer,
     EquipmentUpdateSerializer,
     FieldObjectCreateSerializer,
     FieldObjectNewFieldValidationSerializer,
@@ -69,7 +69,7 @@ class EquipmentList(APIView):
         operation_description='Send the list of Equipment in the database.',
         query_serializer=None,
         responses={
-            200: EquipmentSerializer(many=True),
+            200: EquipmentListingSerializer(many=True),
             401: "Unhauthorized",
         },
     )
@@ -77,7 +77,7 @@ class EquipmentList(APIView):
         """Send the list of Equipment in the database."""
         if request.user.has_perm(VIEW_EQUIPMENT):
             equipments = Equipment.objects.all()
-            serializer = EquipmentSerializer(equipments, many=True)
+            serializer = EquipmentListingSerializer(equipments, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
