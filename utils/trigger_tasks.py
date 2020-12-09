@@ -5,18 +5,19 @@ from datetime import date
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from maintenancemanagement.models import Field, FieldGroup, FieldObject, Task
+from django.contrib.contenttypes.models import ContentType
+from maintenancemanagement.models import FieldObject, Task
 from utils.methods import parse_time
 
 logger = logging.getLogger(__name__)
 
 
 def check_tasks():
-    tasks_to_check = Task.objects.filter(over=False, is_activated=False)
+    tasks_to_check = Task.objects.filter(over=False, is_triggered=False)
     for task in tasks_to_check:
         condition = at_least_one_conditon_is_verified(task)
         if condition:
-            task.is_activated = True
+            task.is_triggered = True
             if condition.field.name in ['Above Threshold', 'Under Threshold', 'Frequency']:
                 task.end_date = date.today() + parse_time(condition.value.split('|')[2])
             task.save()
@@ -39,12 +40,12 @@ def condition_is_verified(condition, task):
     """Check if the condition given is validated to activate the given task."""
     if condition.field.name == 'Recurrence':
         delay = condition.value.split('|')[1]
-        return date.today() > task.end_date - parse_time(delay)
+        return date.today() >= task.end_date - parse_time(delay)
     elif condition.field.name == 'Frequency':
         field_object_id = int(condition.value.split('|')[1])
         value = float(FieldObject.objects.get(id=field_object_id).value)
         next_trigger = float(condition.value.split('|')[3])
-        return value > next_trigger
+        return value >= next_trigger
     else:
         field_object_id = int(condition.value.split('|')[1])
         value = float(FieldObject.objects.get(id=field_object_id).value)
@@ -59,7 +60,7 @@ def start():
     r"""\n# Set up the cron job to trigger tasks."""
     try:
         scheduler = BackgroundScheduler()
-        scheduler.add_job(check_tasks, 'cron', day_of_week='mon-fri', hour='6', minute='30')
+        scheduler.add_job(check_tasks, 'cron', minute='*/5')
         scheduler.start()
     except Exception as e:
         logger.critical("The trigger tasks scheduler did not start. {}", e)
