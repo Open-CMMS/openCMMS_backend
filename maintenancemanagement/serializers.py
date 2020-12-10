@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from usersmanagement.serializers import TeamSerializer, UserProfileSerializer
+from utils.methods import ParseTimeException, parse_time
 
 from .models import (
     Equipment,
@@ -332,24 +333,32 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Redefine the validate method."""
         try:
-            if data.get("field_object_id") is not None:
-                FieldObject.objects.get(id=int(data.get("field_object_id")))
-            if data.get('field').name in ['Above Threshold', 'Under Threshold', 'Frequency'
-                                         ] and data.get("value") is not None:
-                float(data.get("value"))
-            if data.get('field').name in [
-                'Above Threshold', 'Under Threshold', 'Frequency'
-            ] and 'field_object_id' not in data:
-                raise serializers.ValidationError(
-                    f'Misses field_object_id for {data.get("field").name} trigger condition.'
-                )
-            if data.get('field').name == 'Recurrence' and 'field_object_id' in data:
-                raise serializers.ValidationError('field_object_id not expected.')
+            if data.get('delay') is not None:
+                parse_time(data.get('delay'))
+            if data.get('field_object_id') is not None:
+                FieldObject.objects.get(id=int(data.get('field_object_id')))
+            if data.get('field').name == 'Recurrence':
+                if 'field_object_id' in data:
+                    raise serializers.ValidationError('field_object_id not expected.')
+                if data.get("value") is not None:
+                    parse_time(data.get("value"))
+            else:
+                if data.get("value") is not None:
+                    float(data.get("value"))
+                if 'field_object_id' not in data:
+                    raise serializers.ValidationError(
+                        f'Misses field_object_id for {data.get("field").name} trigger condition.'
+                    )
             return data
         except ObjectDoesNotExist as e:
             raise serializers.ValidationError(e)
         except ValueError as e:
             raise serializers.ValidationError(e)
+        except ParseTimeException:
+            if data.get('field').name == 'Recurrence':
+                raise serializers.ValidationError('Delay or value is not valid')
+            else:
+                raise serializers.ValidationError('Delay is not valid')
 
 
 class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
