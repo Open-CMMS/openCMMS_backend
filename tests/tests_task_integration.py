@@ -787,6 +787,7 @@ class TaskTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_conditions")
+        self.assertFalse(task.is_triggered)
         field_object1 = FieldObject.objects.get(
             description="test_add_task_with_perm_with_trigger_conditions_recurrence"
         )
@@ -949,6 +950,7 @@ class TaskTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_end_conditions")
+        self.assertTrue(task.is_triggered)
         field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_1")
         field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_2")
         self.assertEqual(field_object_1.described_object, task)

@@ -1,5 +1,4 @@
-from datetime import date, timedelta
-from io import BytesIO
+from datetime import date
 
 import pytest
 from init_db_tests import init_db
@@ -7,24 +6,10 @@ from init_db_tests import init_db
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from maintenancemanagement.models import (
-    Field,
-    FieldGroup,
-    FieldObject,
-    FieldValue,
-    File,
-    Task,
-)
-from maintenancemanagement.serializers import (
-    EquipmentTypeSerializer,
-    FileSerializer,
-    TaskListingSerializer,
-    TaskSerializer,
-    TeamSerializer,
-)
+from maintenancemanagement.models import Field, FieldGroup, FieldObject, Task
 from openCMMS import settings
 from rest_framework.test import APIClient
-from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.models import UserProfile
 from utils.methods import parse_time
 
 User = settings.AUTH_USER_MODEL
@@ -72,18 +57,15 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_recurrence(self):
         """
-        docstring
+            Test if a new task with a recurence is created when previous one is finished 
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
-        # field_object = FieldObject.objects.get(field=Field.objects.get(name="Nb bouteilles"))
-        # nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         client.post(
-            '/api/maintenancemanagement/tasks/',
-            {
+            '/api/maintenancemanagement/tasks/', {
                 'name':
                     'verifier pneus',
                 'description':
@@ -96,25 +78,6 @@ class TaskTests(TestCase):
                             "delay": "7d",
                             "description": "test_create_task_with_perm_with_trigger_conditions_recurrence"
                         }
-                        # {
-                        # 'field': trigger_conditions.get(name='Above Threshold').id,
-                        # 'value': '0.6',
-                        # 'field_object_id': field_object.id,
-                        # 'delay': '2d',
-                        # 'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
-                        # }, {
-                        # 'field': trigger_conditions.get(name='Under Threshold').id,
-                        # 'value': '0.6',
-                        # 'field_object_id': field_object.id,
-                        # 'delay': '2d',
-                        # 'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
-                        # }, {
-                        # 'field': trigger_conditions.get(name='Frequency').id,
-                        # 'value': '10000',
-                        # 'field_object_id': field_object.id,
-                        # 'delay': '2d',
-                        # 'description': 'test_add_task_with_perm_with_trigger_conditions_frequency'
-                        # }
                     ],
                 'end_conditions':
                     [
@@ -158,9 +121,65 @@ class TaskTests(TestCase):
         for team0, team1 in zip(teams0, teams1):
             self.assertEqual(team0, team1)
 
+    def test_US22_I1_with_recurrence_with_bad_value(self):
+        """
+            Test if a user can't add a task with a recurrence and bad value
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_create_task_with_perm_with_trigger_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": trigger_conditions.get(name="Recurrence").id,
+                            "value": "zeonozenbf",
+                            "delay": "7d",
+                            "description": "test_create_task_with_perm_with_trigger_conditions_recurrence"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_US22_I1_with_recurrence_with_bad_delay(self):
+        """
+            Test if a user can't add a task with a recurrence and bad delay
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name':
+                    'verifier pneus',
+                'description':
+                    'desc_task_test_create_task_with_perm_with_trigger_conditions',
+                'trigger_conditions':
+                    [
+                        {
+                            "field": trigger_conditions.get(name="Recurrence").id,
+                            "value": "30d",
+                            "delay": "reoiungernb",
+                            "description": "test_create_task_with_perm_with_trigger_conditions_recurrence"
+                        }
+                    ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_US22_I1_with_frequency(self):
         """
-        docstring
+            Test if a new task with a frequency is created when previous one is finished 
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -170,34 +189,13 @@ class TaskTests(TestCase):
         nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         client.post(
-            '/api/maintenancemanagement/tasks/',
-            {
+            '/api/maintenancemanagement/tasks/', {
                 'name':
                     'verifier pneus',
                 'description':
                     'desc_task_test_create_task_with_perm_with_trigger_conditions',
                 'trigger_conditions':
                     [
-                        # {
-                        #     "field": trigger_conditions.get(name="Recurrence").id,
-                        #     "value": "50d",
-                        #     "delay": "7d",
-                        #     "description": "test_create_task_with_perm_with_trigger_conditions_frequency"
-                        # }
-                        # {
-                        # 'field': trigger_conditions.get(name='Above Threshold').id,
-                        # 'value': '0.6',
-                        # 'field_object_id': field_object.id,
-                        # 'delay': '2d',
-                        # 'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
-                        # },
-                        # {
-                        # 'field': trigger_conditions.get(name='Under Threshold').id,
-                        # 'value': '0.6',
-                        # 'field_object_id': field_object.id,
-                        # 'delay': '2d',
-                        # 'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
-                        # },
                         {
                             'field': trigger_conditions.get(name='Frequency').id,
                             'value': '10000',
@@ -258,30 +256,22 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_above_thresohld(self):
         """
-        docstring
+            Test if a new task with an above threshold is created when previous one is finished 
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
         field_object = FieldObject.objects.get(field=Field.objects.get(name="Nb bouteilles"))
-        #nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         client.post(
-            '/api/maintenancemanagement/tasks/',
-            {
+            '/api/maintenancemanagement/tasks/', {
                 'name':
                     'verifier pneus',
                 'description':
                     'desc_task_test_create_task_with_perm_with_trigger_conditions',
                 'trigger_conditions':
                     [
-                        # {
-                        #     "field": trigger_conditions.get(name="Frequency").id,
-                        #     "value": "50",
-                        #     "delay": "7d",
-                        #     "description": "test_create_task_with_perm_with_trigger_conditions_frequency"
-                        # }
                         {
                             'field': trigger_conditions.get(name='Above Threshold').id,
                             'value': '0.6',
@@ -289,20 +279,6 @@ class TaskTests(TestCase):
                             'delay': '2d',
                             'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
                         },
-                        # {
-                        # 'field': trigger_conditions.get(name='Under Threshold').id,
-                        # 'value': '0.6',
-                        # 'field_object_id': field_object.id,
-                        # 'delay': '2d',
-                        # 'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
-                        # },
-                        # {
-                        #     'field': trigger_conditions.get(name='Frequency').id,
-                        #     'value': '10000',
-                        #     'field_object_id': field_object.id,
-                        #     'delay': '2d',
-                        #     'description': 'test_add_task_with_perm_with_trigger_conditions_frequency'
-                        # }
                     ],
                 'end_conditions':
                     [
@@ -348,37 +324,22 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_under_threshold(self):
         """
-        docstring
+            Test if a new task with an under threshold is created when previous one is finished 
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
         trigger_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="Trigger Conditions"))
         field_object = FieldObject.objects.get(field=Field.objects.get(name="Nb bouteilles"))
-        #nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         client.post(
-            '/api/maintenancemanagement/tasks/',
-            {
+            '/api/maintenancemanagement/tasks/', {
                 'name':
                     'verifier pneus',
                 'description':
                     'desc_task_test_create_task_with_perm_with_trigger_conditions',
                 'trigger_conditions':
                     [
-                        # {
-                        #     "field": trigger_conditions.get(name="Frequency").id,
-                        #     "value": "50",
-                        #     "delay": "7d",
-                        #     "description": "test_create_task_with_perm_with_trigger_conditions_frequency"
-                        # }
-                        # {
-                        #     'field': trigger_conditions.get(name='Above Threshold').id,
-                        #     'value': '0.6',
-                        #     'field_object_id': field_object.id,
-                        #     'delay': '2d',
-                        #     'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
-                        # },
                         {
                             'field': trigger_conditions.get(name='Under Threshold').id,
                             'value': '0.6',
@@ -386,13 +347,6 @@ class TaskTests(TestCase):
                             'delay': '2d',
                             'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
                         },
-                        # {
-                        #     'field': trigger_conditions.get(name='Frequency').id,
-                        #     'value': '10000',
-                        #     'field_object_id': field_object.id,
-                        #     'delay': '2d',
-                        #     'description': 'test_add_task_with_perm_with_trigger_conditions_frequency'
-                        # }
                     ],
                 'end_conditions':
                     [
@@ -438,7 +392,7 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_under_threshold_and_frequency(self):
         """
-        docstring
+            Test if a new task with a frequency and an under threshold is created when previous one is finished 
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -448,35 +402,20 @@ class TaskTests(TestCase):
         nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         client.post(
-            '/api/maintenancemanagement/tasks/',
-            {
+            '/api/maintenancemanagement/tasks/', {
                 'name':
                     'verifier pneus',
                 'description':
                     'desc_task_test_create_task_with_perm_with_trigger_conditions',
                 'trigger_conditions':
                     [
-                        # {
-                        #     "field": trigger_conditions.get(name="Recurrence").id,
-                        #     "value": "50d",
-                        #     "delay": "7d",
-                        #     "description": "test_create_task_with_perm_with_trigger_conditions_frequency",
-                        # },
-                        # {
-                        #     'field': trigger_conditions.get(name='Above Threshold').id,
-                        #     'value': '0.6',
-                        #     'field_object_id': field_object.id,
-                        #     'delay': '2d',
-                        #     'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
-                        # },
                         {
                             'field': trigger_conditions.get(name='Under Threshold').id,
                             'value': '0.6',
                             'field_object_id': field_object.id,
                             'delay': '2d',
                             'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
-                        },
-                        {
+                        }, {
                             'field': trigger_conditions.get(name='Frequency').id,
                             'value': '10000',
                             'field_object_id': field_object.id,
@@ -537,7 +476,7 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_recurrence_and_frequency(self):
         """
-        docstring
+             Test if a new task with a frequency and a recurrence is created when previous one is finished 
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -547,8 +486,7 @@ class TaskTests(TestCase):
         nb_bouteilles_value = float(field_object.value)
         end_conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
         client.post(
-            '/api/maintenancemanagement/tasks/',
-            {
+            '/api/maintenancemanagement/tasks/', {
                 'name':
                     'verifier pneus',
                 'description':
@@ -560,22 +498,7 @@ class TaskTests(TestCase):
                             "value": "50d",
                             "delay": "7d",
                             "description": "test_create_task_with_perm_with_trigger_conditions_frequency",
-                        },
-                        # {
-                        #     'field': trigger_conditions.get(name='Above Threshold').id,
-                        #     'value': '0.6',
-                        #     'field_object_id': field_object.id,
-                        #     'delay': '2d',
-                        #     'description': 'test_add_task_with_perm_with_trigger_conditions_above_threshold'
-                        # },
-                        # {
-                        #     'field': trigger_conditions.get(name='Under Threshold').id,
-                        #     'value': '0.6',
-                        #     'field_object_id': field_object.id,
-                        #     'delay': '2d',
-                        #     'description': 'test_add_task_with_perm_with_trigger_conditions_under_threshold'
-                        # },
-                        {
+                        }, {
                             'field': trigger_conditions.get(name='Frequency').id,
                             'value': '10000',
                             'field_object_id': field_object.id,
