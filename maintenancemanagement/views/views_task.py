@@ -119,7 +119,7 @@ class TaskList(APIView):
     def _extract_conditions_from_data(self, request):
         trigger_conditions = request.data.pop('trigger_conditions', None)
         end_conditions = request.data.pop('end_conditions', None)
-        if end_conditions is None:
+        if not end_conditions:
             check_box = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")
                                             ).get(name="Checkbox")
             end_conditions = [

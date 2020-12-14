@@ -1087,6 +1087,7 @@ class TaskTests(TestCase):
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'desc_task_test_tasklist_post_with_no_end_condition',
+                'end_conditions': []
             },
             format='json'
         )
