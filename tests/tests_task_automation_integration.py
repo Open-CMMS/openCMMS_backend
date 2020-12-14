@@ -96,7 +96,7 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "field": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
+                            "id": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
                             "value": "true",
                             "description": "test_add_task_with_perm_with_end_conditions_1"
                         }
@@ -221,7 +221,7 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "field": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
+                            "id": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
                             "value": "True",
                             "description": "test_add_task_with_perm_with_end_conditions_1"
                         }
@@ -297,7 +297,7 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "field": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
+                            "id": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
                             "value": "True",
                             "description": "test_add_task_with_perm_with_end_conditions_1"
                         }
@@ -365,7 +365,7 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "field": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
+                            "id": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
                             "value": "True",
                             "description": "test_add_task_with_perm_with_end_conditions_1"
                         }
@@ -440,7 +440,7 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "field": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
+                            "id": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
                             "value": "True",
                             "description": "test_add_task_with_perm_with_end_conditions_1"
                         }
@@ -523,7 +523,7 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "field": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
+                            "id": FieldObject.objects.get(field=end_conditions.get(name="Checkbox")).id,
                             "value": "True",
                             "description": "test_add_task_with_perm_with_end_conditions_1"
                         }
