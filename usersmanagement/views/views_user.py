@@ -281,16 +281,23 @@ class SignIn(APIView):
         """docstring."""
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            data = {
-                'success': 'True',
-                'status code': status.HTTP_200_OK,
-                'message': 'User logged in successfully',
-                'token': serializer.data['token'],
-                'user_id': serializer.data['user_id'],
-                'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
-            }
-            response = {'data': data}
-            return Response(response, status=status.HTTP_200_OK)
+            if UserProfile.objects.get(username=request.data['username']).groups.count() == 0:
+                error = {
+                    'success': 'False',
+                    'error': 'User has no team',
+                }
+                response = {'error': error}
+            else:
+                data = {
+                    'success': 'True',
+                    'status code': status.HTTP_200_OK,
+                    'message': 'User logged in successfully',
+                    'token': serializer.data['token'],
+                    'user_id': serializer.data['user_id'],
+                    'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
+                }
+                response = {'data': data}
+                # return Response(response, status=status.HTTP_200_OK)
         else:
             if str(serializer.errors.get('is_blocked')[0]) == 'True':
                 send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
@@ -300,7 +307,7 @@ class SignIn(APIView):
                 'is_blocked': str(serializer.errors.get('is_blocked')[0]),
             }
             response = {'error': error}
-            return Response(response, status=status.HTTP_200_OK)  # Do not change this error code
+        return Response(response, status=status.HTTP_200_OK)  # Do not change this error code
 
 
 class SignOut(APIView):
