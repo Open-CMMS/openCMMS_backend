@@ -316,12 +316,12 @@ class TaskTests(TestCase):
                 'end_conditions':
                     [
                         {
-                            "field": FieldObject.objects.get(field=checkbox).id,
+                            "id": FieldObject.objects.get(field=checkbox).id,
                             "value": "false",
                             "description": "maj_checkbox"
                         },
                         {
-                            "field": FieldObject.objects.get(field=entier).id,
+                            "id": FieldObject.objects.get(field=entier).id,
                             "value": 10,
                             "description": "maj_entier"
                         },
