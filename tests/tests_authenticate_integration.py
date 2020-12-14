@@ -1,12 +1,11 @@
-from usersmanagement.models import UserProfile
-from usersmanagement.views.views_user import SignOut
-
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.test import APIClient, APIRequestFactory
+from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.views.views_user import SignOut
 
 
 class AuthentificationTests(TestCase):
@@ -17,12 +16,30 @@ class AuthentificationTests(TestCase):
         user.save()
         return user
 
+    def test_is_connected_with_correct_identifier_but_no_team(self):
+        """
+            Test if a user with correct identifier can connect
+        """
+
+        user = self.set_up()
+        client = APIClient()
+        response = client.post(
+            '/api/usersmanagement/login',
+            'username=tom&password=truc',
+            content_type='application/x-www-form-urlencoded'
+        )
+        self.assertEqual(response.data['error']['error'], 'User has no team')
+
     def test_is_connected_with_correct_identifier(self):
         """
             Test if a user with correct identifier can connect
         """
 
         user = self.set_up()
+        teamtype = TeamType.objects.create(name='TeamType test')
+        team = Team.objects.create(team_type=teamtype)
+        user.groups.add(team)
+        user.save()
         client = APIClient()
         response = client.post(
             '/api/usersmanagement/login',
@@ -139,7 +156,8 @@ class AuthentificationTests(TestCase):
         self.assertEqual(response.data.get("error").get("success"), 'False')
         self.assertEqual(response.data.get("error").get("is_blocked"), 'True')
         self.assertEqual(
-            response.data.get("error").get("error"), "You have entered a wrong password too many times. You are blocked."
+            response.data.get("error").get("error"),
+            "You have entered a wrong password too many times. You are blocked."
         )
 
     def test_sign_out(self):
