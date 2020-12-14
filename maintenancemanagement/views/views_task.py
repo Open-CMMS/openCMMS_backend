@@ -4,7 +4,16 @@ import logging
 from datetime import date
 
 from drf_yasg.utils import swagger_auto_schema
-from maintenancemanagement.models import FieldObject, File, Task
+
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
+from maintenancemanagement.models import (
+    Field,
+    FieldGroup,
+    FieldObject,
+    File,
+    Task,
+)
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
     FieldObjectValidationSerializer,
@@ -17,15 +26,12 @@ from maintenancemanagement.serializers import (
     TriggerConditionsCreateSerializer,
     TriggerConditionsValidationSerializer,
 )
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.views.views_team import belongs_to_team
-from utils.methods import parse_time
-
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.views.views_team import belongs_to_team
+from utils.methods import parse_time
 
 logger = logging.getLogger(__name__)
 VIEW_TASK = "maintenancemanagement.view_task"
@@ -113,6 +119,16 @@ class TaskList(APIView):
     def _extract_conditions_from_data(self, request):
         trigger_conditions = request.data.pop('trigger_conditions', None)
         end_conditions = request.data.pop('end_conditions', None)
+        if end_conditions is None:
+            check_box = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")
+                                            ).get(name="Checkbox")
+            end_conditions = [
+                {
+                    'field': check_box.id,
+                    'value': "false",
+                    'description': 'Finish task'
+                }
+            ]  # Add default end_condition
         return (trigger_conditions, end_conditions), trigger_conditions is None
 
     def _validate_conditions(self, conditions):

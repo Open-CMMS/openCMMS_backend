@@ -1,4 +1,3 @@
-from datetime import timedelta
 from io import BytesIO
 
 import pytest
@@ -11,7 +10,6 @@ from maintenancemanagement.models import (
     Field,
     FieldGroup,
     FieldObject,
-    FieldValue,
     File,
     Task,
 )
@@ -24,7 +22,7 @@ from maintenancemanagement.serializers import (
 )
 from openCMMS import settings
 from rest_framework.test import APIClient
-from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.models import Team, UserProfile
 
 User = settings.AUTH_USER_MODEL
 
@@ -1076,3 +1074,23 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/requirements')
         self.assertEqual(response.status_code, 401)
+
+    def test_US11_I2_tasklist_post_with_no_end_condition(self):
+        """
+            Test that a checkbox is created if no end_conditions are given
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'desc_task_test_tasklist_post_with_no_end_condition',
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_tasklist_post_with_no_end_condition")
+        check_box = FieldObject.objects.get(field=conditions.get(name="Checkbox"))
+        self.assertEqual(check_box.described_object, task)
