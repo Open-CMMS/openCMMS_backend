@@ -315,8 +315,42 @@ class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
         if obj.field_value:
             return obj.field_value.value
         else:
-            data = obj.value.split('|')
-            return data[0]
+            return obj.value
+
+
+class TriggerConditionForTaskDetailsSerializer(serializers.ModelSerializer):
+    """Field object details serializer for task."""
+
+    field_name = serializers.CharField(source='field.name')
+    value = serializers.SerializerMethodField()
+    delay = serializers.SerializerMethodField()
+    field_object = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'field_name', 'description', 'value', 'delay', 'field_object']
+
+    def get_value(self, obj):
+        """Give the value of the trigger condition."""
+        return obj.value.split('|')[0]
+
+    def get_delay(self, obj):
+        """Give the delay of the trigger condition."""
+        if obj.field.name == "Recurrence":
+            return obj.value.split('|')[1]
+        else:
+            return obj.value.split('|')[2]
+
+    def get_field_object(self, obj):
+        """Give the field object of the trigger condition."""
+        if obj.field.name == "Recurrence":
+            return None
+        else:
+            field_object_id = int(obj.value.split('|')[1])
+            field_object = FieldObject.objects.get(id=field_object_id)
+            return FieldObjectForTaskDetailsSerializer(field_object).data
 
 
 class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
@@ -629,7 +663,7 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
         trigger_fields_objects = FieldObject.objects.filter(
             object_id=obj.id, content_type=content_type_object, field__field_group__name=TRIGGER_CONDITIONS
         )
-        return FieldObjectForTaskDetailsSerializer(trigger_fields_objects, many=True).data
+        return TriggerConditionForTaskDetailsSerializer(trigger_fields_objects, many=True).data
 
     def get_end_conditions(self, obj):
         """Return end conditions of the given task."""
