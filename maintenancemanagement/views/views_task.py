@@ -83,7 +83,7 @@ class TaskList(APIView):
             if only_template == "true":
                 tasks = Task.objects.filter(is_template=True)
             else:
-                tasks = Task.objects.filter(is_template=False)
+                tasks = Task.objects.filter(is_template=False).order_by('over', 'end_date')
             serializer = TaskListingSerializer(tasks, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
