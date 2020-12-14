@@ -315,6 +315,9 @@ class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
         if obj.field_value:
             return obj.field_value.value
         else:
+            data = obj.value.split('|')
+            if len(data) > 1:
+                return data[1]
             return obj.value
 
 
