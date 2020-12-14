@@ -316,9 +316,7 @@ class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
             return obj.field_value.value
         else:
             data = obj.value.split('|')
-            if len(data) > 1:
-                return data[1]
-            return obj.value
+            return data[0]
 
 
 class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
