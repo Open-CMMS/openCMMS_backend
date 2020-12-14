@@ -4,9 +4,6 @@ import logging
 from datetime import date
 
 from drf_yasg.utils import swagger_auto_schema
-
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from maintenancemanagement.models import FieldObject, File, Task
 from maintenancemanagement.serializers import (
     FieldObjectCreateSerializer,
@@ -20,12 +17,15 @@ from maintenancemanagement.serializers import (
     TriggerConditionsCreateSerializer,
     TriggerConditionsValidationSerializer,
 )
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from usersmanagement.models import Team, UserProfile
 from usersmanagement.views.views_team import belongs_to_team
 from utils.methods import parse_time
+
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
 VIEW_TASK = "maintenancemanagement.view_task"
@@ -224,7 +224,7 @@ class TaskDetail(APIView):
                     for end_condition in end_conditions:
                         try:
                             field_object = FieldObject.objects.get(
-                                pk=end_condition.get('field'), object_id=task.id, content_type=content_type_object
+                                pk=end_condition.get('id'), object_id=task.id, content_type=content_type_object
                             )
 
                             if end_condition.get('file', None) is not None:
