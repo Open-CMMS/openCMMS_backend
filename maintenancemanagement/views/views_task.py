@@ -125,7 +125,7 @@ class TaskList(APIView):
             end_conditions = [
                 {
                     'field': check_box.id,
-                    'value': "false",
+                    'value': None,
                     'description': 'Finish task'
                 }
             ]  # Add default end_condition
