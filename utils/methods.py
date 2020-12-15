@@ -4,11 +4,13 @@ from datetime import timedelta
 
 
 class ParseTimeException(Exception):
+    """parse_time function exception."""
+
     pass
 
 
 def parse_time(time_str):
-    """Convert a str into datetime.timedelta.
+    r"""Convert a str into datetime.timedelta.
 
     The string needs to mathe the regex :
         r'((?P<days>\\d+?)d ?)?((?P<hours>\\d+?)h ?)?((?P<minutes>\\d+?)m ?)?'

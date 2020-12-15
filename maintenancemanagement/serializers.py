@@ -368,23 +368,7 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Redefine the validate method."""
         try:
-            if data.get('delay') is not None:
-                parse_time(data.get('delay'))
-            if data.get('field_object_id') is not None:
-                FieldObject.objects.get(id=int(data.get('field_object_id')))
-            if data.get('field').name == 'Recurrence':
-                if 'field_object_id' in data:
-                    raise serializers.ValidationError('field_object_id not expected.')
-                if data.get("value") is not None:
-                    parse_time(data.get("value"))
-            else:
-                if data.get("value") is not None:
-                    float(data.get("value").replace(" ", ""))
-                if 'field_object_id' not in data:
-                    raise serializers.ValidationError(
-                        f'Misses field_object_id for {data.get("field").name} trigger condition.'
-                    )
-            return data
+            return self._validate_value(data)
         except ObjectDoesNotExist as e:
             raise serializers.ValidationError(e)
         except ValueError as e:
@@ -394,6 +378,25 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Delay or value is not valid')
             else:
                 raise serializers.ValidationError('Delay is not valid')
+
+    def _validate_value(self, data):
+        if data.get('delay') is not None:
+            parse_time(data.get('delay'))
+        if data.get('field_object_id') is not None:
+            FieldObject.objects.get(id=int(data.get('field_object_id')))
+        if data.get('field').name == 'Recurrence':
+            if 'field_object_id' in data:
+                raise serializers.ValidationError('field_object_id not expected.')
+            if data.get("value") is not None:
+                parse_time(data.get("value"))
+        else:
+            if data.get("value") is not None:
+                float(data.get("value").replace(" ", ""))
+            if 'field_object_id' not in data:
+                raise serializers.ValidationError(
+                    f'Misses field_object_id for {data.get("field").name} trigger condition.'
+                )
+        return data
 
 
 class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
@@ -414,8 +417,8 @@ class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
         if data.get('field').name == 'Recurrence':
             value = f'{data.get("value")}|{data.get("delay")}'
         elif data.get('field').name == 'Frequency':
-            next_trigger = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value.replace(" ", "")
-                                ) + float(data.get("value").replace(" ", ""))
+            current_value = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value.replace(" ", ""))
+            next_trigger = current_value + float(data.get("value").replace(" ", ""))
             value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}|{next_trigger}'
         else:
             value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}'

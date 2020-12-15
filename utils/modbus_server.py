@@ -1,3 +1,5 @@
+"""This file emulate a modbus server for tests."""
+
 import logging
 import threading
 import time
@@ -19,13 +21,13 @@ app = get_server(TCPServer, ('localhost', 5002), RequestHandler)
 
 @app.route(slave_ids=[1], function_codes=[1, 2, 3, 4], addresses=list(range(0, 10)))
 def read_data_store(slave_id, function_code, address):
-    """" Return value of address. """
+    """Return value of address."""
     return data_store[address]
 
 
 @app.route(slave_ids=[1], function_codes=[5, 15], addresses=list(range(0, 10)))
 def write_data_store(slave_id, function_code, address, value):
-    """" Set value for address. """
+    """Set value for address."""
     data_store[address] = value
 
 
