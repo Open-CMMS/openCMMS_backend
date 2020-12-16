@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 def check_tasks():
-    """The method that will be running inside a job of a scheduler.
-    It checks on all tasks whether it should be activated then activates
-    it if necessary.
+    """Check all tasks and activates it if necessary.
+
+    This method will be running inside a job of a scheduler.
     """
     tasks_to_check = Task.objects.filter(over=False, is_triggered=False)
     for task in tasks_to_check:
@@ -27,8 +27,7 @@ def check_tasks():
 
 
 def at_least_one_conditon_is_verified(task):
-    """Check if a task has at least one trigger condition that is activated.
-    """
+    """Check if a task has at least one trigger condition that is activated."""
     content_type_object = ContentType.objects.get_for_model(task)
     task_conditions = FieldObject.objects.filter(
         object_id=task.id,

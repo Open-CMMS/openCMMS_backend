@@ -39,6 +39,8 @@ CHANGE_TASK = "maintenancemanagement.change_task"
 ADD_TASK = "maintenancemanagement.add_task"
 DELETE_TASK = "maintenancemanagement.delete_task"
 
+UPDATED_LOGGER = "{user} UPDATED {object} with {params}"
+
 
 class TaskList(APIView):
     r"""
@@ -120,8 +122,8 @@ class TaskList(APIView):
         trigger_conditions = request.data.pop('trigger_conditions', None)
         end_conditions = request.data.pop('end_conditions', None)
         if not end_conditions:
-            check_box = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions")
-                                            ).get(name="Checkbox")
+            end_condition_fields = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+            check_box = end_condition_fields.get(name="Checkbox")
             end_conditions = [
                 {
                     'field': check_box.id,
@@ -234,49 +236,15 @@ class TaskDetail(APIView):
             try:
                 task = Task.objects.get(pk=pk)
                 data = request.data.copy()  # Because request.data is immutable and we will modify its content
-                content_type_object = ContentType.objects.get_for_model(task)
                 end_conditions = data.pop('end_conditions', None)
-                if end_conditions:
-                    for end_condition in end_conditions:
-                        try:
-                            field_object = FieldObject.objects.get(
-                                pk=end_condition.get('id'), object_id=task.id, content_type=content_type_object
-                            )
-
-                            if end_condition.get('file', None) is not None:
-                                end_file = File.objects.get(pk=end_condition.get('file'))
-                                task.files.add(end_file)
-                                logger.info(
-                                    "{user} UPDATED {object} with {params}".format(
-                                        user=request.user, object=repr(task), params=data
-                                    )
-                                )
-                                task.save()
-                                end_condition.update({'value': end_file.file.path})
-
-                            field_object_serializer = FieldObjectCreateSerializer(
-                                field_object, data=end_condition, partial=True
-                            )
-                            if field_object_serializer.is_valid():
-                                logger.info(
-                                    "{user} UPDATED {object} with {params}".format(
-                                        user=request.user, object=repr(field_object), params=end_condition
-                                    )
-                                )
-                                field_object_serializer.save()
-
-                        except ObjectDoesNotExist:
-                            return Response(status=status.HTTP_400_BAD_REQUEST)
-
+                error = self._update_end_conditions(request, end_conditions, task, data)
+                if error:
+                    return error
                 if 'duration' in request.data.keys():
                     data.update({'duration': parse_time(request.data['duration'])})
                 serializer = TaskUpdateSerializer(task, data=data, partial=True)
                 if serializer.is_valid():
-                    logger.info(
-                        "{user} UPDATED {object} with {params}".format(
-                            user=request.user, object=repr(task), params=data
-                        )
-                    )
+                    logger.info(UPDATED_LOGGER.format(user=request.user, object=repr(task), params=data))
                     task = serializer.save()
                     self._check_if_over(request, task)
                     serializer_details = TaskDetailsSerializer(task)
@@ -285,6 +253,31 @@ class TaskDetail(APIView):
             except ObjectDoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def _update_end_conditions(self, request, end_conditions, task, data):
+        content_type_object = ContentType.objects.get_for_model(task)
+        if end_conditions:
+            for end_condition in end_conditions:
+                try:
+                    field_object = FieldObject.objects.get(
+                        pk=end_condition.get('id'), object_id=task.id, content_type=content_type_object
+                    )
+                    if end_condition.get('file', None) is not None:
+                        end_file = File.objects.get(pk=end_condition.get('file'))
+                        task.files.add(end_file)
+                        logger.info(UPDATED_LOGGER.format(user=request.user, object=repr(task), params=data))
+                        task.save()
+                        end_condition.update({'value': end_file.file.path})
+                    field_object_serializer = FieldObjectCreateSerializer(
+                        field_object, data=end_condition, partial=True
+                    )
+                    if field_object_serializer.is_valid():
+                        logger.info(
+                            UPDATED_LOGGER.format(user=request.user, object=repr(field_object), params=end_condition)
+                        )
+                        field_object_serializer.save()
+                except ObjectDoesNotExist:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def _check_if_over(self, request, task):
         content_type_object = ContentType.objects.get_for_model(task)

@@ -29,6 +29,8 @@ VIEW_USERPROFILE = "usersmanagement.view_userprofile"
 CHANGE_USERPROFILE = "usersmanagement.change_userprofile"
 DELETE_USERPROFILE = "usersmanagement.delete_userprofile"
 
+MAIL_ERROR = "There was an exception while sending a mail.\n{}"
+
 
 class UserList(APIView):
     """# List all users or create a new one.
@@ -297,7 +299,6 @@ class SignIn(APIView):
                     'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
                 }
                 response = {'data': data}
-                # return Response(response, status=status.HTTP_200_OK)
         else:
             if str(serializer.errors.get('is_blocked')[0]) == 'True':
                 send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
@@ -387,7 +388,7 @@ def send_mail_to_setup_password(data):
     try:
         email.send()
     except Exception as e:
-        logger.warning("There was an exception while sending a mail.\n{}", e)
+        logger.warning(MAIL_ERROR, e)
 
 
 def send_mail_to_setup_password_after_blocking(id):
@@ -411,7 +412,7 @@ To setup your new password, please follow this link : {url}"
     try:
         email.send()
     except Exception as e:
-        logger.warning("There was an exception while sending a mail.\n{}", e)
+        logger.warning(MAIL_ERROR, e)
 
 
 class SetNewPassword(APIView):
@@ -472,7 +473,7 @@ class UserResetPassword(APIView):
         try:
             email.send()
         except Exception as ex:
-            logger.warning("There was an exception while sending a mail.\n{}", ex)
+            logger.warning(MAIL_ERROR, ex)
             return Response("Error while sending email", status=status.HTTP_400_BAD_REQUEST)
         return Response("Email sent !", status=status.HTTP_200_OK)
 
