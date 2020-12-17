@@ -93,7 +93,7 @@ class FileTests(TestCase):
                     client (APIClient): the client that will be used to do the GET with no user authenticated.
 
                 Expected Outputs:
-                    We expect the response status_code to be 401.
+                    We expect the response's _code to be 401.
         """
         client = APIClient()
         response = client.get('/api/maintenancemanagement/files/', format='json')
@@ -203,7 +203,7 @@ class FileTests(TestCase):
                     client (APIClient): the client that will be used to do the POST with no user authenticated.
 
                 Expected Outputs:
-                    We expect the response status_code to be 401.
+                    We expect the response's _code to be 401.
         """
         client = APIClient()
         response = client.post('/api/maintenancemanagement/files/', format='multipart')
@@ -242,7 +242,7 @@ class FileTests(TestCase):
                     client (APIClient): the client that will be used to do the GET with no user authenticated.
 
                 Expected Outputs:
-                    We expect the response status_code to be 401.
+                    We expect the response's _code to be 401.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -283,7 +283,7 @@ class FileTests(TestCase):
                     client (APIClient): the client that will be used to do the GET with no user authenticated.
 
                 Expected Outputs:
-                    We expect the response status_code to be 401.
+                    We expect the response's _code to be 401.
         """
         user = self.set_up_without_perm()
         file = self.temporary_image('png')
