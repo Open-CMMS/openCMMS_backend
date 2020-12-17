@@ -57,7 +57,15 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_recurrence(self):
         """
-            Test if a new task with a recurence is created when previous one is finished 
+            Test if a new task with a recurence is created when previous one is finished.
+
+            Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with recurrence trigger condition.
+                put data (JSON): finish the task.
+
+            Expected Output:
+                We expect that a new task is created with good values.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -123,7 +131,14 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_recurrence_with_bad_value(self):
         """
-            Test if a user can't add a task with a recurrence and bad value
+            Test if a user can't add a task with a recurrence and bad value.
+
+            Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with a recurrence trigger condition with bad values.
+
+            Expected Output:
+                We expect a 400 status code in the response.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -151,7 +166,14 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_recurrence_with_bad_delay(self):
         """
-            Test if a user can't add a task with a recurrence and bad delay
+            Test if a user can't add a task with a recurrence and bad delay.
+
+            Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with a recurrence trigger condition with bad delay.
+
+            Expected Output:
+                We expect a 400 status code in the response.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -179,7 +201,15 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_frequency(self):
         """
-            Test if a new task with a frequency is created when previous one is finished 
+            Test if a new task with a frequency is created when previous one is finished.
+
+            Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with a frequency trigger condition.
+                put data (JSON): finish the task.
+
+            Expected Output:
+                We expect that a new task is created with good values.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -256,7 +286,15 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_above_thresohld(self):
         """
-            Test if a new task with an above threshold is created when previous one is finished 
+            Test if a new task with an above threshold is created when previous one is finished.
+
+            Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with an above threshold trigger condition.
+                put data (JSON): finish the task.
+
+            Expected Output:
+                We expect that a new task is created with good values.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -324,7 +362,15 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_under_threshold(self):
         """
-            Test if a new task with an under threshold is created when previous one is finished 
+            Test if a new task with an under threshold is created when previous one is finished.
+
+            Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with an under threshold trigger condition.
+                put data (JSON): finish the task.
+
+            Expected Output:
+                We expect that a new task is created with good values.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -392,7 +438,15 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_under_threshold_and_frequency(self):
         """
-            Test if a new task with a frequency and an under threshold is created when previous one is finished 
+            Test if a new task with a frequency and an under threshold is created when previous one is finished.
+
+            Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with trigger conditions.
+                put data (JSON): finish the task.
+
+            Expected Output:
+                We expect that a new task is created with good values.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -476,7 +530,15 @@ class TaskTests(TestCase):
 
     def test_US22_I1_with_recurrence_and_frequency(self):
         """
-             Test if a new task with a frequency and a recurrence is created when previous one is finished 
+             Test if a new task with a frequency and a recurrence is created when previous one is finished.
+
+             Inputs:
+                user (UserProfile): a UserProfile with all permissions on tasks.
+                post data (JSON): a mock-up of a task with trigger conditions.
+                put data (JSON): finish the task.
+
+            Expected Output:
+                We expect that a new task is created with good values.
         """
         user = self.set_up_perm()
         client = APIClient()
