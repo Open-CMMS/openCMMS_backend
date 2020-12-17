@@ -1,5 +1,3 @@
-from django.contrib.auth.models import Permission
-from django.test import TestCase
 from maintenancemanagement.models import (
     Equipment,
     EquipmentType,
@@ -12,8 +10,11 @@ from maintenancemanagement.serializers import (
     EquipmentTypeSerializer,
 )
 from openCMMS import settings
-from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
+
+from django.contrib.auth.models import Permission
+from django.test import TestCase
+from rest_framework.test import APIClient
 
 User = settings.AUTH_USER_MODEL
 
@@ -53,7 +54,13 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I9_equipmenttypelist_get_with_perm(self):
         """
-            Test if a user with perm receive the data
+        Test if a user with perm can retrieve all the equipmenttypes
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+
+                Expected outputs:
+                    We expect a response data which match what we expect
         """
         self.set_up_perm()
         equipment_type = EquipmentType.objects.all()
@@ -66,7 +73,13 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I9_equipmenttypelist_get_without_perm(self):
         """
-            Test if a user without perm doesn't receive the data
+        Test if a user with perm can't retrieve all the equipmenttypes
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without the required permissions.
+
+                Expected outputs:
+                    We expect a 401 status code in the response
         """
         self.set_up_without_perm()
         client = APIClient()
@@ -77,7 +90,14 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I10_equipmenttypelist_post_with_perm(self):
         """
-            Test if a user with perm can add an equipment type
+        Test if a user with perm can add an equipmenttype
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+                    data (json): A dictionnary with all the required information to create an equipmenttype
+
+                Expected outputs:
+                    We expect a 201 status code in the response
         """
         self.set_up_perm()
         client = APIClient()
@@ -93,7 +113,14 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I10_equipmenttypelist_post_without_perm(self):
         """
-            Test if a user without perm can't add an equipment type
+        Test if a user without perm can add an equipmenttype
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without the required permissions.
+                    data (json): A dictionnary with all the required information to create an equipmenttype
+
+                Expected outputs:
+                    We expect a 401 status code in the response
         """
         self.set_up_without_perm()
         client = APIClient()
@@ -104,7 +131,15 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I11_equipmenttypedetail_get_with_perm(self):
         """
-            Test if a user with perm can see an equipment type detail
+        Test if a user with perm can retrieve an equipmenttype details
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+
+                Expected outputs:
+                    We expect a 200 status code in the response
+                    We expect a response data which match what we expect
+
         """
         self.set_up_perm()
         tool = EquipmentType.objects.create(name="tool")
@@ -118,7 +153,13 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I11_equipmenttypedetail_get_without_perm(self):
         """
-            Test if a user without perm can't see
+        Test if a user without perm can retrieve an equipmenttype
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without the required permissions.
+
+                Expected outputs:
+                    We expect a 401 status code in the response
         """
         self.set_up_without_perm()
         tool = EquipmentType.objects.create(name="tool")
@@ -131,7 +172,15 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I12_equipmenttypedetail_put_with_perm(self):
         """
-            Test if a user with perm can change an equipment type detail
+        Test if a user with perm can update an equipmenttype
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+                    data (json): A dictionnary with all the required information to update an equipmenttype
+
+                Expected outputs:
+                    We expect a 200 status code in the response
+                    We expect that the information we changed is updated in the database
         """
         self.set_up_perm()
         tool = EquipmentType.objects.create(name="tool")
@@ -146,7 +195,14 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I12_equipmenttypedetail_put_without_perm(self):
         """
-            Test if a user without perm can't change an equipment type detail
+        Test if a user without perm can update an equipmenttype
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without the required permissions.
+                    data (json): A dictionnary with all the required information to update an equipmenttype
+
+                Expected outputs:
+                    We expect a 401 status code in the response
         """
         self.set_up_without_perm()
         tool = EquipmentType.objects.create(name="tool")
@@ -160,7 +216,15 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I13_equipmenttypedetail_delete_with_perm(self):
         """
-            Test if a user with perm can delete an equipment type
+        Test if a user with perm can delete an equipmenttype 
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+
+                Expected outputs:
+                    We expect a 204 status code in the response
+                    We expect that the equipmenttype we deleted is no longer in the database
+
         """
         self.set_up_perm()
         user = UserProfile.objects.get(username="tom")
@@ -175,22 +239,33 @@ class EquipmentTypeTests(TestCase):
 
     def test_US4_I13_equipmenttypedetail_delete_without_perm(self):
         """
-            Test if a user without perm can't deletean equipment type
+        Test if a user without perm can delete an equipmenttype
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without the required permissions.
+
+                Expected outputs:
+                    We expect a 401 status code in the response
         """
-        self.set_up_perm()
+        self.set_up_without_perm()
         user = UserProfile.objects.get(username="tom")
         client = APIClient()
         client.force_authenticate(user=user)
         tool = EquipmentType.objects.create(name="tool")
-        response_1 = client.get('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/', format='json')
-        response_2 = client.delete('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/')
-        self.assertEqual(response_1.status_code, 200)
-        self.assertEqual(response_2.status_code, 204)
-        self.assertFalse(EquipmentType.objects.filter(id=tool.id).exists())
+        response = client.delete('/api/maintenancemanagement/equipmenttypes/' + str(tool.id) + '/')
+        self.assertEqual(response.status_code, 401)
 
     def test_US20_I1_equipmenttypelist_post_with_fields_with_perm(self):
         """
-            Test if a user with perm can add an equipment type with fields
+        Test if a user with perm can add an equipmenttype with field
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+                    data (json): A dictionnary with all the required information to create an equipmenttype with fields
+
+                Expected outputs:
+                    We expect a 201 status code in the response
+                    We expect that the fields we created are all in the database with the correct values
         """
         self.set_up_perm()
         client = APIClient()
