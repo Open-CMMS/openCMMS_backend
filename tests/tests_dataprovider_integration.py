@@ -4,8 +4,8 @@ import pytest
 from init_db_tests import init_db
 
 from django.contrib.auth.models import Permission
-from django.test import TestCase, client
-from maintenancemanagement.models import Equipment, Field, FieldObject
+from django.test import TestCase
+from maintenancemanagement.models import Equipment, Field
 from openCMMS.settings import BASE_DIR
 from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
