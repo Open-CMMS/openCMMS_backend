@@ -6,7 +6,7 @@ from secrets import token_hex
 from drf_yasg.utils import swagger_auto_schema
 
 from django.conf import settings
-from django.contrib.auth import logout, authenticate
+from django.contrib.auth import authenticate, logout
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
@@ -28,6 +28,8 @@ ADD_USERPROFILE = "usersmanagement.add_userprofile"
 VIEW_USERPROFILE = "usersmanagement.view_userprofile"
 CHANGE_USERPROFILE = "usersmanagement.change_userprofile"
 DELETE_USERPROFILE = "usersmanagement.delete_userprofile"
+
+MAIL_ERROR = "There was an exception while sending a mail.\n{}"
 
 
 class UserList(APIView):
@@ -281,16 +283,22 @@ class SignIn(APIView):
         """docstring."""
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            data = {
-                'success': 'True',
-                'status code': status.HTTP_200_OK,
-                'message': 'User logged in successfully',
-                'token': serializer.data['token'],
-                'user_id': serializer.data['user_id'],
-                'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
-            }
-            response = {'data' : data}
-            return Response(response, status=status.HTTP_200_OK)
+            if UserProfile.objects.get(username=request.data['username']).groups.count() == 0:
+                error = {
+                    'success': 'False',
+                    'error': 'User has no team',
+                }
+                response = {'error': error}
+            else:
+                data = {
+                    'success': 'True',
+                    'status code': status.HTTP_200_OK,
+                    'message': 'User logged in successfully',
+                    'token': serializer.data['token'],
+                    'user_id': serializer.data['user_id'],
+                    'user': UserProfileSerializer(UserProfile.objects.get(pk=serializer.data['user_id'])).data,
+                }
+                response = {'data': data}
         else:
             if str(serializer.errors.get('is_blocked')[0]) == 'True':
                 send_mail_to_setup_password_after_blocking(serializer.errors.get('user_id')[0])
@@ -299,8 +307,8 @@ class SignIn(APIView):
                 'error': str(serializer.errors.get('error')[0]),
                 'is_blocked': str(serializer.errors.get('is_blocked')[0]),
             }
-            response = {'error' : error}
-            return Response(response, status=status.HTTP_200_OK)  # Do not change this error code
+            response = {'error': error}
+        return Response(response, status=status.HTTP_200_OK)  # Do not change this error code
 
 
 class SignOut(APIView):
@@ -380,7 +388,7 @@ def send_mail_to_setup_password(data):
     try:
         email.send()
     except Exception as e:
-        logger.warning("There was an exception while sending a mail.\n{}", e)
+        logger.warning(MAIL_ERROR, e)
 
 
 def send_mail_to_setup_password_after_blocking(id):
@@ -404,7 +412,7 @@ To setup your new password, please follow this link : {url}"
     try:
         email.send()
     except Exception as e:
-        logger.warning("There was an exception while sending a mail.\n{}", e)
+        logger.warning(MAIL_ERROR, e)
 
 
 class SetNewPassword(APIView):
@@ -465,7 +473,7 @@ class UserResetPassword(APIView):
         try:
             email.send()
         except Exception as ex:
-            logger.warning("There was an exception while sending a mail.\n{}", ex)
+            logger.warning(MAIL_ERROR, ex)
             return Response("Error while sending email", status=status.HTTP_400_BAD_REQUEST)
         return Response("Email sent !", status=status.HTTP_200_OK)
 
@@ -505,8 +513,7 @@ class CheckPassword(APIView):
         operation_description='Authenticate the token of a user.', responses={200: 'The request went well.'}
     )
     def post(self, request):
-        """docstrings."""
-        
+        """Check if the pair username password is valid."""
         password = request.data['password']
         username = request.data['username']
         user = authenticate(username=username, password=password)
@@ -514,17 +521,17 @@ class CheckPassword(APIView):
 
 
 class ResendInscriptionEmail(APIView):
-    """Resend the inscription mail to an user"""
+    """Resend the inscription mail to an user."""
 
     def get(self, request):
-       
-        try :
+        """Resend the inscription mail to an user."""
+        try:
             user = UserProfile.objects.get(pk=request.GET.get('userid'))
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if request.user.has_perm(ADD_USERPROFILE) :
-            data = {'id' : user.pk}
+        if request.user.has_perm(ADD_USERPROFILE):
+            data = {'id': user.pk}
             send_mail_to_setup_password(data)
             return Response(status=status.HTTP_200_OK)
         else:

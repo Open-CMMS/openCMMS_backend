@@ -24,16 +24,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    '127.0.0.1'
-]
+ALLOWED_HOSTS = ['127.0.0.1']
 
-AUTHENTICATION_BACKENDS = (
-    "django.contrib.auth.backends.ModelBackend",
-)
+AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
 BASE_URL = 'http://127.0.0.1:8000/'
-
 
 INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions',
@@ -91,7 +86,6 @@ DATABASES = {
         }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -109,7 +103,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
@@ -186,7 +179,6 @@ JWT_AUTH = {
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-
 ################################################################
 ############################# EMAIL ############################
 ################################################################
@@ -198,6 +190,8 @@ EMAIL_FILE_PATH = '/tmp/app-messages'
 ############################ LOGGING ###########################
 ################################################################
 
+FILE_HANDLER = 'logging.FileHandler'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -206,20 +200,18 @@ LOGGING = {
             'verbose_http':
                 {
                     'format':
-                        '{levelname} {asctime} {process:d} {thread:d} "{request.user} did {request.method} on {request.path} with {request.POST} and got {status_code}"',
+                        '{levelname} {asctime} "{request.user} did {request.method} on {request.path} with {request.POST} and got {status_code}"',
                     'style':
                         '{',
                 },
-            'verbose_sql':
-                {
-                    'format': '{levelname} {asctime} {process:d} {thread:d} {message} {sql} {params}',
-                    'style': '{',
-                },
-            'verbose_base':
-                {
-                    'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-                    'style': '{',
-                },
+            'verbose_sql': {
+                'format': '{levelname} {asctime} {message} {sql} {params}',
+                'style': '{',
+            },
+            'verbose_base': {
+                'format': '{levelname} {asctime} {module} {message}',
+                'style': '{',
+            },
             'simple': {
                 'format': '{levelname} {message}',
                 'style': '{',
@@ -234,35 +226,35 @@ LOGGING = {
             },
             'file_http':
                 {
-                    'class': 'logging.FileHandler',
+                    'class': FILE_HANDLER,
                     'filename': os.path.join(BASE_DIR, 'log/', 'requests.log'),
                     'level': 'DEBUG',
                     'formatter': 'verbose_http'
                 },
             'file_sql':
                 {
-                    'class': 'logging.FileHandler',
+                    'class': FILE_HANDLER,
                     'filename': os.path.join(BASE_DIR, 'log/', 'sql.log'),
                     'level': 'INFO',
                     'formatter': 'verbose_sql'
                 },
             'file_utils':
                 {
-                    'class': 'logging.FileHandler',
+                    'class': FILE_HANDLER,
                     'filename': os.path.join(BASE_DIR, 'utils/log/', 'infos.log'),
                     'level': 'INFO',
                     'formatter': 'verbose_base'
                 },
             'file_users':
                 {
-                    'class': 'logging.FileHandler',
+                    'class': FILE_HANDLER,
                     'filename': os.path.join(BASE_DIR, 'usersmanagement/log/', 'infos.log'),
                     'level': 'INFO',
                     'formatter': 'verbose_base'
                 },
             'file_maintenance':
                 {
-                    'class': 'logging.FileHandler',
+                    'class': FILE_HANDLER,
                     'filename': os.path.join(BASE_DIR, 'maintenancemanagement/log/', 'infos.log'),
                     'level': 'INFO',
                     'formatter': 'verbose_base'

@@ -14,5 +14,7 @@ class UtilsConfig(AppConfig):
             notifications.start()
             from utils import data_provider
             data_provider.start()
+            from utils import trigger_tasks
+            trigger_tasks.start()
         except Exception:
             pass

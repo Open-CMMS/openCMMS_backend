@@ -16,7 +16,7 @@ from maintenancemanagement.models import (
 )
 from maintenancemanagement.serializers import (
     EquipmentDetailsSerializer,
-    EquipmentSerializer,
+    EquipmentListingSerializer,
 )
 from openCMMS import settings
 from rest_framework.test import APIClient
@@ -103,7 +103,7 @@ class EquipmentTests(TestCase):
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
         equipments = Equipment.objects.all()
-        serializer = EquipmentSerializer(equipments, many=True)
+        serializer = EquipmentListingSerializer(equipments, many=True)
         c = APIClient()
         c.force_authenticate(user=user)
         response = c.get("/api/maintenancemanagement/equipments/")

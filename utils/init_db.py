@@ -37,7 +37,11 @@ def initialize_db():
     )
 
     # Adding all permissions to admins
-    permissions_admin = Permission.objects.all()
+    not_important_contenttypes = ['auth', 'admin', 'contenttypes', 'files', 'sessions', 'activity', 'entry']
+    not_important_models = ['fieldvalue', 'fieldobject', 'field', 'fieldgroup', 'group', 'permissions', 'file']
+    permissions_admin = Permission.objects.exclude(content_type__app_label__in=not_important_contenttypes)
+    permissions_admin = permissions_admin.exclude(content_type__model__in=not_important_models)
+
     for permission in permissions_admin:
         admins.perms.add(permission)
 

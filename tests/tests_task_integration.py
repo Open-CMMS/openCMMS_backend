@@ -1,4 +1,3 @@
-from datetime import timedelta
 from io import BytesIO
 
 import pytest
@@ -8,15 +7,22 @@ from PIL import Image
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from maintenancemanagement.models import (
-    Field, FieldGroup, FieldObject, FieldValue, File, Task,
+    Field,
+    FieldGroup,
+    FieldObject,
+    File,
+    Task,
 )
 from maintenancemanagement.serializers import (
-    EquipmentTypeSerializer, FileSerializer, TaskListingSerializer,
-    TaskSerializer, TeamSerializer,
+    EquipmentTypeSerializer,
+    FileSerializer,
+    TaskListingSerializer,
+    TaskSerializer,
+    TeamSerializer,
 )
 from openCMMS import settings
 from rest_framework.test import APIClient
-from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.models import Team, UserProfile
 
 User = settings.AUTH_USER_MODEL
 
@@ -313,7 +319,7 @@ class TaskTests(TestCase):
                             "description": "maj_checkbox"
                         },
                         {
-                            "field": FieldObject.objects.get(field=entier).id,
+                            "id": FieldObject.objects.get(field=entier).id,
                             "value": 10,
                             "description": "maj_entier"
                         },
@@ -779,6 +785,7 @@ class TaskTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_trigger_conditions")
+        self.assertFalse(task.is_triggered)
         field_object1 = FieldObject.objects.get(
             description="test_add_task_with_perm_with_trigger_conditions_recurrence"
         )
@@ -909,7 +916,6 @@ class TaskTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-
     def test_US11_I1_tasklist_post_with_end_conditions_with_perm(self):
         """
             Test if a user with perm can add a task with end_conditions
@@ -942,6 +948,7 @@ class TaskTests(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         task = Task.objects.get(description="desc_task_test_add_task_with_perm_with_end_conditions")
+        self.assertTrue(task.is_triggered)
         field_object_1 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_1")
         field_object_2 = FieldObject.objects.get(description="test_add_task_with_perm_with_end_conditions_2")
         self.assertEqual(field_object_1.described_object, task)
@@ -1067,3 +1074,24 @@ class TaskTests(TestCase):
         client.force_authenticate(user=user)
         response = client.get('/api/maintenancemanagement/tasks/requirements')
         self.assertEqual(response.status_code, 401)
+
+    def test_US11_I2_tasklist_post_with_no_end_condition(self):
+        """
+            Test that a checkbox is created if no end_conditions are given
+        """
+        user = self.set_up_perm()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        conditions = Field.objects.filter(field_group=FieldGroup.objects.get(name="End Conditions"))
+        response = client.post(
+            '/api/maintenancemanagement/tasks/', {
+                'name': 'verifier pneus',
+                'description': 'desc_task_test_tasklist_post_with_no_end_condition',
+                'end_conditions': []
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        task = Task.objects.get(description="desc_task_test_tasklist_post_with_no_end_condition")
+        check_box = FieldObject.objects.get(field=conditions.get(name="Checkbox"))
+        self.assertEqual(check_box.described_object, task)

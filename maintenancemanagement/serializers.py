@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from usersmanagement.serializers import TeamSerializer, UserProfileSerializer
+from utils.methods import ParseTimeException, parse_time
 
 from .models import (
     Equipment,
@@ -50,7 +51,7 @@ class FileSerializer(serializers.ModelSerializer):
         fields = ['id', 'file', 'is_manual']
 
     def validate_file(self, file):
-        """Check that the file sent is an image with imghdr or if it is a pdf."""
+        """Check that the file sent is an image or if it is a pdf."""
         if not imghdr.what(file):
             try:
                 from io import BytesIO
@@ -317,6 +318,41 @@ class FieldObjectForTaskDetailsSerializer(serializers.ModelSerializer):
             return obj.value
 
 
+class TriggerConditionForTaskDetailsSerializer(serializers.ModelSerializer):
+    """Field object details serializer for task."""
+
+    field_name = serializers.CharField(source='field.name')
+    value = serializers.SerializerMethodField()
+    delay = serializers.SerializerMethodField()
+    field_object = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = FieldObject
+        fields = ['id', 'field_name', 'description', 'value', 'delay', 'field_object']
+
+    def get_value(self, obj):
+        """Give the value of the trigger condition."""
+        return obj.value.split('|')[0]
+
+    def get_delay(self, obj):
+        """Give the delay of the trigger condition."""
+        if obj.field.name == "Recurrence":
+            return obj.value.split('|')[1]
+        else:
+            return obj.value.split('|')[2]
+
+    def get_field_object(self, obj):
+        """Give the field object of the trigger condition."""
+        if obj.field.name == "Recurrence":
+            return None
+        else:
+            field_object_id = int(obj.value.split('|')[1])
+            field_object = FieldObject.objects.get(id=field_object_id)
+            return FieldObjectForTaskDetailsSerializer(field_object).data
+
+
 class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
     """Trigger condition validation serializer."""
 
@@ -332,27 +368,36 @@ class TriggerConditionsValidationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Redefine the validate method."""
         try:
-            if data.get("field_object_id") is not None:
-                FieldObject.objects.get(id=int(data.get("field_object_id")))
-            if data.get('field').name in [
-                'Above Threshold', 'Under Threshold', 'Frequency'
-            ] and data.get("value") is not None:
-                float(data.get("value"))
-            if data.get('field').name in [
-                'Above Threshold', 'Under Threshold', 'Frequency'
-            ] and 'field_object_id' not in data:
-                raise serializers.ValidationError(
-                    f'Misses field_object_id for {data.get("field").name} trigger condition.'
-                )
-            if data.get('field').name == 'Recurrence' and 'field_object_id' in data:
-                raise serializers.ValidationError(
-                    'field_object_id not expected.'
-                )
-            return data
+            return self._validate_value(data)
         except ObjectDoesNotExist as e:
             raise serializers.ValidationError(e)
         except ValueError as e:
             raise serializers.ValidationError(e)
+        except ParseTimeException:
+            if data.get('field').name == 'Recurrence':
+                raise serializers.ValidationError('Delay or value is not valid')
+            else:
+                raise serializers.ValidationError('Delay is not valid')
+
+    def _validate_value(self, data):
+        if data.get('delay') is not None:
+            parse_time(data.get('delay'))
+        if data.get('field_object_id') is not None:
+            FieldObject.objects.get(id=int(data.get('field_object_id')))
+        if data.get('field').name == 'Recurrence':
+            if 'field_object_id' in data:
+                raise serializers.ValidationError('field_object_id not expected.')
+            if data.get("value") is not None:
+                parse_time(data.get("value"))
+        else:
+            if data.get("value") is not None:
+                float(data.get("value").replace(" ", ""))
+            if 'field_object_id' not in data:
+                raise serializers.ValidationError(
+                    f'Misses field_object_id for {data.get("field").name} trigger condition.'
+                )
+        return data
+
 
 class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
     """Trigger condition create serializer."""
@@ -372,7 +417,8 @@ class TriggerConditionsCreateSerializer(serializers.ModelSerializer):
         if data.get('field').name == 'Recurrence':
             value = f'{data.get("value")}|{data.get("delay")}'
         elif data.get('field').name == 'Frequency':
-            next_trigger = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value) + float(data.get("value"))
+            current_value = float(FieldObject.objects.get(id=int(data.get("field_object_id"))).value.replace(" ", ""))
+            next_trigger = current_value + float(data.get("value").replace(" ", ""))
             value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}|{next_trigger}'
         else:
             value = f'{data.get("value")}|{data.get("field_object_id")}|{data.get("delay")}'
@@ -425,6 +471,25 @@ class EquipmentFieldSerializer(serializers.ModelSerializer):
 
         model = FieldObject
         fields = ['id', 'field', 'field_name', 'value', 'field_value', 'description']
+
+
+class EquipmentListingSerializer(serializers.ModelSerializer):
+    """Equipment listing serializer."""
+
+    field = serializers.SerializerMethodField()
+
+    class Meta:
+        """This class contains the serializer metadata."""
+
+        model = Equipment
+        fields = ['id', 'name', 'equipment_type', 'files', 'field']
+
+    def get_field(self, obj):
+        """Get the explicit field associated with the \
+            Equipement as obj."""
+        content_type_object = ContentType.objects.get_for_model(obj)
+        fields = FieldObject.objects.filter(object_id=obj.id, content_type=content_type_object)
+        return EquipmentFieldSerializer(fields, many=True).data
 
 
 class EquipmentDetailsSerializer(serializers.ModelSerializer):
@@ -601,7 +666,7 @@ class TaskDetailsSerializer(serializers.ModelSerializer):
         trigger_fields_objects = FieldObject.objects.filter(
             object_id=obj.id, content_type=content_type_object, field__field_group__name=TRIGGER_CONDITIONS
         )
-        return FieldObjectForTaskDetailsSerializer(trigger_fields_objects, many=True).data
+        return TriggerConditionForTaskDetailsSerializer(trigger_fields_objects, many=True).data
 
     def get_end_conditions(self, obj):
         """Return end conditions of the given task."""

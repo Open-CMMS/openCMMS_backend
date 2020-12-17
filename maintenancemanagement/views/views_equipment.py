@@ -15,8 +15,8 @@ from maintenancemanagement.models import (
 from maintenancemanagement.serializers import (
     EquipmentCreateSerializer,
     EquipmentDetailsSerializer,
+    EquipmentListingSerializer,
     EquipmentRequirementsSerializer,
-    EquipmentSerializer,
     EquipmentUpdateSerializer,
     FieldObjectCreateSerializer,
     FieldObjectNewFieldValidationSerializer,
@@ -33,6 +33,9 @@ ADD_EQUIPMENT = "maintenancemanagement.add_equipment"
 VIEW_EQUIPMENT = "maintenancemanagement.view_equipment"
 CHANGE_EQUIPMENT = "maintenancemanagement.change_equipment"
 DELETE_EQUIPMENT = "maintenancemanagement.delete_equipment"
+
+UPDATED_LOGGER = "{user} UPDATED {object} with {params}"
+DELETED_LOGGER = "{user} DELETED {object}"
 
 
 def _get_expected_fields(equipment_type_id):
@@ -69,7 +72,7 @@ class EquipmentList(APIView):
         operation_description='Send the list of Equipment in the database.',
         query_serializer=None,
         responses={
-            200: EquipmentSerializer(many=True),
+            200: EquipmentListingSerializer(many=True),
             401: "Unhauthorized",
         },
     )
@@ -77,7 +80,7 @@ class EquipmentList(APIView):
         """Send the list of Equipment in the database."""
         if request.user.has_perm(VIEW_EQUIPMENT):
             equipments = Equipment.objects.all()
-            serializer = EquipmentSerializer(equipments, many=True)
+            serializer = EquipmentListingSerializer(equipments, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -207,11 +210,7 @@ class EquipmentDetail(APIView):
                         request, equipment, equipment_serializer, field_objects
                     )
                 else:
-                    logger.info(
-                        "{user} UPDATED {object} with {params}".format(
-                            user=request.user, object=repr(equipment), params=request.data
-                        )
-                    )
+                    logger.info(UPDATED_LOGGER.format(user=request.user, object=repr(equipment), params=request.data))
                     equipment_serializer.save()
                     return Response(equipment_serializer.data, status=status.HTTP_200_OK)
             return Response(equipment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -226,11 +225,7 @@ class EquipmentDetail(APIView):
             error = self._validate_new_fields(request, new_field_objects)
             if error:
                 return error
-            logger.info(
-                "{user} UPDATED {object} with {params}".format(
-                    user=request.user, object=repr(equipment), params=request.data
-                )
-            )
+            logger.info(UPDATED_LOGGER.format(user=request.user, object=repr(equipment), params=request.data))
             equipment = equipment_serializer.save()
             self._save_modification_fields(request, existing_field_objects, equipment)
             self._save_fields(request, new_field_objects, equipment)
@@ -244,13 +239,9 @@ class EquipmentDetail(APIView):
                 content_type = ContentType.objects.get_for_model(equipment)
                 old_fields = FieldObject.objects.filter(object_id=equipment.pk, content_type=content_type)
                 for old_field in old_fields:
-                    logger.info("{user} DELETED {object}".format(user=request.user, object=repr(old_field)))
+                    logger.info(DELETED_LOGGER.format(user=request.user, object=repr(old_field)))
                     old_field.delete()
-                logger.info(
-                    "{user} UPDATED {object} with {params}".format(
-                        user=request.user, object=repr(equipment), params=request.data
-                    )
-                )
+                logger.info(UPDATED_LOGGER.format(user=request.user, object=repr(equipment), params=request.data))
                 equipment = equipment_serializer.save()
                 self._save_fields(request, field_objects, equipment)
                 equipment_details_serializer = EquipmentDetailsSerializer(equipment)
@@ -349,9 +340,7 @@ class EquipmentDetail(APIView):
                 )
                 if field_object_serializer.is_valid():
                     logger.info(
-                        "{user} UPDATED {object} with {params}".format(
-                            user=request.user, object=repr(field_object), params=field_object_data
-                        )
+                        UPDATED_LOGGER.format(user=request.user, object=repr(field_object), params=field_object_data)
                     )
                     field_object_serializer.save()
 
@@ -371,7 +360,7 @@ class EquipmentDetail(APIView):
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if request.user.has_perm(DELETE_EQUIPMENT):
-            logger.info("{user} DELETED {object}".format(user=request.user, object=repr(equipment)))
+            logger.info(DELETED_LOGGER.format(user=request.user, object=repr(equipment)))
             equipment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -411,7 +400,7 @@ class RemoveFieldFromEquipment(APIView):
                         str(field_object) + ' is not a field of ' + str(equipment), status=status.HTTP_400_BAD_REQUEST
                     )
                 if field_object.field.id not in _get_expected_fields(equipment.equipment_type.id):
-                    logger.info("{user} DELETED {object}".format(user=request.user, object=repr(field_object)))
+                    logger.info(DELETED_LOGGER.format(user=request.user, object=repr(field_object)))
                     field_object.field.delete()
                     return Response(status=status.HTTP_204_NO_CONTENT)
                 else:

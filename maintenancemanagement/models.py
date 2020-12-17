@@ -162,18 +162,10 @@ class Task(models.Model):
     duration = models.DurationField(null=True, blank=True)  # Correspond à la durée forfaitaire
     is_template = models.BooleanField(default=False)
     created_by = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name="tasks_created"
+        UserProfile, on_delete=models.CASCADE, blank=True, null=True, related_name="tasks_created"
     )
     achieved_by = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name="tasks_achieved"
+        UserProfile, on_delete=models.CASCADE, blank=True, null=True, related_name="tasks_achieved"
     )
     equipment = models.ForeignKey(
         Equipment,
@@ -220,7 +212,8 @@ class Task(models.Model):
     def __repr__(self):
         """Define formal representation of a task."""
         return "<Task: id={id}, name='{name}', end_date={date}, duration={duration}, is_template={template}, \
-equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, is_triggered={triggered}, over={over}>".format(
+equipment={equipment}, equipment_type={type}, teams={teams}, files={files}, is_triggered={triggered}\
+over={over}>".format(
             id=self.id,
             name=self.name,
             date=self.end_date,
