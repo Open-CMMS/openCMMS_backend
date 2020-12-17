@@ -1,7 +1,8 @@
 """This script initiate the database with some default values."""
-from django.contrib.contenttypes.models import ContentType
 from maintenancemanagement.models import Field, FieldGroup, Task
 from usersmanagement.models import Permission, Team, TeamType, UserProfile
+
+from django.contrib.contenttypes.models import ContentType
 
 
 def initialize_db():
@@ -51,12 +52,15 @@ def initialize_db():
     # Adding permissions to maintenance managers
 
     liste_manager_management = [
-        'equipment', 'equipmenttype', 'field', 'fieldgroup', 'fieldvalue', 'file', 'task', 'tasktemplate'
+        'equipment', 'equipmenttype', 'field', 'fieldgroup', 'fieldvalue', 'file', 'task', 'tasktemplate',
+        'dataprovider'
     ]
     perms_tasktemplate = Permission.objects.filter(codename__regex='|'.join(liste_manager_management))
     perms_tasktemplate = perms_tasktemplate.exclude(codename__endswith='profile')
 
-    liste_manager_user = ['Can change team', 'Can view user profile', 'Can view team', 'Can add team']
+    liste_manager_user = [
+        'Can change team', 'Can view user profile', 'Can view team', 'Can add team', 'Can view team type'
+    ]
     permissions_managers_users = Permission.objects.filter(name__in=liste_manager_user)
     for permission in perms_tasktemplate:
         maintenance_managers.perms.add(permission)
@@ -69,13 +73,8 @@ def initialize_db():
 
     # Adding permissions to maintenance teams
     liste_team = [
-        'Can view file',
-        'Can view equipment',
-        'Can view field',
-        'Can view field group',
-        'Can view field value',
-        'Can change field value',
-        'Can view task',
+        'Can view file', 'Can view equipment', 'Can view field', 'Can view field group', 'Can view field value',
+        'Can change field value', 'Can view task', 'Can view equipment type'
     ]
 
     permissions_maintenance_team = Permission.objects.filter(name__in=liste_team)
