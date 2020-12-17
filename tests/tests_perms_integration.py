@@ -1,13 +1,15 @@
+from openCMMS import settings
+from usersmanagement.models import Team, UserProfile
+from usersmanagement.serializers import (
+    PermissionSerializer,
+    UserProfileSerializer,
+)
+from usersmanagement.views import views_perms
+
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase
-from openCMMS import settings
 from rest_framework.test import APIClient
-from usersmanagement.models import Team, UserProfile
-from usersmanagement.serializers import (
-    PermissionSerializer, UserProfileSerializer,
-)
-from usersmanagement.views import views_perms
 
 User = settings.AUTH_USER_MODEL
 
@@ -43,9 +45,15 @@ class permsTests(TestCase):
         tom.user_permissions.add(permission)
         tom.save()
 
-    def test_perms_list_get_authorized(self):
+    def test_US1_I6_permslist_get_with_perm(self):
         """
-            Test if a user with perm receive the permissions' list
+        Test if a user with perm can retrieve all the permissions
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+
+                Expected outputs:
+                    We expect a response data which match what we expect
         """
         self.set_up()
 
@@ -63,9 +71,15 @@ class permsTests(TestCase):
         response = c.get("/api/usersmanagement/perms/")
         self.assertEqual(serializer.data, response.json())
 
-    def test_perm_list_get_unauthorized(self):
+    def test_US1_I6_permslist_get_without_perm(self):
         """
-            Test if a user without perm can't receive the permissions' list
+        Test if a user with perm can't retrieve all the permissions
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without the required permissions.
+
+                Expected outputs:
+                    We expect a 401 status code in the response
         """
         self.set_up()
 
@@ -78,9 +92,15 @@ class permsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_perm_detail_get_authorized(self):
+    def test_US1_I6_permsdetails_get_with_perm(self):
         """
-            Test if a user with perm receive the permission's data
+        Test if a user with perm can retrieve permission details
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with the required permissions.
+
+                Expected outputs:
+                    We expect a response data which match what we expect
         """
         self.set_up()
 
@@ -98,9 +118,15 @@ class permsTests(TestCase):
 
         self.assertEqual(serializer.data, response.data)
 
-    def test_perm_detail_get_unauthorized(self):
+    def test_US1_I6_permsdetails_get_without_perm(self):
         """
-            Test if a user without perm can't receive the permission's data
+        Test if a user without perm can retrieve a permission
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without the required permissions.
+
+                Expected outputs:
+                    We expect a 401 status code in the response
         """
         self.set_up()
 
