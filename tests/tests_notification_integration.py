@@ -1,8 +1,9 @@
 import datetime
 
-from django.test import TestCase
 from usersmanagement.models import Team, TeamType, UserProfile
 from utils.notifications import *
+
+from django.test import TestCase
 
 
 class NotificationsTests(TestCase):
@@ -42,6 +43,15 @@ class NotificationsTests(TestCase):
         team.save()
 
     def test_US17_I1_send_notification_user_with_task(self):
+        """
+        Test if a user receives an email with all the tasks he has to do
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with tasks to do (yesterday, today, tomorrow)
+
+                Expected outputs:
+                    We expect that an email has been sent with the correct subject and recipient
+        """
         self.set_up()
         send_notifications()
         # os.mkdir()

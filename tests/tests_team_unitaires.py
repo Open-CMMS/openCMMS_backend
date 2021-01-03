@@ -64,7 +64,14 @@ class TeamsTests(TestCase):
 
     def test_US3_U1_belongstoteam_true(self):
         """
-            Test if a user belonging to a team send true
+            Test if a user belonging to a team send true.
+
+            Inputs:
+                joe (UserProfile): a user to check if he belongs to a team.
+                team (Team): a team to check if it contains joe
+
+            Expected Output:
+                We expect that joe belongs to team.
         """
         self.set_up()
 
@@ -76,7 +83,14 @@ class TeamsTests(TestCase):
 
     def test_US3_U1_belongstoteam_false(self):
         """
-            Test if a user not belonging to a team send false
+            Test if a user not belonging to a team send false.
+
+            Inputs:
+                joe (UserProfile): a user to check if he belongs to a team.
+                team (Team): a team to check if it contains joe
+
+            Expected Output:
+                We expect that joe doesn't belong to team.
         """
         self.set_up()
 

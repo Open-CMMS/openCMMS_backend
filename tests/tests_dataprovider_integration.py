@@ -2,8 +2,12 @@ import os
 
 import pytest
 from init_db_tests import init_db
-from maintenancemanagement.models import Equipment, Field, FieldObject
+
+from django.contrib.auth.models import Permission
+from django.test import TestCase
+from maintenancemanagement.models import Equipment, Field
 from openCMMS.settings import BASE_DIR
+from rest_framework.test import APIClient
 from usersmanagement.models import UserProfile
 from utils.data_provider import add_job, scheduler
 from utils.models import DataProvider
@@ -11,10 +15,6 @@ from utils.serializers import (
     DataProviderRequirementsSerializer,
     DataProviderSerializer,
 )
-
-from django.contrib.auth.models import Permission
-from django.test import TestCase, client
-from rest_framework.test import APIClient
 
 
 class DataProviderTest(TestCase):
@@ -55,6 +55,14 @@ class DataProviderTest(TestCase):
     def test_US23_I1_dataproviderlist_get_with_perm(self):
         """
             Test if a user with perm receive the dataproviders' list
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to view data providers.
+                serializer (DataProviderRequirementsSerializer): a serializer containing all data providers of the database.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
@@ -76,6 +84,12 @@ class DataProviderTest(TestCase):
     def test_US23_I1_dataproviderlist_get_without_perm(self):
         """
             Test if a user without perm doesn't receive the dataproviders' list
+
+            Inputs:
+                user (UserProfile): a UserProfile without permissions to view data providers.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         c = APIClient()
@@ -86,6 +100,15 @@ class DataProviderTest(TestCase):
     def test_US23_I2_dataproviderlist_post_with_perm(self):
         """
             Test if a user with perm can add a dataprovider
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add data providers.
+                serializer (DataProviderSerializer): a serializer containing the posted data provider data.
+                post data (JSON): a mock-up of a data provider.
+
+            Expected Output:
+                We expect a 201 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -112,6 +135,13 @@ class DataProviderTest(TestCase):
     def test_US23_I2_dataproviderlist_post_without_perm(self):
         """
             Test if a user without perm can't add a dataprovider
+            
+            Inputs:
+                user (UserProfile): a UserProfile without permissions to add data providers.
+                post data (JSON): a mock-up of a data provider.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         client = APIClient()
@@ -132,6 +162,16 @@ class DataProviderTest(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_US23_I2_dataproviderlist_post_with_perm_and_missing_parms(self):
+        """
+            Test if a user with perm can't add a dataprovider whith missing params
+            
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add data providers.
+                post data (JSON): a mock-up of a data provider with missing params.
+
+            Expected Output:
+                We expect a 400 status code in the response.
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
         client = APIClient()
@@ -146,6 +186,18 @@ class DataProviderTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_US23_I2_dataproviderlist_post_with_perm_and_too_much_parms(self):
+        """
+            Test if a user with perm can add a dataprovider whith too much params
+            
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add data providers.
+                serializer (DataProviderSerializer): a serializer containing the posted data provider data.
+                post data (JSON): a mock-up of a data provider with too much params.
+
+            Expected Output:
+                We expect a 201 status code in the response.
+                We expect to get in the response the same data as in serializer.
+        """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
         client = APIClient()
@@ -172,6 +224,15 @@ class DataProviderTest(TestCase):
     def test_US23_I3_dataproviderdetail_get_with_perm(self):
         """
             Test if a user with perm can get a dataprovider.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to view data providers.
+                dataprovider (DataProvider): the data provider for which we want details.
+                serializer (DataProviderSerializer): a serializer containing the data of dataprovider.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
@@ -185,7 +246,14 @@ class DataProviderTest(TestCase):
 
     def test_US23_I3_dataproviderdetail_get_without_perm(self):
         """
-            Test if a user with perm can get a dataprovider.
+            Test if a user without perm can't get a dataprovider.
+
+            Inputs:
+                user (UserProfile): a UserProfile without permissions to view data providers.
+                dataprovider (DataProvider): the data provider for which we want details.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         client = APIClient()
@@ -197,6 +265,16 @@ class DataProviderTest(TestCase):
     def test_US23_I4_dataproviderdetail_put_with_perm(self):
         """
             Test if a user with perm can update a dataprovider.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add and change data providers.
+                serializer (DataProviderSerializer): a serializer containing the data of the updated data provider.
+                post data (JSON): a mock-up of a data provider.
+                put data (JSON): a mock-up of an updated data provider.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_change_perm(user)
@@ -237,7 +315,17 @@ class DataProviderTest(TestCase):
 
     def test_US23_I4_dataproviderdetail_put_with_perm_and_missing_parms(self):
         """
-            Test if a user with perm can update a dataprovider.
+            Test if a user with perm can update a dataprovider with missing params.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add and change data providers.
+                serializer (DataProviderSerializer): a serializer containing the data of the updated data provider.
+                post data (JSON): a mock-up of a data provider.
+                put data (JSON): a mock-up of an updated data provider with missing params.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_change_perm(user)
@@ -273,6 +361,14 @@ class DataProviderTest(TestCase):
     def test_US23_I5_dataproviderdetail_delete_with_perm(self):
         """
             Test if a user with perm can delete a dataprovider.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to delete data providers.
+
+            Expected Output:
+                We expect a 204 status code in the response.
+                We expect to not find in database the deleted data provider.
+                We expect to have one job less after deleted tha data provider.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_delete_perm(user)
@@ -290,6 +386,12 @@ class DataProviderTest(TestCase):
     def test_US23_I5_dataproviderdetail_delete_without_perm(self):
         """
             Test if a user without perm can't delete a dataprovider.
+
+            Inputs:
+                user (UserProfile): a UserProfile without permissions to delete data providers.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         client = APIClient()
@@ -301,6 +403,15 @@ class DataProviderTest(TestCase):
     def test_US23_I6_testdataprovider_post_with_perm(self):
         """
             Test if a user with perm can test a data provider.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add data providers.
+                file (File): a temporary file which will return a value for the data provider test.
+                post data (JSON): a mock-up of a data provider.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the value returned by get_data function in the file.
         """
         with open(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers.py'), "w+") as file:
             file.write('def get_data(ip_address, port):\n')
@@ -329,6 +440,12 @@ class DataProviderTest(TestCase):
     def test_US23_I6_testdataprovider_post_without_perm(self):
         """
              Test if a user without perm can't test a data provider.
+
+            Inputs:
+                user (UserProfile): a UserProfile without permissions to add data providers.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         client = APIClient()
@@ -339,6 +456,14 @@ class DataProviderTest(TestCase):
     def test_US23_I6_testdataprovider_post_with_perm_and_not_well_formated_file(self):
         """
             Test if a user with perm can test a data provider with a not well formted file.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add data providers.
+                file (File): a temporary file which is not well formated.
+                post data (JSON): a mock-up of a data provider.
+
+            Expected Output:
+                We expect to find the pair {'error': 'Python file is not well formated, please follow the example'} in the error of the response's data.
         """
         with open(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error.py'), "w+") as file:
             file.write('def wrong_get_data(ip_address, port):\n')
@@ -360,13 +485,19 @@ class DataProviderTest(TestCase):
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["error"], 'Python file is not well formated, please follow the example')
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error.py'))
 
-    def test_US23_I6_testdataprovider_post_with_perm_but_not_file(self):
+    def test_US23_I6_testdataprovider_post_with_perm_but_no_file(self):
         """
-            Test if a user with perm can test a data provider with a not well formted file.
+            Test if a user with perm can test a data provider with missing file.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add data providers.
+                post data (JSON): a mock-up of a data provider.
+
+            Expected Output:
+                We expect to find the pair {'error': "Python file not found, please enter 'name_of_your_file.py'"} in the error of the response's data.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -385,12 +516,19 @@ class DataProviderTest(TestCase):
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["error"], "Python file not found, please enter 'name_of_your_file.py'")
 
     def test_US23_I6_testdataprovider_post_with_perm_and_not_working_get_data(self):
         """
             Test if a user with perm can test a data provider with a not working get_data function.
+
+            Inputs:
+                user (UserProfile): a UserProfile with permissions to add data providers.
+                file (File): a temporary file in which doesn't work.
+                post data (JSON): a mock-up of a data provider.
+
+            Expected Output:
+                We expect to find the pair {'error': 'IP not found or python file not working'} in the error of the response's data.
         """
         with open(
             os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error_in_getdata.py'), "w+"
@@ -415,6 +553,5 @@ class DataProviderTest(TestCase):
             },
             format='json'
         )
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["error"], 'IP not found or python file not working')
         os.remove(os.path.join(BASE_DIR, 'utils/data_providers/temp_test_data_providers_error_in_getdata.py'))

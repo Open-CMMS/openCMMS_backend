@@ -1,9 +1,10 @@
 import datetime
 
-from django.contrib.auth.models import User
-from django.test import TestCase
 from usersmanagement.models import Team, TeamType, UserProfile
 from utils.notifications import *
+
+from django.contrib.auth.models import User
+from django.test import TestCase
 
 
 class NotificationsTests(TestCase):
@@ -46,6 +47,15 @@ class NotificationsTests(TestCase):
         team.save()
 
     def test_US17_U1_get_imminent_tasks_user_with_tasks(self):
+        """
+        Test if we can retrieve the tasks an user with tasks has to do
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with tasks to do
+
+                Expected outputs:
+                    We expect all the tasks the user has to do well separed in different sublists
+        """
         self.set_up()
         tasks = get_imminent_tasks(UserProfile.objects.get(username='jd'))
         self.assertTrue(Task.objects.get(name='task_yesterday') in tasks[0])
@@ -53,6 +63,15 @@ class NotificationsTests(TestCase):
         self.assertTrue(Task.objects.get(name='task_tomorrow') in tasks[2])
 
     def test_US17_U1_get_imminent_tasks_user_without_tasks(self):
+        """
+        Test if we retrieve no tasks from an user without tasks to do
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without tasks to do
+
+                Expected outputs:
+                    We expect to retrieve no tasks in all the sublists
+        """
         self.set_up()
         tasks = get_imminent_tasks(UserProfile.objects.get(username='toto'))
         self.assertFalse(tasks[0])
@@ -60,18 +79,45 @@ class NotificationsTests(TestCase):
         self.assertFalse(tasks[2])
 
     def test_US17_U2_get_notification_template_user_with_tasks(self):
+        """
+        Test if we retrieve a template when an user has tasks to do
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with tasks to do
+
+                Expected outputs:
+                    We expect to retrieve the template
+        """
         self.set_up()
         user = UserProfile.objects.get(username='jd')
         template = get_notification_template(user)
         self.assertTrue(template)
 
     def test_US17_U2_get_notification_template_user_without_tasks(self):
+        """
+        Test if we retrieve a template when an user hasn't tasks to do
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create without tasks to do
+
+                Expected outputs:
+                    We expect to not retrieve the template
+        """
         self.set_up()
         user = UserProfile.objects.get(username='toto')
         template = get_notification_template(user)
         self.assertFalse(template)
 
     def test_US17_U3_get_imminent_tasks_user_with_some_achieved_tasks(self):
+        """
+        Test if we retrieve achieved tasks when an user has already completed tasks he had to do
+
+                Inputs:
+                    user (UserProfile): A UserProfile we create with tasks to do and achieved tasks
+
+                Expected outputs:
+                    We expect to not retrieve achieved task in all the sublists
+        """
         self.set_up()
         tasks = get_imminent_tasks(UserProfile.objects.get(username='jd'))
         self.assertFalse(Task.objects.get(name='achieved_task') in tasks[0])
