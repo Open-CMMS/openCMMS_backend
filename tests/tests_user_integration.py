@@ -1,12 +1,13 @@
+from usersmanagement.models import Team, TeamType, UserProfile
+from usersmanagement.views.views_user import *
+from usersmanagement.views.views_user import init_database, is_first_user
+
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
-from usersmanagement.models import Team, TeamType, UserProfile
-from usersmanagement.views.views_user import *
-from usersmanagement.views.views_user import init_database, is_first_user
 
 
 class UserTests(TestCase):
@@ -43,7 +44,13 @@ class UserTests(TestCase):
 
     def test_US2_I1_userlist_get_with_perm(self):
         """
-            Test if a user with perm receive the data
+            Test if a user with permission can view the users' list.
+
+            Inputs:
+                serializer (UserProfileSerializer): a serializer containing all users data.
+
+            Expected Output:
+                We expect to get in the response the same data as in serializer.
         """
         user = self.set_up_perm()
         users = UserProfile.objects.all()
@@ -55,7 +62,12 @@ class UserTests(TestCase):
 
     def test_US2_I1_userlist_get_without_perm(self):
         """
-            Test if a user without perm doesn't receive the data
+            Test if a user without permission can't view the users' list.
+
+            Inputs:
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -65,7 +77,13 @@ class UserTests(TestCase):
 
     def test_US2_I2_userlist_post_is_first_user_without_perm(self):
         """
-            Test if a user without perm and is first user can add a user
+            Test if a user without permission but it's first user can add an user.
+
+            Inputs:
+                post data (UserProfile): a mock-up for an user.
+
+            Expected Output:
+                We expect a 201 status code in the respone.
         """
         client = APIClient()
         client.login(username='tom', password='truc')
@@ -79,7 +97,13 @@ class UserTests(TestCase):
 
     def test_US2_I2_userlist_post_with_perm(self):
         """
-            Test if a user with perm and is not first user can add a user
+            Test if a user with permission can add an user.
+
+            Inputs:
+                post data (UserProfile): a mock-up for an user.
+
+            Expected Output:
+                We expect a 201 status code in the response.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -96,7 +120,13 @@ class UserTests(TestCase):
 
     def test_US2_I2_userlist_post_without_perm(self):
         """
-            Test if a user without perm can't add a user
+            Test if a user without permission can't add an user.
+
+            Inputs:
+                post data (UserProfile): a mock-up for an user.
+
+            Expected Output:
+                We expect an error in the response.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -113,7 +143,13 @@ class UserTests(TestCase):
 
     def test_US2_I6_isfirstuserrequest_with_no_user(self):
         """
-            Test is_first_user with the first user
+            Test if a is_first_user request works well
+
+            Inputs:
+               None
+
+            Expected Output:
+                We expect that the Response is True as there is no user in the database
         """
         client = APIClient()
         UserProfile.objects.all().delete()
@@ -122,7 +158,13 @@ class UserTests(TestCase):
 
     def test_US2_I6_isfirstuserrequest_with_user(self):
         """
-            Test is_first_user without the first user
+            Test if a is_first_user request works well
+
+            Inputs:
+               None
+
+            Expected Output:
+                We expect that the Response is False as there is an user in the database
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -132,7 +174,14 @@ class UserTests(TestCase):
 
     def test_US2_I7_usernamesuffix_with_existant(self):
         """
-            Test that the fonction give the correct number to put after an username
+            Test if we get the correct suffix for the username
+
+            Inputs:
+               None
+
+            Expected Output:
+                We expect that the Response is 1 as there is an user in the database
+                with the same username
         """
         user = self.set_up_perm()
         c = Client()
@@ -141,7 +190,14 @@ class UserTests(TestCase):
 
     def test_US2_I7_usernamesuffix_without_existant(self):
         """
-            Test that the fonction give empty string to put after an username
+            Test if we get the correct suffix for the username
+
+            Inputs:
+               None
+
+            Expected Output:
+                We expect that the Response is "" as there is no user in the database
+                with the same username
         """
         c = Client()
         response = c.get('/api/usersmanagement/users/username_suffix?username=yolo')
@@ -149,7 +205,13 @@ class UserTests(TestCase):
 
     def test_US2_I3_userdetail_get_own_detail(self):
         """
-            Test if a user without perm can see his own detail
+            Test if a user without permission can view it's own details.
+
+            Inputs:
+                None
+
+            Expected Output:
+                We expect to get it's details in the response.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -159,7 +221,13 @@ class UserTests(TestCase):
 
     def test_US2_I3_userdetail_get_with_perm(self):
         """
-            Test if a user with perm can see another user detail
+            Test if a user with permission can view an user.
+
+            Inputs:
+                None.
+
+            Expected Output:
+                We expect to get the user's details in the response..
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -176,7 +244,12 @@ class UserTests(TestCase):
 
     def test_US2_I3_userdetail_get_without_perm(self):
         """
-            Test if a user without perm can see another user detail
+            Test if a user without permission can't view an user.
+
+            Inputs:
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -196,7 +269,13 @@ class UserTests(TestCase):
 
     def test_US2_I4_userdetail_put_own_detail(self):
         """
-            Test if a user can change his own detail
+            Test if a user without permission can change it's own details.
+
+            Inputs:
+                put data (JSON): a mock-up of an updated user.
+
+            Expected Output:
+                We expect to find updated user.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -208,7 +287,13 @@ class UserTests(TestCase):
 
     def test_US2_I4_userdetail_put_with_perm(self):
         """
-            Test if a user with perm can change another user detail
+            Test if a user with permission can change an user.
+
+            Inputs:
+                put data (JSON): a mock-up of an updated user.
+
+            Expected Output:
+                We expect to find updated user.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -228,7 +313,13 @@ class UserTests(TestCase):
 
     def test_US2_I4_userdetail_put_without_perm(self):
         """
-            Test if a user without perm can change another user detail
+            Test if a user without permission can't change an user's informations
+
+            Inputs:
+                put data (JSON): a mock-up of an updated user.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -251,7 +342,14 @@ class UserTests(TestCase):
 
     def test_US2_I5_userdetail_delete_with_perm(self):
         """
-            Test if a user with perm can delete another user
+            Test if a user with permission can delete an user.
+
+            Inputs:
+                delete data (JSON): the id of the user to be deleted.
+
+            Expected Output:
+                We expect a 204 status code in the response.
+                We expect to not find deleted user.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -271,7 +369,13 @@ class UserTests(TestCase):
 
     def test_US2_I5_userdetail_delete_without_perm(self):
         """
-            Test if a user without perm can delete another user
+            Test if a user without permission can't delete an user.
+
+            Inputs:
+                delete data (JSON): the id of the user to be deleted.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -294,7 +398,13 @@ class UserTests(TestCase):
 
     def test_US2_I8_getuserpermissions_with_perm(self):
         """
-            Test if a user with perm can see the permissions of a user
+            Test if a user with permission can view the permissions of an user.
+
+            Inputs:
+                None
+
+            Expected Output:
+                We expect to get in the response the correct permissions of the requested user
         """
         user = self.set_up_perm()
         pk = UserProfile.objects.get(username='tom').pk
@@ -305,7 +415,13 @@ class UserTests(TestCase):
 
     def test_US2_I8_getuserpermissions_own_perm(self):
         """
-            Test if a user without perm can see the permissions of himself
+            Test if a user without permission can view it's own permissions
+
+            Inputs:
+                None
+
+            Expected Output:
+                We expect to get in the response the correct permissions of the requested user
         """
         user = self.set_up_without_perm()
         pk = UserProfile.objects.get(username='tom').pk
@@ -316,7 +432,12 @@ class UserTests(TestCase):
 
     def test_US2_I8_getuserpermissions_without_perm(self):
         """
-            Test if a user without perm can see the permissions of himself
+            Test if a user without permission can't view the permissions of an user.
+
+            Inputs:
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = self.set_up_perm()
         client = APIClient()

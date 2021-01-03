@@ -1,8 +1,4 @@
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-from django.test import RequestFactory, TestCase
 from openCMMS import settings
-from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 from usersmanagement.serializers import (
     PermissionSerializer,
@@ -11,6 +7,11 @@ from usersmanagement.serializers import (
     UserProfileSerializer,
 )
 from usersmanagement.views.views_team import belongs_to_team
+
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.test import RequestFactory, TestCase
+from rest_framework.test import APIClient
 
 User = settings.AUTH_USER_MODEL
 
@@ -286,7 +287,7 @@ class TeamsTests(TestCase):
             Test if a user with permission can view a team.
 
             Inputs:
-                serializer (TeamDetailsSerializer): a serializer containing a team data.
+                None.
 
             Expected Output:
                 We expect a 200 status code in the response.
