@@ -92,7 +92,7 @@ class permsTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_US1_I6_permsdetails_get_with_perm(self):
+    def test_US1_I7_permsdetails_get_with_perm(self):
         """
         Test if a user with perm can retrieve permission details
 
@@ -118,7 +118,7 @@ class permsTests(TestCase):
 
         self.assertEqual(serializer.data, response.data)
 
-    def test_US1_I6_permsdetails_get_without_perm(self):
+    def test_US1_I7_permsdetails_get_without_perm(self):
         """
         Test if a user without perm can retrieve a permission
 
