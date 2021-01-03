@@ -1,8 +1,4 @@
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-from django.test import RequestFactory, TestCase
 from openCMMS import settings
-from rest_framework.test import APIClient
 from usersmanagement.models import Team, TeamType, UserProfile
 from usersmanagement.serializers import (
     PermissionSerializer,
@@ -11,6 +7,11 @@ from usersmanagement.serializers import (
     UserProfileSerializer,
 )
 from usersmanagement.views.views_team import belongs_to_team
+
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.test import RequestFactory, TestCase
+from rest_framework.test import APIClient
 
 User = settings.AUTH_USER_MODEL
 
@@ -68,7 +69,15 @@ class TeamsTests(TestCase):
 
     def test_US3_I1_addusertoteam_post_with_perm(self):
         """
-            Test if a user with permission can add a user to a team
+            Test if a user with permission can add a user to a team.
+
+            Inputs:
+                user (UserProfile): a user to add to a team.
+                team (Team): a team in which to add a user.
+
+            Expected Output:
+                We expect a 201 status code in the response.
+                We expect to find user in the team.
         """
         self.set_up()
         c = APIClient()
@@ -91,7 +100,14 @@ class TeamsTests(TestCase):
 
     def test_US3_I1_addusertoteam_post_without_perm(self):
         """
-            Test if a user without permission can't add a user to a team
+            Test if a user without permission can't add a user to a team.
+
+            Inputs:
+                user (UserProfile): a user to add to a team.
+                team (Team): a team in which to add a user.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         self.set_up()
         c = APIClient()
@@ -111,7 +127,15 @@ class TeamsTests(TestCase):
 
     def test_US3_I1_addusertoteam_put_with_perm(self):
         """
-            Test if a user with permission can remove a user to a team
+            Test if a user with permission can remove a user to a team.
+
+            Inputs:
+                user (UserProfile): a user to add to a team.
+                team (Team): a team in which to add a user.
+
+            Expected Output:
+                We expect a 201 status code in the response.
+                We expect to find user in the team.
         """
         self.set_up()
         c = APIClient()
@@ -134,7 +158,14 @@ class TeamsTests(TestCase):
 
     def test_US3_I1_addusertoteam_put_without_perm(self):
         """
-            Test if a user without permission can't remove a user to a team
+            Test if a user without permission can't remove a user to a team.
+
+            Inputs:
+                user (UserProfile): a user to add to a team.
+                team (Team): a team in which to add a user.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         self.set_up()
         c = APIClient()
@@ -154,7 +185,14 @@ class TeamsTests(TestCase):
 
     def test_US3_I2_teamlist_get_with_perm(self):
         """
-            Test if a user with permission can view the teams' list
+            Test if a user with permission can view the teams' list.
+
+            Inputs:
+                serializer (TeamSerializer): a serializer containing all teams data.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         self.set_up()
 
@@ -172,7 +210,12 @@ class TeamsTests(TestCase):
 
     def test_US3_I2_teamlist_get_without_perm(self):
         """
-            Test if a user without permission can't view the teams' list
+            Test if a user without permission can't view the teams' list.
+
+            Inputs:
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         self.set_up()
 
@@ -187,7 +230,15 @@ class TeamsTests(TestCase):
 
     def test_US3_I3_teamlist_post_with_perm(self):
         """
-            Test if a user with permission can add a team
+            Test if a user with permission can add a team.
+
+            Inputs:
+                post data (Team): a mock-up for a team.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to find the created team.
+                We expect that the created team as the good team type.
         """
         self.set_up()
 
@@ -213,7 +264,13 @@ class TeamsTests(TestCase):
 
     def test_US3_I3_teamlist_get_without_perm(self):
         """
-            Test if a user without permission can't add a team
+            Test if a user without permission can't add a team.
+
+            Inputs:
+                post data (Team): a mock-up for a team.
+
+            Expected Output:
+                We expect an error in the response.
         """
         self.set_up()
 
@@ -223,12 +280,18 @@ class TeamsTests(TestCase):
         c.force_authenticate(user=joe)
 
         response = c.post("/api/usersmanagement/teams/", {"name": "test_team"}, format='json')
-
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["error"], "You don't have this permission")
 
     def test_US3_I4_teamdetail_get_with_perm(self):
         """
-            Test if a user with permission can view a team
+            Test if a user with permission can view a team.
+
+            Inputs:
+                None.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         self.set_up()
 
@@ -249,7 +312,12 @@ class TeamsTests(TestCase):
 
     def test_US3_I4_teamdetail_get_without_perm(self):
         """
-            Test if a user without permission can't view a team
+            Test if a user without permission can't view a team.
+
+            Inputs:
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         self.set_up()
 
@@ -268,7 +336,14 @@ class TeamsTests(TestCase):
 
     def test_US3_I5_teamdetail_put_with_perm(self):
         """
-            Test if a user with permission can change a team's name
+            Test if a user with permission can change a team's name.
+
+            Inputs:
+                put data (JSON): a mock-up of an updated team.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to find updated team.
         """
         self.set_up()
 
@@ -287,7 +362,14 @@ class TeamsTests(TestCase):
 
     def test_US3_I5_teamdetail_put_with_perm(self):
         """
-            Test if a user with permission can change a team's team type
+            Test if a user with permission can change a team's team type.
+
+            Inputs:
+                put data (JSON): a mock-up of an updated team.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to find updated team.
         """
         self.set_up()
 
@@ -310,6 +392,12 @@ class TeamsTests(TestCase):
     def test_US3_I5_teamdetail_put_without_perm(self):
         """
             Test if a user without permission can't change a team's informations
+
+            Inputs:
+                put data (JSON): a mock-up of an updated team.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         self.set_up()
 
@@ -328,7 +416,14 @@ class TeamsTests(TestCase):
 
     def test_US3_I6_teamdetail_delete_with_perm(self):
         """
-            Test if a user with permission can delete a team
+            Test if a user with permission can delete a team.
+
+            Inputs:
+                delete data (JSON): the id of the team to be deleted.
+
+            Expected Output:
+                We expect a 204 status code in the response.
+                We expect to not find deleted team.
         """
         self.set_up()
 
@@ -348,7 +443,13 @@ class TeamsTests(TestCase):
 
     def test_US3_I6_teamdetail_delete_without_perm(self):
         """
-            Test if a user without permission can't delete a team
+            Test if a user without permission can't delete a team.
+
+            Inputs:
+                delete data (JSON): the id of the team to be deleted.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         self.set_up()
 

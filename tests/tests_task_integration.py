@@ -86,7 +86,14 @@ class TaskTests(TestCase):
 
     def test_US5_I1_tasklist_get_with_perm(self):
         """
-            Test if a user with perm receive the data
+        Test if a user with perm receive the data.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks.
+                    serializer (TaskSerializer): a TaskSerializer containing all tasks of the database in a Serialized state.
+
+                Expected Outputs:
+                    We expect the response's data to be the same dict than the serialiser's data.
         """
         user = self.set_up_perm()
         tasks = Task.objects.filter(is_template=False)
@@ -98,7 +105,14 @@ class TaskTests(TestCase):
 
     def test_US5_I1_tasklist_get_only_templates_with_perm(self):
         """
-            Test if a user with perm receive the data
+        Test if a user with perm receive the data.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks.
+                    serializer (TaskListingSerializer): a TaskListingSerializer containing all task templates of the database in a Serialized state.
+
+                Expected Outputs:
+                    We expect the response's data to be the same dict than the serialiser's data.
         """
         user = self.set_up_perm()
         tasks = Task.objects.filter(is_template=True)
@@ -110,7 +124,13 @@ class TaskTests(TestCase):
 
     def test_US5_I1_tasklist_get_without_perm(self):
         """
-            Test if a user without perm doesn't receive the data
+        Test if a user without perm doesn't receive the data.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -120,24 +140,36 @@ class TaskTests(TestCase):
 
     def test_US5_I2_tasklist_post_with_perm(self):
         """
-            Test if a user with perm can add a task
+        Test if a user with perm can add a task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks.
+                    data (dict): {
+                        'name': 'verifier pneus',
+                        'description': 'faut verfier les pneus de la voiture ta vu'
+                    }
+
+                Expected Outputs:
+                    We expect the response's status_code to be 201.
+                    We expect to find the data we sent in the response data.
         """
         user = self.set_up_perm()
+        data = {'name': 'verifier pneus', 'description': 'faut verfier les pneus de la voiture ta vu'}
         client = APIClient()
         client.force_authenticate(user=user)
-        response = client.post(
-            '/api/maintenancemanagement/tasks/', {
-                'name': 'verifier pneus',
-                'description': 'faut verfier les pneus de la voiture ta vu'
-            },
-            format='json'
-        )
+        response = client.post('/api/maintenancemanagement/tasks/', data, format='json')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['name'], 'verifier pneus')
+        self.assertLessEqual(data.items(), response.data.items())
 
     def test_US5_I2_tasklist_post_without_perm(self):
         """
-            Test if a user without perm can't add a task
+        Test if a user without perm can't add a task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -153,43 +185,54 @@ class TaskTests(TestCase):
 
     def test_US5_I3_taskdetail_get_with_perm(self):
         """
-            Test if a user with perm can see a task detail
+        Test if a user with perm can see a task detail.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks.
+                    data (dict): {
+                        'name': 'verifier pneus',
+                        'description': 'faut verfier les pneus de la voiture ta vu'
+                    }
+
+                Expected Outputs:
+                    We expect the response's status_code to be 201.
+                    We expect to find the data we sent in the response data.
         """
         user = self.set_up_perm()
+        data = {'name': 'verifier pneus', 'description': 'faut verfier les pneus de la voiture ta vu'}
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post(
-            '/api/maintenancemanagement/tasks/', {
-                'name': 'verifier pneus',
-                'description': 'faut verfier les pneus de la voiture ta vu'
-            },
-            format='json'
-        )
+        response1 = client.post('/api/maintenancemanagement/tasks/', data, format='json')
         pk = response1.data['id']
-        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
-        self.assertEqual(response.data['name'], 'verifier pneus')
+        response = client.get(f'/api/maintenancemanagement/tasks/{pk}/')
+        self.assertLessEqual(data.items(), response.data.items())
 
     def test_US5_I3_taskdetail_get_non_existing_task_with_perm(self):
         """
-            Test if a user with perm can't see an unavailable task detail
+        Test if a user with perm can't see an unavailable task detail.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks.
+                    10506466 (int): a number we know can't be a task id in our tests
+
+                Expected Output:
+                    We expect the response's status_code to be 404.
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post(
-            '/api/maintenancemanagement/tasks/', {
-                'name': 'verifier pneus',
-                'description': 'faut verfier les pneus de la voiture ta vu'
-            },
-            format='json'
-        )
-        pk = response1.data['id']
-        response = client.get('/api/maintenancemanagement/tasks/' + str(10506466) + '/')
+        response = client.get('/api/maintenancemanagement/tasks/10506466/')
         self.assertEqual(response.status_code, 404)
 
     def test_US5_I3_taskdetail_get_without_perm(self):
         """
-            Test if a user without perm can't see a task detail
+        Test if a user without perm can't see a task detail.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks then no permissions.
+
+                Expected Outputs:
+                    We expect the GET response's status_code to be 401.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -205,53 +248,70 @@ class TaskTests(TestCase):
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.get('/api/maintenancemanagement/tasks/' + str(pk) + '/')
+        response = client.get(f'/api/maintenancemanagement/tasks/{pk}/')
         self.assertEqual(response.status_code, 401)
 
     def test_US5_I4_taskdetail_put_with_perm(self):
         """
-            Test if a user with perm can change a task
+        Test if a user with perm can change a task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks.
+                    data_post (dict): {'name': 'verifier pneus', 'description': 'faut verfier les pneus de la voiture ta vu'}
+                    data_put (dict): {'name': 'verifier roues'}
+
+                Expected Outputs:
+                    We expect to find the same id in the data of response_post and response_put.
+                    We expect the PUT response's data to contain the same value for 'name' than the put data.
+                    We expect the PUT response's status_code to be 200.
+                    We expect the GET response's data to contain the same value for 'name' than the put data.
         """
         user = self.set_up_perm()
+        data_post = {'name': 'verifier pneus', 'description': 'faut verfier les pneus de la voiture ta vu'}
+        data_put = {'name': 'verifier roues'}
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post(
-            '/api/maintenancemanagement/tasks/', {
-                'name': 'verifier pneus',
-                'description': 'faut verfier les pneus de la voiture ta vu'
-            },
-            format='json'
-        )
-        pk = response1.data['id']
-        response = client.put(
-            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'name': 'verifier roues'}, format='json'
-        )
-        self.assertEqual(response.data['name'], 'verifier roues')
-        self.assertEqual(response.status_code, 200)
+        response_post = client.post('/api/maintenancemanagement/tasks/', data_post, format='json')
+        pk = response_post.data['id']
+        response_put = client.put(f'/api/maintenancemanagement/tasks/{pk}/', data_put, format='json')
+        self.assertEqual(response_put.data['id'], response_post.data['id'])
+        self.assertEqual(response_put.data['name'], data_put['name'])
+        self.assertEqual(response_put.status_code, 200)
+        response_get = client.get(f'/api/maintenancemanagement/tasks/{pk}/')
+        self.assertEqual(response_get.data['name'], data_put['name'])
 
     def test_US5_I4_taskdetail_put_non_existing_task_with_perm(self):
         """
-            Test if a user with perm can't change an unavailable task
+        Test if a user with perm can't change an unavailable task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with all permissions on tasks.
+
+                Expected Outputs:
+                    We expect the PUT response's status_code to be 404.
         """
         user = self.set_up_perm()
         client = APIClient()
         client.force_authenticate(user=user)
-        response1 = client.post(
+        client.post(
             '/api/maintenancemanagement/tasks/', {
                 'name': 'verifier pneus',
                 'description': 'faut verfier les pneus de la voiture ta vu'
             },
             format='json'
         )
-        pk = response1.data['id']
-        response = client.put(
-            '/api/maintenancemanagement/tasks/' + str(644687456) + '/', {'name': 'verifier roues'}, format='json'
-        )
+        response = client.put('/api/maintenancemanagement/tasks/644687456/', {'name': 'verifier roues'}, format='json')
         self.assertEqual(response.status_code, 404)
 
     def test_US5_I4_taskdetail_put_without_perm(self):
         """
-            Test if a user without perm can change a task
+        Test if a user without perm can change a task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -267,14 +327,16 @@ class TaskTests(TestCase):
         user.user_permissions.clear()
         user = UserProfile.objects.get(id=user.pk)
         client.force_authenticate(user=user)
-        response = client.put(
-            '/api/maintenancemanagement/tasks/' + str(pk) + '/', {'name': 'verifier roues'}, format='json'
-        )
+        response = client.put(f'/api/maintenancemanagement/tasks/{pk}/', {'name': 'verifier roues'}, format='json')
         self.assertEqual(response.status_code, 401)
 
     def test_US5_I4_taskdetail_put_with_end_condition_with_perm(self):
         """
-            Test if a user with perm can change a task
+        Test if a user with perm can change a task.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
+
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -327,12 +389,16 @@ class TaskTests(TestCase):
             },
             format='json'
         )
+        self.assertEqual(response1.status_code, 201)  # if the post is failing in this test we know it is.
         self.assertEqual(response.data['name'], 'verifier roues')
         self.assertEqual(response.status_code, 200)
 
     def test_US5_I5_taskdetail_delete_with_perm(self):
         """
-            Test if a user with perm can delete a task
+        Test if a user with perm can delete a task
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -350,7 +416,10 @@ class TaskTests(TestCase):
 
     def test_US5_I5_taskdetail_delete_non_existing_task_with_perm(self):
         """
-            Test if a user with perm can't delete an unavailable task
+        Test if a user with perm can't delete an unavailable task
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -360,7 +429,13 @@ class TaskTests(TestCase):
 
     def test_US5_I5_taskdetail_delete_without_perm(self):
         """
-            Test if a user without perm can delete a task
+        Test if a user without perm can delete a task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -381,7 +456,10 @@ class TaskTests(TestCase):
 
     def test_US6_I1_addteamtotask_post_with_perm(self):
         """
-            Test if a user with permission can add a team to a task.
+        Test if a user with permission can add a team to a task.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -399,7 +477,13 @@ class TaskTests(TestCase):
 
     def test_US6_I1_addteamtotask_post_without_perm(self):
         """
-            Test if a user without permission can't add a team to a task.
+        Test if a user without permission can't add a team to a task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_perm()
         user.user_permissions.clear()
@@ -418,7 +502,10 @@ class TaskTests(TestCase):
 
     def test_US6_I1_addteamtotask_put_with_perm(self):
         """
-            Test if a user with permission can remove a team from a task.
+        Test if a user with permission can remove a team from a task.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -436,7 +523,13 @@ class TaskTests(TestCase):
 
     def test_US6_I1_addteamtotask_put_with_perm(self):
         """
-            Test if a user without permission can't remove a team from a task.
+        Test if a user without permission can't remove a team from a task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -454,7 +547,10 @@ class TaskTests(TestCase):
 
     def test_US6_I3_teamtaskslist_get_with_perm(self):
         """
-            Test if a user with permission can view team's task
+        Test if a user with permission can view team's task
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         team = Team.objects.create(name="team")
         task = Task.objects.create(name="task")
@@ -471,7 +567,10 @@ class TaskTests(TestCase):
 
     def test_US6_I3_teamtaskslist_get_non_existing_team_with_perm(self):
         """
-            Test if a user with permission can't view non existing team's task
+        Test if a user with permission can't view non existing team's task
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -481,7 +580,13 @@ class TaskTests(TestCase):
 
     def test_US6_I3_teamtaskslist_get_without_perm(self):
         """
-            Test if a user without permission can't view team's task
+        Test if a user without permission can't view team's task.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -493,7 +598,10 @@ class TaskTests(TestCase):
 
     def test_US6_I4_usertaskslist_get_with_perm(self):
         """
-            Tests if a user with permission can access a user's task list.
+        Tests if a user with permission can access a user's task list.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         team = Team.objects.create(name="team")
         team2 = Team.objects.create(name="team2")
@@ -517,7 +625,10 @@ class TaskTests(TestCase):
 
     def test_US6_I4_usertaskslist_get_non_existing_user_with_perm(self):
         """
-            Tests if a user with permission can't access a non existing user's task list.
+        Tests if a user with permission can't access a non existing user's task list.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -527,7 +638,13 @@ class TaskTests(TestCase):
 
     def test_US6_I4_usertaskslist_get_without_perm(self):
         """
-            Test if a user without permissions can see his own tasks
+        Test if a user without permissions can see his own tasks.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         temp_user = self.set_up_perm()
         user = self.set_up_without_perm()
@@ -541,7 +658,10 @@ class TaskTests(TestCase):
 
     def test_US8_I1_tasklist_post_with_file_with_perm(self):
         """
-            Test if a user with perm can add a task with a file
+        Test if a user with perm can add a task with a file
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         self.add_add_perm_file(user)
@@ -563,7 +683,13 @@ class TaskTests(TestCase):
 
     def test_US8_I1_tasklist_post_with_file_without_perm(self):
         """
-            Test if a user without perm can't add a task with a file
+        Test if a user without perm can't add a task with a file.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_without_perm()
         self.add_add_perm_file(user)
@@ -584,7 +710,10 @@ class TaskTests(TestCase):
 
     def test_US8_I2_taskdetail_get_with_file_with_perm(self):
         """
-            Test if a user with perm can see a task detail with a file
+        Test if a user with perm can see a task detail with a file
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         self.add_add_perm_file(user)
@@ -608,7 +737,13 @@ class TaskTests(TestCase):
 
     def test_US8_I2_taskdetail_get_with_file_withouts_perm(self):
         """
-            Test if a user without perm can't see a task detail with a file
+        Test if a user without perm can't see a task detail with a file.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_perm()
         self.add_add_perm_file(user)
@@ -634,7 +769,10 @@ class TaskTests(TestCase):
 
     def test_US8_I1_tasklist_post_with_files_with_perm(self):
         """
-            Test if a user with perm can add a task with multiple files
+        Test if a user with perm can add a task with multiple files
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         self.add_add_perm_file(user)
@@ -659,7 +797,13 @@ class TaskTests(TestCase):
 
     def test_US8_I1_tasklist_post_with_files_without_perm(self):
         """
-            Test if a user without perm can't add a task with multiple files
+        Test if a user without perm can't add a task with multiple files.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_without_perm()
         self.add_add_perm_file(user)
@@ -683,7 +827,10 @@ class TaskTests(TestCase):
 
     def test_US8_I2_taskdetail_get_with_files_with_perm(self):
         """
-            Test if a user with perm can see a task detail with multiple files
+        Test if a user with perm can see a task detail with multiple files
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         self.add_add_perm_file(user)
@@ -710,7 +857,13 @@ class TaskTests(TestCase):
 
     def test_US8_I2_taskdetail_get_with_files_without_perm(self):
         """
-            Test if a user without perm can't see a task detail with multiple files
+        Test if a user without perm can't see a task detail with multiple files.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_perm()
         self.add_add_perm_file(user)
@@ -739,7 +892,10 @@ class TaskTests(TestCase):
 
     def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm(self):
         """
-            Test if a user with perm can add a task with trigger_conditions
+        Test if a user with perm can add a task with trigger_conditions
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -806,7 +962,10 @@ class TaskTests(TestCase):
 
     def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_1(self):
         """
-            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        Test if a user with perm can't add a task with trigger_conditions with bad values.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -833,7 +992,10 @@ class TaskTests(TestCase):
 
     def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_2(self):
         """
-            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        Test if a user with perm can't add a task with trigger_conditions with bad values.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -862,7 +1024,10 @@ class TaskTests(TestCase):
 
     def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_3(self):
         """
-            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        Test if a user with perm can't add a task with trigger_conditions with bad values.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -890,7 +1055,10 @@ class TaskTests(TestCase):
 
     def test_US9_I1_tasklist_post_with_trigger_conditions_with_perm_and_wrong_values_4(self):
         """
-            Test if a user with perm can't add a task with trigger_conditions with bad values.
+        Test if a user with perm can't add a task with trigger_conditions with bad values.
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -918,7 +1086,10 @@ class TaskTests(TestCase):
 
     def test_US11_I1_tasklist_post_with_end_conditions_with_perm(self):
         """
-            Test if a user with perm can add a task with end_conditions
+        Test if a user with perm can add a task with end_conditions
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -956,7 +1127,10 @@ class TaskTests(TestCase):
 
     def test_US10_11_I1_tasklist_post_with_end_and_trigger_conditions_with_perm(self):
         """
-            Test if a user with perm can add a task with trigger_condition and end_condition
+        Test if a user with perm can add a task with trigger_condition and end_condition
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -1004,7 +1178,10 @@ class TaskTests(TestCase):
 
     def test_US10_11_I1_tasklist_post_with_conditions_with_bad_values_with_perm(self):
         """
-            Test if a user with perm can add a task with conditons with bad values
+        Test if a user with perm can add a task with conditons with bad values
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -1031,7 +1208,10 @@ class TaskTests(TestCase):
 
     def test_US19_I1_taskrequirements_with_perm(self):
         """
-            Test if a user can get template requirements with permission
+        Test if a user can get template requirements with permission
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()
@@ -1067,7 +1247,13 @@ class TaskTests(TestCase):
 
     def test_US19_I1_taskrequirements_without_perm(self):
         """
-            Test if a user can get template requirements without permission
+        Test if a user can get template requirements without permission.
+
+                Inputs:
+                    user (UserProfile): a UserProfile we setup with no permissions on tasks.
+
+                Expected Outputs:
+                    We expect the response's status_code to be 401.
         """
         user = self.set_up_without_perm()
         client = APIClient()
@@ -1077,7 +1263,10 @@ class TaskTests(TestCase):
 
     def test_US11_I2_tasklist_post_with_no_end_condition(self):
         """
-            Test that a checkbox is created if no end_conditions are given
+        Test that a checkbox is created if no end_conditions are given
+
+                Inputs:
+                    user (UserProfile): a user with all permissions on tasks.
         """
         user = self.set_up_perm()
         client = APIClient()

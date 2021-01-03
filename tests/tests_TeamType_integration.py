@@ -48,7 +48,15 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I1_teamtypeslist_get_with_perm(self):
         """
-            Test if a user with perm receive the teamtypes' list
+            Test if a user with perm receive the teamtypes' list.
+
+            Inputs:
+                user (UserProfile): a user with permissions to view team types.
+                serializer (TeamTypeSerializer): a serializer containing all team types data.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_view_perm(user)
@@ -62,7 +70,13 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I1_teamtypeslist_get_without_perm(self):
         """
-            Test if a user without perm can't receive the teamtypes' list
+            Test if a user without perm can't receive the teamtypes' list.
+
+            Inputs:
+                user (UserProfile): a user without permissions to view team types.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
@@ -72,7 +86,15 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I2_teamtypeslist_post_with_perm(self):
         """
-            Test if a user with perm can add a teamtype
+            Test if a user with perm can add a teamtype.
+
+            Inputs:
+                user (UserProfile): a user with permissions to add team types.
+                post data (JSON): a mock-up for a team type.
+
+            Expected Output:
+                We expect a 201 status code in the response.
+                We expect to find the created team type.
         """
         user = UserProfile.objects.create(username="user", password="p4ssword")
         self.add_add_perm(user)
@@ -92,7 +114,14 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I2_teamtypeslist_post_without_perm(self):
         """
-            Test if a user without perm can't add a teamtype
+            Test if a user without perm can't add a teamtype.
+
+            Inputs:
+                user (UserProfile): a user without permissions to add team types.
+                post data (JSON): a mock-up for a team type.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
@@ -109,7 +138,15 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I3_teamtypesdetail_get_with_perm(self):
         """
-            Test if a user with perm can get a teamtype
+            Test if a user with perm can get a teamtype.
+
+            Inputs:
+                user (UserProfile): a user with permissions to view team types.
+                serializer (TeamTypeDetailsSerializer): a serializer containing a team type data.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to get in the response the same data as in serializer.
         """
         user = UserProfile.objects.create(username="user")
         self.add_view_perm(user)
@@ -124,7 +161,13 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I3_teamtypesdetail_get_without_perm(self):
         """
-            Test if a user without perm can't get a teamtype
+            Test if a user without perm can't get a teamtype.
+
+            Inputs:
+                user (UserProfile): a user without permissions to view team types.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
@@ -135,7 +178,15 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I4_teamtypesdetail_put_with_perm(self):
         """
-            Test if a user with perm can change a teamtype
+            Test if a user with perm can change a teamtype.
+
+            Inputs:
+                user (UserProfile): a user with permissions to change team types.
+                put data (JSON): a mock-up for an updated team type.
+
+            Expected Output:
+                We expect a 200 status code in the response.
+                We expect to find the updated team type.
         """
         user = UserProfile.objects.create(username="user")
         self.add_change_perm(user)
@@ -157,7 +208,14 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I4_teamtypesdetail_put_without_perm(self):
         """
-            Test if a user without perm can't change a teamtype
+            Test if a user without perm can't change a teamtype.
+
+            Inputs:
+                user (UserProfile): a user without permissions to change team types.
+                put data (JSON): a mock-up for an updated team type.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
@@ -177,7 +235,14 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I5_teamtypesdetail_delete_with_perm(self):
         """
-            Test if a user with perm can delete a teamtype
+            Test if a user with perm can delete a teamtype.
+
+            Inputs:
+                user (UserProfile): a user with permissions to delete team types.
+
+            Expected Output:
+                We expect a 204 status code in the response.
+                We expect to not find the deleled team type.
         """
         user = UserProfile.objects.create(username="user")
         self.add_delete_perm(user)
@@ -190,7 +255,13 @@ class TeamTypeTests(TestCase):
 
     def test_US1_I5_teamtypesdetail_delete_without_perm(self):
         """
-            Test if a user without perm can't delete a teamtype
+            Test if a user without perm can't delete a teamtype.
+
+            Inputs:
+                user (UserProfile): a user without permissions to delete team types.
+
+            Expected Output:
+                We expect a 401 status code in the response.
         """
         user = UserProfile.objects.create(username="user")
         c = APIClient()
