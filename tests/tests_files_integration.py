@@ -1,15 +1,15 @@
 from io import BytesIO
 
+from maintenancemanagement.models import File
+from maintenancemanagement.serializers import FileSerializer
+from openCMMS import settings
 from PIL import Image
+from usersmanagement.models import UserProfile
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import Client, TestCase
-from maintenancemanagement.models import File
-from maintenancemanagement.serializers import FileSerializer
-from openCMMS import settings
 from rest_framework.test import APIClient
-from usersmanagement.models import UserProfile
 
 
 class FileTests(TestCase):
@@ -66,7 +66,7 @@ class FileTests(TestCase):
         tmp_file.seek(0)
         return tmp_file
 
-    def test_files_TI2_can_acces_files_list_with_connected(self):
+    def test_files_I2_can_acces_files_list_with_connected(self):
         """
         Test if a user with perm receive the data.
 
@@ -85,7 +85,7 @@ class FileTests(TestCase):
         response = client.get('/api/maintenancemanagement/files/', format='json')
         self.assertEqual(response.data, serializer.data)
 
-    def test_files_TI2_can_acces_file_list_without_connected(self):
+    def test_files_I2_can_acces_file_list_without_connected(self):
         """
         Test if a client with no authenticated user can't access the file list.
 
@@ -99,7 +99,7 @@ class FileTests(TestCase):
         response = client.get('/api/maintenancemanagement/files/', format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_files_TI1_add_png_file_with_connected(self):
+    def test_files_I1_add_png_file_with_connected(self):
         """
         Test if a user can add a png file.
 
@@ -118,7 +118,7 @@ class FileTests(TestCase):
         response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         self.assertEqual(response.status_code, 201)
 
-    def test_files_TI1_add_jpg_file_with_connected(self):
+    def test_files_I1_add_jpg_file_with_connected(self):
         """
         Test if a user with perm can add a jpg file.
 
@@ -137,7 +137,7 @@ class FileTests(TestCase):
         response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         self.assertEqual(response.status_code, 201)
 
-    def test_files_TI1_add_bitmap_file_with_connected(self):
+    def test_files_I1_add_bitmap_file_with_connected(self):
         """
         Test if a user with perm can add a file.
 
@@ -156,7 +156,7 @@ class FileTests(TestCase):
         response = client.post("/api/maintenancemanagement/files/", data, format='multipart')
         self.assertEqual(response.status_code, 201)
 
-    def test_files_TI1_add_pdf_file_with_connected(self):
+    def test_files_I1_add_pdf_file_with_connected(self):
         """
         Test if a user with perm can add a pdf file.
 
@@ -176,7 +176,7 @@ class FileTests(TestCase):
         print(response.data)
         self.assertEqual(response.status_code, 201)
 
-    def test_files_TI1_add_text_file_with_connected(self):
+    def test_files_I1_add_text_file_with_connected(self):
         """
         Test if a user can't add text file.
 
@@ -209,7 +209,7 @@ class FileTests(TestCase):
         response = client.post('/api/maintenancemanagement/files/', format='multipart')
         self.assertEqual(response.status_code, 401)
 
-    def test_files_TI3_view_file_details_with_connected(self):
+    def test_files_I3_view_file_details_with_connected(self):
         """
         Test if a user can see a file.
 
@@ -234,7 +234,7 @@ class FileTests(TestCase):
             colors = img.getcolors()
         self.assertEqual(colors, [(3600, 255)])
 
-    def test_files_TI3_view_file_details_without_connected(self):
+    def test_files_I3_view_file_details_without_connected(self):
         """
         Test if a client with no authenticated user can't access a file.
 
@@ -255,7 +255,7 @@ class FileTests(TestCase):
         response = client.get(f'/api/maintenancemanagement/files/{pk}/')
         self.assertEqual(response.status_code, 401)
 
-    def test_files_TI4_delete_file_with_connected(self):
+    def test_files_I4_delete_file_with_connected(self):
         """
         Test if a user can delete a file.
 
@@ -275,7 +275,7 @@ class FileTests(TestCase):
         response = client.delete('/api/maintenancemanagement/files/' + str(pk) + '/')
         self.assertEqual(response.status_code, 204)
 
-    def test_files_TI4_delete_file_without_connected(self):
+    def test_files_I4_delete_file_without_connected(self):
         """
         Test if a client with no authenticated user can't delete a file.
 
