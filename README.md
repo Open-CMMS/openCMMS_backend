@@ -12,93 +12,35 @@ Then, we also offer the possibility of adding DataProviders that will allow you 
 
 Finally, we offer a front end interface that can be coupled to this project and which is located here:
 
+# Creating a cmms user
+
+To prevent security breaches, we have created a cmms user. To do so follow theese lines :
+
+- Create user cmms : `adduser cmms`
+- Add sudo package : `apt install sudo`
+- Add user to the sudoers group : `adduser cmms sudo`
+- Connect as cmms user : `su cmms`
+
 # Installing the project
 
-In this part we will explain how to install this project locally or globally. The installation process has been tested with Debian 10 container.
+In this part we will explain how to install this project in development and production mode. The installation process has been tested with Debian 10 container.
 
-First, you have to download the project and put it in a specific directory, in our example we put the project in `/root/backend/`
+First, you have to download the project and put it in a specific directory, in our example we put the project in `/home/cmms/backend/`
 
-Make sure that you have all your packages up to date : `sudo apt-get update` and that you are on the project folder, here `/root/backend`
+Make sure that you have all your packages up to date : `sudo apt-get update`
 
-# Locally
+# Production Mode
 
-## Install the dependencies
-
-### With a virtual environment
+## Install the dependencies - With a virtual environment
 
 - Install required package : `sudo apt install -y python3-venv`
-- Create a virtual environment : `python3 -m venv env`
-- Activate the environment : `. env/bin/activate`
-- Install the dependencies using the requirements.txt which comes with re project : `pip install -r requirements.txt`
-
-### With Pipenv
-
-- Install the dependencies : `sudo apt-get install libsasl2-dev python3-dev libldap2-dev libssl-dev libpq-dev`
-- Install pipenv : `pip install pipenv` (if this command fails try with `pip3`)
-- Install the required packages : `pipenv install -d` (if this command fails because your python version doesn't match try running `pipenv install -d --python python3` )
-- Activate the pipenv env : `pipenv shell`
-
-## Install the database
-
-For this project we used a Postgresql database.
-
-- Install PostgreSQL : `sudo apt install -y postgresql-11`
-- Do this command only if you are using a separate container from the one where the project is : `nano /etc/postgresql/11/main/postgresql.conf` and modify the line `listen_addresses` with `listen_addresses='0.0.0.0'`
-- Modify this file : `nano /etc/postgresql/11/main/pg_hba.conf` by adding this line to the end of the file : `host all all all md5`
-- We will now add a django user and it's database. If you want to change the name of the user, the password and the name of the database, you also have to change it in the `base_settings.py` file :
-  - `su - postgres`
-  - `createuser django`
-  - `createdb django -O django`
-  - `psql`
-  - `alter user django with password 'django';`
-  - `alter user django with createdb;`
-  - `exit()` x2
-  - `service postgresql restart`
-
-## Launch the server
-
-Move to the root folder of the project, in our case `/root/backend`, and execute `python manage.py migrate` and then `python manage.py runserver`
-
-If you are executing the project in your computer you can access it at http://127.0.0.1:8000/api/admin (make sure you have created a superuser with `python manage.py createsuperuser`)
-Else, you can go to the nginx configuration section
-
-# Globally
-
-To install this project globally, thus in production mode, we have used gunicorn. There are a few steps to follow to make this work.
-
-## Install the database
-
-For this project we used a Postgresql database.
-
-- Install PostgreSQL : `sudo apt install -y postgresql-11`
-- Do this command only if you are using a separate container from the one where the project is : `nano /etc/postgresql/11/main/postgresql.conf` and modify the line `listen_addresses` with `listen_addresses='0.0.0.0'`
-- Modify this file : `nano /etc/postgresql/11/main/pg_hba.conf` by adding this line to the end of the file : `host all all all md5`
-- We will now add a django user and it's database. If you want to change the name of the user, the password and the name of the database, you also have to change it in the `base_settings.py` file :
-  - `su - postgres`
-  - `createuser django`
-  - `createdb django -O django`
-  - `psql`
-  - `alter user django with password 'django';`
-  - `alter user django with createdb;`
-  - `ctrl+d` x2
-  - `service postgresql restart`
-
-## Install the dependencies
-
-To make gunicorn work, we have to install the packages globally with pip3
-
-- Install pip3 : `sudo apt install -y python3-pip`
-- Install the dependencies using the requirements.txt which comes with the project (you have to be in the project folder) : `pip3 install -r requirements.txt`
-- Install gunicorn and dependencies :
-  - `apt install -y gunicorn3`
-  - `pip3 install gevent`
-- Migrate the modifications to the database from /root/backend: `python3 manage.py migrate`
-- Create the environment file : `nano /root/env_file` and put this in it :
-  ```
-  PYTHONUNBUFFERED=TRUE
-  ```
-  This file enables you to pass environment variables to gunicorn
-- Create the gunicorn service : `nano /etc/systemd/system/gunicorn.service` and put this in it
+- Create a virtual environment : `python3 -m venv cmms_env`
+- Activate the environment : `. cmms_env/bin/activate`
+- Move to the project repository : `cd /home/cmms/backend/`
+- Install the dependencies using the requirements.txt which comes with the project : `pip install -r requirements.txt`
+- Install gunicorn : `pip install gunicorn`
+- Install gunicorn dependencies : `pip install gevent==1.4.0 greenlet==0.4.14`
+- Create the gunicorn service : `sudo nano /etc/systemd/system/gunicorn.service` and put this in it
 
   ```
   [Unit]
@@ -107,10 +49,9 @@ To make gunicorn work, we have to install the packages globally with pip3
 
   [Service]
   PermissionsStartOnly = true
-  WorkingDirectory=/root/backend
-  User=root
-  EnvironmentFile=/root/env_file
-  ExecStart=/usr/bin/gunicorn3 openCMMS.wsgi:application -b 127.0.0.1:8000 -w 3 --preload --pid /run/gunicorn.pid --access-logfile=/var/log/gunicorn/server_access.log --error-logfile=/var/log/gunicorn/error.log --capture-output --worker-class=gevent --worker-connections=1000 --log-level debug
+  WorkingDirectory=/home/cmms/backend
+  User=cmms
+  ExecStart=/home/cmms/cmms_env/bin/gunicorn openCMMS.wsgi:application -b 127.0.0.1:8000 -w 3 --preload --worker-class=gevent --worker-connections=1000
   ExecReload=/bin/kill -s HUP $MAINPID
   ExecStop=/bin/kill -s TERM $MAINPID
   KillMode=process
@@ -121,11 +62,28 @@ To make gunicorn work, we have to install the packages globally with pip3
   WantedBy=multi-user.target
   ```
 
-  Make sure that the working directory and the environment file are correct
+  Make sure that the working directory is correct
 
-- Create the folder for gunicorn logs : `mkdir /var/log/gunicorn`
-- Reload all the services : `systemctl daemon-reload`
-- Start the gunicorn service : `systemctl start gunicorn.service`
+- Reload all the services : `sudo systemctl daemon-reload`
+- Start the gunicorn service : `sudo systemctl start gunicorn.service`
+
+## Install the database
+
+For this project we used a Postgresql database.
+
+- Install PostgreSQL : `sudo apt install -y postgresql-11`
+- Do this command only if you are using a separate container from the one where the project is : `sudo nano /etc/postgresql/11/main/postgresql.conf` and modify the line `listen_addresses` with `listen_addresses='0.0.0.0'`
+- Modify this file only if you are using a separate container from the one where the project is : `sudo nano /etc/postgresql/11/main/pg_hba.conf` by adding this line to the end of the file : `host all all all md5`
+- We will now add a django user and it's database. If you want to change the name of the user, the password and the name of the database, you also have to change it in the `base_settings.py` file :
+  - `sudo su - postgres`
+  - `createuser django`
+  - `createdb django -O django`
+  - `psql`
+  - `alter user django with password 'django';`
+  - `alter user django with createdb;`
+  - `ctrl+d` x2
+  - `sudo service postgresql restart`
+  - Migrate django's database (with the virtual environment activated) : `python manage.py migrate`
 
 # Nginx configuration
 
@@ -188,12 +146,12 @@ As we serve both back and front end, we have set up Nginx in order to distribute
 
           location /static {
                   autoindex on;
-                  alias /root/backend/staticfiles;
+                  alias /home/cmms/backend/staticfiles;
           }
 
           location /media {
                   autoindex on;
-                  alias /root/backend/media;
+                  alias /home/cmms/backend/media;
           }
 
   }
@@ -201,8 +159,8 @@ As we serve both back and front end, we have set up Nginx in order to distribute
 
   Make sure that the alias match your root folder for the project
 
-- Change the user in the nginx configuration : `nano /etc/nginx/nginx.conf` and change `user www-data;` to `user root;`
-- Reload nginx : `service nginx restart`
+- Change the user in the nginx configuration : `sudo nano /etc/nginx/nginx.conf` and change `user www-data;` to `user cmss;`
+- Reload nginx : `sudo service nginx restart`
 
 # Configure the project
 
@@ -217,9 +175,15 @@ If you want the email part to be effective you have to change a few things in th
   - EMAIL_USE_TLS = False
   - EMAIL_HOST_USER = ''
   - EMAIL_HOST_PASSWORD = ''
-  - DEFAULT_FROM_EMAIL = `'No-Reply <no-reply@pic.brasserie-du-slalom.fr>'`
+  - DEFAULT_FROM_EMAIL = `'No-Reply <no-reply@your-domain.fr>'`
 - Modify your `BASE_URL` so it matches your website
 
 ## Others
 
-If you setup the project to be accessed from the internet, you may have to had your site address to the `ALLOWED_HOSTS` variable.
+If you setup the project to be accessed from the internet, you may have to had your site address to the `CSRF_TRUSTED_ORIGINS` variable, like for example :
+
+```
+  CSRF_TRUSTED_ORIGINS = [
+  'your.website.com'
+  ]
+```
