@@ -26,6 +26,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
+CSRF_TRUSTED_ORIGINS = []
+
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
 BASE_URL = 'http://127.0.0.1:8000/'
